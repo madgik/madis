@@ -8,7 +8,7 @@ from sqlparse.tokens import *
 import zlib
 import functions
 
-break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)$""", re.DOTALL| re.UNICODE)
+break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)\s*$""", re.DOTALL| re.UNICODE)
 find_parenthesis=re.compile(r"""\s*\((.*)\)\s*$""", re.DOTALL| re.UNICODE)
 
 # delete reserved SQL keywords that collide with our vtables
@@ -368,6 +368,7 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"var 'usercc' from select 5;"]
     sql+=[r"(exec flow file 'lala' 'lala1' asdfasdf:asdfdsaf);"]
     sql+=[r"UPDATE merged_similarity SET  merged_similarity = ((ifthenelse(colsim,colsim,0)*0.3)+(ifthenelse(colsim,colsim,0)*0.3))"]
+    sql+=[r"toggle tracing ;"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
