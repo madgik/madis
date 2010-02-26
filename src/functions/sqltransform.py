@@ -196,7 +196,7 @@ class Transclass:
             for t in [x for x in expand_type(from_range, (sqlparse.sql.Identifier,sqlparse.sql.IdentifierList))]: #from_range.tokens[:]:
                 if type(t) is sqlparse.sql.Function:
                     vname=vt_name(unicode(t))
-                    fname=t.tokens[0].get_real_name()
+                    fname=t.tokens[0].get_real_name().lower()
                     if fname in self.vtables:
                         out_vtables+=[(vname, fname, unicode(t.tokens[1])[1:-1])]
                         t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)] or \
