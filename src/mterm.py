@@ -57,6 +57,13 @@ def update_tablelist():
     alltables=[x[0].lower().encode('ascii') for x in cursor.fetchall()]
     cursor.close()
 
+def mcomplete(text,state):
+    hits= [x.lower() for x in allfuncs+alltables if x.lower()[:len(text)]==text.lower()]
+    if state<len(hits):
+        return hits[state]
+    else:
+        return
+
 intromessage="""MTerM - Extended Sqlite shell - version 0.5
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
@@ -94,6 +101,8 @@ language, output_encoding = locale.getdefaultlocale()
 
 if len(sys.argv) >= 2:
     db = sys.argv[1]
+    if db=="-q":
+        db=':memory:'
 
 connection = functions.Connection(db)
 
@@ -101,25 +110,11 @@ functions.register(connection)
 functions.variables.execdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
 functions.variables.flowname='main'
 
-allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
-alltables=[]
-update_tablelist()
-
-def mcomplete(text,state):
-    hits= [x.lower() for x in allfuncs+alltables if x.lower()[:len(text)]==text.lower()]
-    if state<len(hits):
-        return hits[state]
-    else:
-        return
-
-readline.set_completer(mcomplete)
-readline.parse_and_bind("tab: complete")
-
 if len(sys.argv)>2:
+        
     statement=' '.join(sys.argv[2:])
     statement = statement.decode(output_encoding)
-    
-    
+        
     printer=writer(output,dialect=mtermoutput(),delimiter=separator)
     cursor = connection.cursor()
     try:
@@ -134,6 +129,13 @@ if len(sys.argv)>2:
         except:
             pass
     sys.exit()
+
+allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
+alltables=[]
+update_tablelist()
+
+readline.set_completer(mcomplete)
+readline.parse_and_bind("tab: complete")
 
 #print functions.functions
 print intromessage
