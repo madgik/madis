@@ -28,7 +28,7 @@ Examples:
     >>> sql("select * from (flow file 'testing/colpref.csv' limit 5) ")
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator flow: Incompete statement found : userid colid pr ... 41 416900.0 agr
+    OperatorError: madIS SQLError: operator flow: Incompete statement found : userid colid pr ... 41 416900.0 agr
 
 
 Test files:
