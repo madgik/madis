@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Madis documentation build configuration file, created by
+# madIS documentation build configuration file, created by
 # sphinx-quickstart on Thu Nov 26 16:25:19 2009.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -50,7 +50,7 @@ def setup(app):
 master_doc = 'index'
 
 # General information about the project.
-project = u'Madis'
+project = u'madIS'
 copyright = u'2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -175,7 +175,7 @@ html_split_index = True
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Madisdoc'
+htmlhelp_basename = 'madisdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -189,7 +189,7 @@ htmlhelp_basename = 'Madisdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Madis.tex', u'Madis Documentation',
+  ('index', 'madis.tex', u'madIS Documentation',
    u'mlmlml', 'manual'),
 ]
 

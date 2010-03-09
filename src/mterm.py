@@ -64,7 +64,7 @@ def mcomplete(text,state):
     else:
         return
 
-intromessage="""MTerM - Extended Sqlite shell - version 0.5
+intromessage="""mTerm - Extended Sqlite shell - version 0.5
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
