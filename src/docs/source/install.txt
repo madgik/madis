@@ -1,11 +1,11 @@
-Installing Madis
+Installing madIS
 ================
 
-The requirements for using Madis are:
+The requirements for using madIS are:
 
 1.  Python 2.6.x: You can download a windows distribution of Python from
     http://www.python.org/download/releases/ .You need to download the latest
-    Python in the 2.6 series. Madis hasn't been tested at all with Python 3.x
+    Python in the 2.6 series. madIS hasn't been tested at all with Python 3.x
 
     Most Linux distributions come with Python 2.6 preinstalled.
 
@@ -24,7 +24,7 @@ The requirements for using Madis are:
 
     Download from above page, the latest Readline-X.X.win32-py2.X.exe, and install it.
 
-4.  Download the Madis archive (.zip) from:
+4.  Download the madIS archive (.zip) from:
 
     http://code.google.com/p/madis/downloads/list
 

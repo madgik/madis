@@ -15,7 +15,7 @@ The are three kinds of functions:
 
 - Virtual tables
 
-Madis also provides syntactic extensions, in its supported SQL, that simplify the use of above functions.
+madIS also provides syntactic extensions, in its supported SQL, that simplify the use of above functions.
 
 .. seealso::
 
@@ -57,7 +57,7 @@ Creating and using a simple row function
 Python files that implement row functions live in "/src/functions/row". A single python file can contain many row functions.
 Now lets create a simple "hello world" row function.
 
-Go to the "src/functions/row/" path of Madis, and create "hello.py". Then write the following code in it:
+Go to the "src/functions/row/" path of madIS, and create "hello.py". Then write the following code in it:
 
 .. sourcecode:: python
 
@@ -68,10 +68,10 @@ Go to the "src/functions/row/" path of Madis, and create "hello.py". Then write 
 
 The code above, looks like and indeed is, a simple python function that takes multiple arguments.
 The only peculiarity is the "hello.registered=True" line.
-What this line does, is to instruct Madis to register this function with the SQLite core.
+What this line does, is to instruct madIS to register this function with the SQLite core.
 This way, Python functions that we don't wish to become SQLite row functions, can simply be used without any change to them.
 
-To execute the above row function we start Madis and execute an SQL query which uses the new *hello* row function::
+To execute the above row function we start madIS and execute an SQL query which uses the new *hello* row function::
 
    % python mterm.py
    mterm> select hello("world"); 
@@ -91,12 +91,12 @@ Below we show such an example::
    hello world 
    Query executed in 0 min. 0 sec 7 msec 
 
-When developing custom row functions it is very useful to browse through the already developed row functions, in the "functions/row" path of Madis.
+When developing custom row functions it is very useful to browse through the already developed row functions, in the "functions/row" path of madIS.
 Most of the time a custom function can be based on an already existing one.
 
 .. note::
    If a developer wishes to add a row function that in essence is a part of a pre-existing Python library.
-   The Madis convention is to put the library files in the "src/lib/" path of Madis and then create a row function in the "row" path of Madis which imports and calls the necessary methods of the actual library in "lib" path.
+   The madIS convention is to put the library files in the "src/lib/" path of madIS and then create a row function in the "row" path of madIS which imports and calls the necessary methods of the actual library in "lib" path.
    For an example of this see *detectlang.*
 
 .. seealso::
@@ -141,7 +141,7 @@ Python files that implement aggregate functions live in
 "/src/functions/aggregate". A single python file can contain many aggregate functions.
 Now, lets create a simple aggregate function.
 
-Go to the "src/functions/aggregate/" path of Madis, and create "myconcat.py". Then write the following code in it:
+Go to the "src/functions/aggregate/" path of madIS, and create "myconcat.py". Then write the following code in it:
 
 .. sourcecode:: python
 
@@ -165,9 +165,9 @@ In the "__init__" method of class *quotedconcatterms* we initialize all needed v
 The "step" method, is called by SQLite's engine for every tuple of the group which is fed into the aggregate function.
 At the end of the group, the "final" method is called to return the final result.
 
-The "registered=True" line above, as in row functions, instructs Madis to load the class into the SQLite engine as an aggregate function.
+The "registered=True" line above, as in row functions, instructs madIS to load the class into the SQLite engine as an aggregate function.
 
-To execute the above aggregate function we start Madis and execute an SQL query which uses the new *quotedconcatterms*
+To execute the above aggregate function we start madIS and execute an SQL query which uses the new *quotedconcatterms*
 aggregate function (notice the single quotes around each input string in the results)::
 
    % python mterm.py
@@ -176,7 +176,7 @@ aggregate function (notice the single quotes around each input string in the res
 
 As is the case with aggregate functions it is very useful to browse through the
 already developed aggregate functions, in the "functions/aggregate" path of
-Madis, to find snippets of code implementing wished for, functionality.
+madIS, to find snippets of code implementing wished for, functionality.
 
 .. seealso::
 
@@ -185,17 +185,17 @@ Madis, to find snippets of code implementing wished for, functionality.
 Virtual tables
 ==============
 
-Virtual tables are one of the most powerful function class in Madis.
+Virtual tables are one of the most powerful function class in madIS.
 They can function in a regular table fashion, where the input is finite in length, or a streaming fashion, where the input or output stream are infinite.
 
 
 In both of previously mentioned operating modes, they can do most everything with the input data.
 They can change the schema, or even produce data without given any.
-This, together with the SQL syntax extensions of Madis, creates a very powerful environment with which a variety of standard Madis features have been
+This, together with the SQL syntax extensions of madIS, creates a very powerful environment with which a variety of standard madIS features have been
 developed, such as the *multisets*, *workflow engine*, *direct data load from filesystem or network*, etc.
 
 In addition to above, virtual tables can also function as programmable indexes on the input data, negotiating with the database engine about which constraints or ordering they'll be able to answer/produce quickly.
-The only Madis virtual table that implements and works as an index is *cache*, which offers, a created on the fly, multidimensional index.
+The only madIS virtual table that implements and works as an index is *cache*, which offers, a created on the fly, multidimensional index.
 
 Using virtual tables can be done in a variety of ways.
 The first of those is the **parametric table**::
@@ -224,7 +224,7 @@ using space as a delimiter, into multiple columns through *strsplit* row functio
 
 In this point, we should skip a little ahead, and mention two peculiarities on the queries above.
 The first one is the "query:date" parameter of *pipe*.
-This in Madis is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
+This in madIS is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
 
 The second peculiarity is the that the row function *strsplit* returns multiple columns.
 This is a multiset function, able to return as many columns and rows as it wishes.
@@ -245,9 +245,9 @@ The "coltypes" part of above query may look like a special function of the termi
 
 .. note::
     - "coltypes" is able to be used in front of a query because it is in its *inverted form*.
-      We'll discuss Madis SQL extensions in the following section.
+      We'll discuss madIS SQL extensions in the following section.
     - We won't present a simple virtual table implementation as they are too complex to be presented here.
-      For more see the already existing tables in the "/src/functions/vtable" path of Madis, and the `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
+      For more see the already existing tables in the "/src/functions/vtable" path of madIS, and the `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
 
 .. seealso::
 
@@ -259,10 +259,10 @@ The "coltypes" part of above query may look like a special function of the termi
 
 .. _inversion:
 
-Madis SQL extensions
+madIS SQL extensions
 ********************
 
-While developing Madis, we realized that some simple ideas like virtual table chaining, were too difficult to be written in plain SQL.
+While developing madIS, we realized that some simple ideas like virtual table chaining, were too difficult to be written in plain SQL.
 In addition using a virtual table was more difficult than it needed to be, due to having to "create" a virtual table before using it.
 
 To solve the problems above, we've extended SQL with the following features:
@@ -272,7 +272,7 @@ To solve the problems above, we've extended SQL with the following features:
 - Syntax inversion
 
 The first of above features, is quite apparent. The user doesn't have to manage virtual tables,
-Madis does everything it is needed automatically in the background, creating a virtual table just before a query using it, is executed, and
+madIS does everything it is needed automatically in the background, creating a virtual table just before a query using it, is executed, and
 deleting it after the query's execution completes. This is why we could directly
 read from the file system, with the *file* virtual table, in the previous section.
 
@@ -285,13 +285,13 @@ So lets start with a simple virtual table chaining example and invert it::
 What the query above does, is to call system's "date" command, through the *pipe* virtual table, and write the output back to the file system (in the file named "d.txt").
 The *output* virtual table returns back if it succeeded or not (1 or 0).
 
-Because chaining virtual tables on the manner shown above, proved to require a lot of effort and in addition was error prone, syntax inversion was added to Madis' accepted SQL syntax.
+Because chaining virtual tables on the manner shown above, proved to require a lot of effort and in addition was error prone, syntax inversion was added to madIS' accepted SQL syntax.
 The inversion syntax is::
 
    VTname 'param1' 'param2'... namedparam1:valueofnamedparam1 ... SQL_query
    
 
-Whenever Madis' SQL preprocessor "sees" above syntax it turns it into::
+Whenever madIS' SQL preprocessor "sees" above syntax it turns it into::
 
    select * from Vtname('param1', 'param2' ..., 'namedparam1:valueofnamedparam1' ... , 'query:SQL_query')
 
@@ -302,9 +302,9 @@ So lets use the inverted syntax, to reissue the query above::
 
 In practice a wide range of functionalities has been possible with inversions.
 The *coltypes* example shown in the previous section "feels" like special functionality that is implemented execution engine in other DB systems.
-In Madis, most of the special commands are in essence virtual tables (or row functions) in their inverted form.
+In madIS, most of the special commands are in essence virtual tables (or row functions) in their inverted form.
 
-The same inverted syntax is also offered by Madis, for row functions.
+The same inverted syntax is also offered by madIS, for row functions.
 So instead of::
 
    mterm> select detectlang('Il en est des livres comme du feu de nos foyers'); 
@@ -318,7 +318,7 @@ We could have written it as such::
 A problem arises with row inversions.
 How to distinguish between the case of passing the actual query to a row function, and passing the **results** of the query to the row function.
 
-Madis has the *var* row function, which sets and retrieves a Madis variable.
+madIS has the *var* row function, which sets and retrieves a madIS variable.
 Some examples of its usage::
 
    mterm> var 'demo' 'time'; -- This puts value 'time' to the variable named 'demo'
@@ -375,7 +375,7 @@ What "FROM" does is to transform the query in its non inverted syntax shown abov
 Multisets
 *********
 
-Early in the development of Madis, the need to return multiple rows and columns from row and aggregate functions, arose.
+Early in the development of madIS, the need to return multiple rows and columns from row and aggregate functions, arose.
 This need was satisfied through the use of *expand* virtual table and an accompanying Python API (*CompBuffer*) to create multisets.
 
 Virtual table *expand* works by looking into the results of a SQL query, and if
@@ -386,7 +386,7 @@ If more than one *CompBuffers* are found, then their schemata are consolidated i
 CompBuffer tries to avoid writing on the hard disk, by compressing in memory, the data fed
 into it and only after a threshold of 10 Mb of compressed data is reached, spilling over into the hard disk.
 
-To make multiset usage transparent to the user, Madis' SQL preprocessor, inserts automatically
+To make multiset usage transparent to the user, madIS' SQL preprocessor, inserts automatically
 the *expand* virtual table whenever a multiset producing function is met.
 To flag a row or aggregate function as a multiset one, the programmer has to set the function's attribute
 "multiset" to "True". This is done in the same way as for the "registered" function's attribute.
@@ -464,7 +464,7 @@ An example of *cache* use is::
    . . . . . . . . .
    Query executed in 0 min 0 sec 71 msec
 
-The queries above, do a direct join on the filesystem's files "countries.tsv" and "continents.tsv" (in the "demo" path of Madis).
+The queries above, do a direct join on the filesystem's files "countries.tsv" and "continents.tsv" (in the "demo" path of madIS).
 The first query doesn't do any caching at all, so it is forced to do multiple sequential reads of the "continents" file, to execute the join.
 The second query, using the inverted syntax, caches the "continents" file and creates the required indexes to execute the join quickly.
 
@@ -479,10 +479,10 @@ For bigger datasets and more constraints the speed advantage could be even great
 Workflows
 *********
 
-From the beginning Madis was designed for building complete data processing systems with it.
-In Madis, workflows are viewed as a series of queries to be executed sequentially.
+From the beginning madIS was designed for building complete data processing systems with it.
+In madIS, workflows are viewed as a series of queries to be executed sequentially.
 
-The main function that implements Madis' workflow engine is *exec* virtual table::
+The main function that implements madIS' workflow engine is *exec* virtual table::
 
    mterm> select 'select 5';
    select 5
@@ -501,13 +501,13 @@ the *file* virtual table, then feed its results into the *flow* virtual table
 which collects in one line the "broken into multiple lines" queries, and finally
 to feed the resulting queries to *exec* virtual table which will execute them.
 
-The above combination of virtual tables presents, one the most powerful aspects of Madis.
+The above combination of virtual tables presents, one the most powerful aspects of madIS.
 Namely the ability to create complex functionality (in this instance a workflow engine), by quickly combining simple entities.
 
 .. note::
     Another benefit of using (or abusing) a relational database to implement a workflow engine, is that all ACID properties
     of the database are still present during the workflow processing. Unfortunately due to limitations of the SQLite core, 
-    transactional execution of Madis workflows isn't fully working yet (see :ref:`tutlimitations`).
+    transactional execution of madIS workflows isn't fully working yet (see :ref:`tutlimitations`).
 
 .. seealso::
 
@@ -515,11 +515,11 @@ Namely the ability to create complex functionality (in this instance a workflow 
     * :mod:`~functions.vtable.flow`
     * :mod:`~functions.vtable.file`
 
-Designing and building a data processing system with Madis
+Designing and building a data processing system with madIS
 **********************************************************
 
 Concerning the design of a data processing system.
-The required steps that have to be made when **designing** a data processing system with Madis are:
+The required steps that have to be made when **designing** a data processing system with madIS are:
 
 1. Define the problem you are trying to solve
 
@@ -540,14 +540,14 @@ Great care should be given, when designing, on the most difficult and time consu
 
 .. _tutlimitations:
 
-Limitations of Madis
+Limitations of madIS
 ********************
 
-The limitations of Madis are:
+The limitations of madIS are:
 
-- Due to SQLite's inability to simultaneously use multiple CPUs to execute a query, Madis' query execution is done by only one CPU.
+- Due to SQLite's inability to simultaneously use multiple CPUs to execute a query, madIS' query execution is done by only one CPU.
   This will be partially solved in the future through the use of the *map* virtual table, which will be able to execute a row function on multiple data rows in parallel.
-  For more heavy processing concurrency, functions and virtual tables enabling Madis to be used on clusters are in the planning stage 
+  For more heavy processing concurrency, functions and virtual tables enabling madIS to be used on clusters are in the planning stage
 
 - Due to SQLite's locking semantics, workflows inside a parent workflow, aren't in their own transactions.
   So when a child workflow fails, the whole parent transaction rolls back.

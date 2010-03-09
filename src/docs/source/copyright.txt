@@ -3,7 +3,7 @@ Copyright and License
 
 Copyright (C) 2009-2010 Lefteris Stamatogiannakis, Mei Li Triantafyllidi, Maria Vayanou, Marialena Kyriakidi.
 
-The external libraries used throughout the Madis project are copyright of their respective authors.
+The external libraries used throughout the madIS project are copyright of their respective authors.
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
