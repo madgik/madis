@@ -132,7 +132,7 @@ Function :mod:`~functions.vtable.names` is a virtual table function that operate
 	City|Region|Country|Population
 	Query executed in 0 min. 0 sec 24 msec
 	
-Similar functionality, has :mod:`~functions.vtable.coltypes` function presenting also the column :ref:`types affinity <http://www.sqlite.org/datatype3.html#affinity>`_ if specified, .
+Similar functionality, has :mod:`~functions.vtable.coltypes` function presenting also the column `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_ if specified, .
 
 ::
 

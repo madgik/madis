@@ -185,11 +185,11 @@ Virtual tables
 Virtual tables are actually functions that take parameters and output table like data. They can be used in the SQL syntax wherever
 a regular table would be placed.
 
-Virtual tables are one of the most powerful function classes in Madis. They can function in a regular table fashion,
+Virtual tables are one of the most powerful function classes in madIS. They can function in a regular table fashion,
 where the output data is finite in number, or in a streaming fashion, where the output stream can be infinite.
 
-This, together with the SQL syntax extensions of Madis, creates a very powerful environment with which a variety
-of standard Madis features have been developed, such as the *multisets*, *workflow engine*,
+This, together with the SQL syntax extensions of madIS, creates a very powerful environment with which a variety
+of standard madIS features have been developed, such as the *multisets*, *workflow engine*,
 *direct data load from filesystem or network*, etc.
 
 
@@ -197,7 +197,7 @@ Typical examples of virtual tables sources are files, SQL query resulsets, or ev
 
 In addition to the above, virtual tables can also function as programmable indexes on the input data,
 negotiating with the database engine about which constraints or ordering they'll be able to answer/produce quickly.
-The only Madis virtual table that implements and works as an index is :ref:`cache <tutcache>`, which offers, a created on the fly,
+The only madIS virtual table that implements and works as an index is :ref:`cache <tutcache>`, which offers, a created on the fly,
 multidimensional index.
 
 Using virtual tables can be done in a variety of ways.
@@ -227,7 +227,7 @@ using space as a delimiter, into multiple columns through :func:`~functions.row.
 
 At this point, we should skip a little ahead, and mention two peculiarities on the queries above.
 The first one is the "query:date" parameter of :mod:`~functions.vtable.pipe`.
-This in Madis is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
+This in madIS is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
 
 The second peculiarity is the that the row function :func:`~functions.row.formating.strsplit` returns multiple columns.
 This is a :ref:`multiset <tutmultiset>` function, able to return as many columns and rows as it wishes.
@@ -250,9 +250,9 @@ of the inside query and as second column the column types of the inside query.
 
 .. note::
     - :mod:`~functions.vtable.coltypes` is able to be used in front of a query because it is in its :ref:`inverted form <inversion>`.
-      We'll discuss Madis SQL extensions in the following section.
+      We'll discuss madIS SQL extensions in the following section.
     - We won't present a simple virtual table implementation as they are too complex to be presented here.
-      For more see the already existing tables in the "/src/functions/vtable" path of Madis, and the
+      For more see the already existing tables in the "/src/functions/vtable" path of madIS, and the
       `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
 
 .. seealso::
@@ -488,7 +488,7 @@ Workflows
 From the beginning madIS was designed for building complete data processing systems with it.
 In madIS, workflows are viewed as a series of queries to be executed sequentially.
 
-The main function that implements Madis' workflow engine is :mod:`~functions.vtable.exec` virtual table::
+The main function that implements madIS' workflow engine is :mod:`~functions.vtable.exec` virtual table::
 
    mterm> select 'select 5';
    select 5
