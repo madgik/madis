@@ -179,3 +179,9 @@ So making a join between streaming virtual tables for many data is not a good id
 :ref:`cache <tutcache>` virtual table function at one of the *streaming* queries will significantly increase performance.
 
 
+.. _workflowexample:
+
+Building workoflows
+===================
+
+setexecdb //Return current db , if new argument provided it will be used in exec

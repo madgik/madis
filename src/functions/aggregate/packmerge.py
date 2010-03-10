@@ -51,10 +51,10 @@ class mergebypriority:
     ... aggregate   1
     ... ''')
     >>> sql(\"""select mergebypriority(pk,priorities.b)
-                    from
-                        (select a,pack(b,c) as pk from table1 group by a) as profile,
-                        table2 as priorities
-                    where priorities.a=profile.a\""")
+    ...             from
+    ...                 (select a,pack(b,c) as pk from table1 group by a) as profile,
+    ...                 table2 as priorities
+    ...             where priorities.a=profile.a\""")
     dimension | rank
     ----------------
     movie2    | 1
