@@ -283,7 +283,7 @@ def dateformat(*args):
     To change *outformat*, both format parameters must be provided. If date is not formatted according
     to *inpformat* null value is returned.
     
-    Check `formatting pattern <http://docs.python.org/library/datetime.html#strftime-behavior>`_ details
+    Check `formatting pattern <http://docs.python.org/library/time.html?#time.strftime>`_ details
     
     
     Examples:

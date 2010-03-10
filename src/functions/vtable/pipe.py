@@ -1,6 +1,6 @@
 """
 
-.. function:: pipe(query:None,lines:t)
+.. function:: pipe(query:None[,lines:t])
 
 Executes *query* as a shell command and returns the standard output lines as rows of one column table. Setting *lines* parameter to *f* the command output will be returned in one table row.
 
