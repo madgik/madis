@@ -24,7 +24,6 @@ madIS also provides syntactic extensions, in its supported SQL, that simplify th
     * :ref:`vtable-functions-list`
 
 Row functions
-=============
 
 Programmable row functions work in a similar way as standard SQL row functions such as *abs()*, *lower()* and *upper()*.
 Their implementation is done in Python, and they are able to use all Python facilities and libraries.
@@ -104,7 +103,6 @@ Most of the time a custom function can be based on an already existing one.
     * :ref:`row-functions-list`
 
 Aggregate functions
-===================
 
 Programmable aggregate functions work in a similar way as standard SQL aggregate functions such as *sum()*, *min()* and *max()*.
 Their implementation is done in Python, and as is also the case for row functions, all Python facilities and libraries are available.
@@ -118,13 +116,13 @@ An example of an SQL statement using an external aggregate function is::
    from (select "term1+term2" as a UNION select "term2 term3" as a); 
    term1+term2 term2 term3
 
-The statement above, executes the *concatterms* function, which concatenates strings of terms together, while keeping the terms disjoint.
+The statement above, executes the :func:`~functions.aggregate.text.concatterms` function, which concatenates strings of terms together, while keeping the terms disjoint.
 
 Using the aggregate function above, together with a row function is also possible.
 To concatenate together only the input string keywords we could execute the following SQL::
 
    mterm> select concatterms(keywords(a))
-   from (select "term1+term2" as a UNION select "term2 term3" as a); 
+            from (select "term1+term2" as a UNION select "term2 term3" as a);
    term1 term2 term2 term3 
 
 .. seealso::
@@ -183,29 +181,34 @@ madIS, to find snippets of code implementing wished for, functionality.
     * :ref:`aggregate-functions-list`
 
 Virtual tables
-==============
 
-Virtual tables are one of the most powerful function class in madIS.
-They can function in a regular table fashion, where the input is finite in length, or a streaming fashion, where the input or output stream are infinite.
+Virtual tables are actually functions that take parameters and output table like data. They can be used in the SQL syntax wherever
+a regular table would be placed.
+
+Virtual tables are one of the most powerful function classes in Madis. They can function in a regular table fashion,
+where the output data is finite in number, or in a streaming fashion, where the output stream can be infinite.
+
+This, together with the SQL syntax extensions of Madis, creates a very powerful environment with which a variety
+of standard Madis features have been developed, such as the *multisets*, *workflow engine*,
+*direct data load from filesystem or network*, etc.
 
 
-In both of previously mentioned operating modes, they can do most everything with the input data.
-They can change the schema, or even produce data without given any.
-This, together with the SQL syntax extensions of madIS, creates a very powerful environment with which a variety of standard madIS features have been
-developed, such as the *multisets*, *workflow engine*, *direct data load from filesystem or network*, etc.
+Typical examples of virtual tables sources are files, SQL query resulsets, or even external programs output.
 
-In addition to above, virtual tables can also function as programmable indexes on the input data, negotiating with the database engine about which constraints or ordering they'll be able to answer/produce quickly.
-The only madIS virtual table that implements and works as an index is *cache*, which offers, a created on the fly, multidimensional index.
+In addition to the above, virtual tables can also function as programmable indexes on the input data,
+negotiating with the database engine about which constraints or ordering they'll be able to answer/produce quickly.
+The only Madis virtual table that implements and works as an index is :ref:`cache <tutcache>`, which offers, a created on the fly,
+multidimensional index.
 
 Using virtual tables can be done in a variety of ways.
-The first of those is the **parametric table**::
+The first is **parametric table**::
 
    % python mterm.py
    mterm> select * from file('./demo/continents.tsv') limit 2; 
    Asia|AF 
    Europe|AL 
 
-What the example above does, is to read the tab separated "continents.tsv" filesystem file as a table, passing it as a parameter to the virtual table *file*.
+What the example above does, is to read the tab separated "continents.tsv" filesystem file as a table.
 Using the standard *limit* SQL directive, the output is limited to only 2 rows.
 
 An example showing the streaming nature of virtual tables is::
@@ -216,18 +219,18 @@ An example showing the streaming nature of virtual tables is::
    mterm> select strsplit(output,'delimiter: ') from pipe('query:date'); 
    Mon|Feb||1|12:34:56|EET|2000 
 
-The first of above examples executes system's "date" command through the use of the *pipe* virtual table.
-Notice that the *pipe* virtual table has a default output schema, having one column named *output.*
+The first of the above examples executes system's "date" command through the use of the :mod:`~functions.vtable.pipe` virtual table.
+Notice that the :mod:`~functions.vtable.pipe` virtual table has a default returned schema, having one column named *output.*
 
-The second of above examples does the same as above, however in addition to that, it also splits *pipe's* output,
-using space as a delimiter, into multiple columns through *strsplit* row function.
+The second of the above examples does the same as the previous one, however it also splits :mod:`~functions.vtable.pipe`'s output,
+using space as a delimiter, into multiple columns through :func:`~functions.row.formating.strsplit` row function.
 
-In this point, we should skip a little ahead, and mention two peculiarities on the queries above.
-The first one is the "query:date" parameter of *pipe*.
-This in madIS is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
+At this point, we should skip a little ahead, and mention two peculiarities on the queries above.
+The first one is the "query:date" parameter of :mod:`~functions.vtable.pipe`.
+This in Madis is called a *named parameter*, where the part before the ":" is a parameter's name and the second part is a parameter's value.
 
-The second peculiarity is the that the row function *strsplit* returns multiple columns.
-This is a multiset function, able to return as many columns and rows as it wishes.
+The second peculiarity is the that the row function :func:`~functions.row.formating.strsplit` returns multiple columns.
+This is a :ref:`multiset <tutmultiset>` function, able to return as many columns and rows as it wishes.
 To see the column names and column types of second query above, we can execute::
 
    mterm> coltypes select strsplit(output,'delimiter: ') from pipe('query:date'); 
@@ -240,14 +243,17 @@ To see the column names and column types of second query above, we can execute::
    C7|text 
    
 
-The "coltypes" part of above query may look like a special function of the terminal but in essence it is also a virtual table that takes as input a query and returns a table having as first column the column names of the inside query and as second column the column types of the inside query.
+The "coltypes" in the above query may look like a special function of the terminal but in essence it is also
+a virtual table that takes as input a query and returns a table having as first column the column names
+of the inside query and as second column the column types of the inside query.
 
 
 .. note::
-    - "coltypes" is able to be used in front of a query because it is in its *inverted form*.
-      We'll discuss madIS SQL extensions in the following section.
+    - :mod:`~functions.vtable.coltypes` is able to be used in front of a query because it is in its :ref:`inverted form <inversion>`.
+      We'll discuss Madis SQL extensions in the following section.
     - We won't present a simple virtual table implementation as they are too complex to be presented here.
-      For more see the already existing tables in the "/src/functions/vtable" path of madIS, and the `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
+      For more see the already existing tables in the "/src/functions/vtable" path of Madis, and the
+      `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
 
 .. seealso::
 
@@ -482,16 +488,16 @@ Workflows
 From the beginning madIS was designed for building complete data processing systems with it.
 In madIS, workflows are viewed as a series of queries to be executed sequentially.
 
-The main function that implements madIS' workflow engine is *exec* virtual table::
+The main function that implements Madis' workflow engine is :mod:`~functions.vtable.exec` virtual table::
 
    mterm> select 'select 5';
    select 5
    mterm> exec select 'select 5';
    1
 
-Virtual table *exec*, takes as input an SQL query, executes it and then operates on the **results** of the input query, executing them sequentially and returning "1" if all the queries executed successfully, or throwing an error if any queries failed to execute correctly.
+Virtual table :mod:`~functions.vtable.exec`, takes as input an SQL query, executes it and then operates on the **results** of the input query, executing them sequentially and returning "1" if all the queries executed successfully, or throwing an error if any queries failed to execute correctly.
 
-This peculiar design (its a meta-meta function), enables *exec* to work in tandem with other virtual tables that feed to it the workflows to be executed.
+This peculiar design (its a meta-meta function), enables :mod:`~functions.vtable.exec` to work in tandem with other virtual tables that feed to it the workflows to be executed.
 The most frequent combination is::
 
    mterm> exec flow file 'workflow.sql';
@@ -499,7 +505,7 @@ The most frequent combination is::
 What the query above does, is to open and read the "workflow.sql" filesystem file via
 the *file* virtual table, then feed its results into the *flow* virtual table
 which collects in one line the "broken into multiple lines" queries, and finally
-to feed the resulting queries to *exec* virtual table which will execute them.
+to feed the resulting queries to :mod:`~functions.vtable.exec` virtual table which will execute them.
 
 The above combination of virtual tables presents, one the most powerful aspects of madIS.
 Namely the ability to create complex functionality (in this instance a workflow engine), by quickly combining simple entities.
