@@ -7,7 +7,7 @@ import functions
 def var(*args):
 
     """
-    .. function:: var(varname, value) -> value
+    .. function:: var(varname[, value]) -> value
 
     Sets (if both varname and value are given) or returns (if only varname is given) the contents of a variable.
 
