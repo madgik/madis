@@ -30,8 +30,7 @@ Contents:
    
    install
    about
-   manual
-   trickypoints
+   manual   
    row
    aggregate
    vtable

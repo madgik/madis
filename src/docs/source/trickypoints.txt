@@ -91,7 +91,7 @@ Understanding function return types
 ===================================
 
 To understand how function return types works, make sure you understand how `SQLite types <http://www.sqlite.org/datatype3.html>`_ work. 
-The return type of the row and aggregate Madis functions refers to the storage class usually returned by the function. 
+The return type of the row and aggregate madIS functions refers to the storage class usually returned by the function.
 Virtual table functions return a table that has a static or dynamic schema with column names and `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_. 
 To make more clear the difference of the returned types of row/aggregate functions and virtual table functions consider the following example::
 
@@ -120,25 +120,28 @@ So the returned values from row and aggregate functions, even :ref:`multisets <t
 Shell interaction
 =================
 
+While working on interactive mode with the shell there are helpful shell commands, that show up with *.help* command, but also some functions that facilitate complex queries composition.
 
-Except of the shell commands that 
-**Autocomplete **
+**Names function**
 
-Names , coltypes
+Function :mod:`~functions.vtable.names` is a virtual table function that operates over a query (See :ref:`tipparameters`) and returns the column names of the query result.
 
-toggle  tracing
+::
 
-toggle vtdebug
+	mterm> names select * from file('test.csv','header:t') ;
+	City|Region|Country|Population
+	Query executed in 0 min. 0 sec 24 msec
+	
+Similar functionality, has :mod:`~functions.vtable.coltypes` function presenting also the column :ref:`types affinity <http://www.sqlite.org/datatype3.html#affinity>`_ if specified, .
 
-------------------
+::
 
-Auta mallon se flow pio polu i 
-use it as a flow engine
-----------------------------
-logging???
-setexecdb
-settings
-variables???
+	mterm> coltypes select * from file('/home/meili/Desktop/test.csv','header:t') ;
+	City|text
+	Region|text
+	Country|text
+	Population|text
+
 
 .. _tipemptyschema:
 
