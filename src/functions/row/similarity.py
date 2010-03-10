@@ -126,7 +126,7 @@ def euclean(*args):###not working with lists
 
     .. function:: euclean(pack1,pack2)
 
-    Returns euclean distance value of two packets ( vector-like object's created by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` function).
+    Returns euclidean distance value of two packets ( vector-like object's created by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` function).
     If packets are full vectors then then non-common metrics WILL be used in the calculation. To avoid that do not include zero values
     in *pack1* and *pack2* or use :func:`eucleancommon`, but this solution is slower.
 
@@ -262,7 +262,7 @@ def eucleancommon(*args):###not working with lists
 
     .. function:: eucleancommon(pack1,pack2)
 
-    Returns euclean distance value of two packets ( vector-like object's created by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` function).
+    Returns euclidean distance value of two packets ( vector-like object's created by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` function).
     If packets are full vectors or include zero weights then then only common metrics (non-zero values) will be used in the calculation.
     This function behaves exactly like :func:`euclean` but exhibits the same behavior if packs are vectorized.
 

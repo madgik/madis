@@ -26,11 +26,11 @@ madIS is hosted at http://code.google.com/p/madis/
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
    install
    about
-   manual
+   manual   
    row
    aggregate
    vtable

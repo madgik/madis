@@ -249,5 +249,5 @@ def schemastr(tablename,colnames,typenames=None):
     if not typenames:
         return "create table %s(%s)" %(tablename,','.join(['"'+str(c)+'"' for c in unify(stripedcolnames)]))
     else:
-        stripedtypenames=['' if el=="None" else el if onlyalphnum.match(el) else '"'+el.replace('"','""')+'"' for el in typenames]
+        stripedtypenames=['' if el.lower()=="none" else el if onlyalphnum.match(el) else '"'+el.replace('"','""')+'"' for el in typenames]
         return "create table %s(%s)" %(tablename,','.join([str(c)+' '+str(t) for c,t in zip(unify(stripedcolnames),stripedtypenames)]))
