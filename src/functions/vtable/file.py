@@ -12,6 +12,10 @@ recognized with the corresponding dialect).
 
 Formatting options:
 
+:encoding:
+
+    A standar encoding name. (`List of encodings <http://docs.python.org/library/codecs.html#standard-encodings>`_)
+
 :compression: *t/f*
 
     Default is *f* (False)
@@ -143,9 +147,9 @@ def nullify(iterlist):
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect'])
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
-        encoding='utf-8'
+        self.encoding='utf-8'
         if 'encoding' in rest:
-            encoding=rest['encoding']
+            self.encoding=rest['encoding']
             del rest['encoding']
 
         self.nonames=first
@@ -177,10 +181,10 @@ class FileCursor:
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
             if first and not hasheader:
-                self.iter=peekable(nullify(reader(self.fileiter,encoding=encoding,**rest)))
+                self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                 sample=self.iter.peek()
             else: ###not first or header
-                self.iter=nullify(reader(self.fileiter,encoding=encoding,**rest))
+                self.iter=nullify(reader(self.fileiter,encoding=self.encoding,**rest))
                 if hasheader:
                     sample=self.iter.next()
             if first:
@@ -197,7 +201,10 @@ class FileCursor:
     def __iter__(self):
         return self
     def next(self):
-        return self.iter.next()
+        try:
+            return self.iter.next()
+        except UnicodeDecodeError:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"File is not %s encoded" %(self.encoding))
     def close(self):
         self.fileiter.close()
         
