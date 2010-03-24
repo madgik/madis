@@ -3,6 +3,7 @@ import tempfile
 import apsw
 import csv
 import re
+import os
 from lib.boolops import xor
 
 class defaultcsv(csv.Dialect):
@@ -106,7 +107,7 @@ def inoutargsparse(args,kargs):
 
 def cacheurl(url,extraheaders):
     fd , fname =tempfile.mkstemp(suffix="kill.urlfetch")
-
+    os.close(fd)
     req=urllib2.Request(url,None,extraheaders)
     #urliter=urllib2.urlopen(url)
     urliter=urllib2.urlopen(req)
