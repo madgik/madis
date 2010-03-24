@@ -56,8 +56,13 @@ def kdtreerec(data, treedata, cols, axis, index):
         axis=0
 
     if lendata!=1:
-        kdtreerec(data[:median], treedata, cols, axis, (index<<1)+1)
-        kdtreerec(data[median:], treedata, cols, axis, (index+1)<<1)
+        left=data[:median]
+        right=data[median:]
+
+        del(data)
+        
+        kdtreerec(left, treedata, cols, axis, (index<<1)+1)
+        kdtreerec(right, treedata, cols, axis, (index+1)<<1)
     return
 
 def query(tree, constraints=None, consargs=None):
