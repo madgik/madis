@@ -33,7 +33,7 @@ sqroot.registered=True
 def safediv(*args):
 
     """
-    .. function:: sqroot(int, int, int) -> int
+    .. function:: safediv(int, int, int) -> int
 
     Returns the first argument, when the division of the two subsequent numbers
     includes zero in denominator (i.e. in third argument)
