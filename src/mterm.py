@@ -253,17 +253,13 @@ while True:
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
         except KeyboardInterrupt:
             print "KeyboardInterrupt exception: Query execution stopped"
-            cursor.close()
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
-            cursor.close()
             print e
             continue
         except Exception, e:
-            cursor.close()
             raise
         finally:
-            #print "In finally mterm"
             try:
                 cursor.close()
             except:
