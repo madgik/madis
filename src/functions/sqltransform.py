@@ -186,8 +186,6 @@ class Transclass:
             select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], from_start, exclude_end=True) )
             from_end=query.token_next_by_instance(query.token_index(from_start), sqlparse.sql.Where)
 
-        print query.tokens
-
         # process virtual tables in from range
         if from_start!=None:
             if from_end is None:
