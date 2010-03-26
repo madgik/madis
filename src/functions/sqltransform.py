@@ -160,7 +160,7 @@ class Transclass:
         s_start=s.token_next_match(0, Token.Keyword.DML, r'(?i)select', True)
         if s_start!=None:
             # find keyword that ends substatement
-            s_end=s.token_next_match(s.token_index(s_start), Token.Keyword, (r'(?i)union', r'(?i)order', r'(?i)limit', r'(?i)intersect', r'(?i)except'), True)
+            s_end=s.token_next_match(s.token_index(s_start), Token.Keyword, (r'(?i)union', r'(?i)order', r'(?i)limit', r'(?i)intersect', r'(?i)except', r'(?i)having'), True)
             if len(s.tokens)<3:
                 return (unicode(s), vt_distinct(out_vtables), self.direct_exec)
             if s_end is None:
@@ -185,6 +185,8 @@ class Transclass:
         if from_start!=None:
             select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], from_start, exclude_end=True) )
             from_end=query.token_next_by_instance(query.token_index(from_start), sqlparse.sql.Where)
+
+        print query.tokens
 
         # process virtual tables in from range
         if from_start!=None:
@@ -296,7 +298,7 @@ if __name__ == "__main__":
     execv.no_results=True
 
     vtables={'file':file, 'lnf':True, 'funlalakis':True, 'filela':True, 'sendto':True, 'helpvt':True, 'output':True,'names':True, 'cache':True, 'testvt':True, 'exec':execv, 'flow':True, 'testvt':True}
-    row_functions=['help','set', 'execute', 'var', 'toggle', 'strsplit', 'min', 'ifthenelse']
+    row_functions=['help','set', 'execute', 'var', 'toggle', 'strsplit', 'min', 'ifthenelse', 'keywords']
 
     sql+=["select a,b,(apriori(a,b,c,'fala:a')) from lalatable"]
     sql+=["create table a from select a,b,(apriori(a,b,c,'fala:a')) from lalatable, lala14, lala15"]
@@ -369,6 +371,8 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"(exec flow file 'lala' 'lala1' asdfasdf:asdfdsaf);"]
     sql+=[r"UPDATE merged_similarity SET  merged_similarity = ((ifthenelse(colsim,colsim,0)*0.3)+(ifthenelse(colsim,colsim,0)*0.3))"]
     sql+=[r"toggle tracing ;"]
+    sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala'"]
+    sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala' union select * from file('lala')"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
