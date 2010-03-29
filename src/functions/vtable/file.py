@@ -12,6 +12,10 @@ recognized with the corresponding dialect).
 
 Formatting options:
 
+:encoding:
+
+    A standar encoding name. (`List of encodings <http://docs.python.org/library/codecs.html#standard-encodings>`_)
+
 :compression: *t/f*
 
     Default is *f* (False)
@@ -143,6 +147,11 @@ def nullify(iterlist):
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect'])
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
+        self.encoding='utf-8'
+        if 'encoding' in rest:
+            self.encoding=rest['encoding']
+            del rest['encoding']
+
         self.nonames=first
         for el in rest:
             if el not in csvkeywordparams:
@@ -172,10 +181,10 @@ class FileCursor:
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
             if first and not hasheader:
-                self.iter=peekable(nullify(reader(self.fileiter,**rest)))
+                self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                 sample=self.iter.peek()
             else: ###not first or header
-                self.iter=nullify(reader(self.fileiter,**rest))
+                self.iter=nullify(reader(self.fileiter,encoding=self.encoding,**rest))
                 if hasheader:
                     sample=self.iter.next()
             if first:
@@ -186,19 +195,22 @@ class FileCursor:
                     for i in xrange(1,len(sample)+1):
                         namelist.append("C"+str(i))
         else: #### Default read lines
-            self.iter=nullify(linetorow(self.fileiter))
+            self.iter=nullify(linetorow(self.fileiter,encoding=encoding))
             namelist.append("C1")
             
     def __iter__(self):
         return self
     def next(self):
-        return self.iter.next()
+        try:
+            return self.iter.next()
+        except UnicodeDecodeError:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"File is not %s encoded" %(self.encoding))
     def close(self):
         self.fileiter.close()
         
-def linetorow(f):
+def linetorow(f,encoding='utf-8'):
     for line in f:
-        yield [unicode(line,'utf-8').rstrip("\n")]
+        yield [unicode(line,encoding).rstrip("\n")]
 
 
 class FileVT:

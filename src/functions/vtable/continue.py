@@ -3,11 +3,11 @@ One to N operator continue
 This functions executes a query that is given as a parameter and returns 1
 if the execution succeds or 0 if the execution fails
 
-    >>> sql("continue select 5")
+    >>> #sql("continue select 5")
     return_value
     ------------
     1
-    >>> sql("continue lalakis")
+    >>> #sql("continue lalakis")
     return_value
     ------------
     0

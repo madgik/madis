@@ -15,6 +15,7 @@ Formatting options:
     - gtable      In gtable mode table is formatted as a google Data Table for visualisation
     - gjson       In gjson mode table is formatted as true json in accepted google Data Table for visualisation json schema
     - csv        Default value, in csv mode table is formatted in csv, many csv settings available
+    - plain      The columns are concatened and written, after each row a new line is added.
 
     If *mode* is not *csv* any given csv formatting options are ignored
 
@@ -139,6 +140,9 @@ def outputData(diter,*args,**formatAgrs):
 
         elif formatAgrs['mode']=='html':
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
+        elif formatAgrs['mode']=='plain':
+            for row,headers in diter:
+                fileIter.write(((''.join(row))+'\n').encode('utf-8'))
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Unknown mode value")
 

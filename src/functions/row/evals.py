@@ -30,9 +30,9 @@ def pyeval(*args):
     -------------
     2
     >>> sql("select var('test')")
-    var('test')
-    -----------
-    None
+    Traceback (most recent call last):
+    ...
+    MadisError: Madis SQLError: Variable 'test' does not exist
     >>> sql("select var('test', pyeval('1+1'))")
     var('test', pyeval('1+1'))
     --------------------------
@@ -45,9 +45,9 @@ def pyeval(*args):
     pyeval('1+1','"-"','3+1')
     -------------------------
     2-4
-    >>> sql("var 'testvar' 5")
-    var('testvar','5')
-    ------------------
+    >>> sql("var 'testvar' of select 5")
+    var('testvar',(select 5))
+    -------------------------
     5
     >>> sql("pyeval 'testvar+5'")
     pyeval('testvar+5')

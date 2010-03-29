@@ -34,7 +34,7 @@ class MadisError(Exception):
     def __init__(self,msg):
         self.msg=msg
     def __str__(self):
-        return "madIS SQLError: "+str(self.msg)
+        return "Madis SQLError: "+str(self.msg)
 
 class OperatorError(MadisError):
     def __init__(self,opname,msg):
