@@ -195,7 +195,7 @@ class FileCursor:
                     for i in xrange(1,len(sample)+1):
                         namelist.append("C"+str(i))
         else: #### Default read lines
-            self.iter=nullify(linetorow(self.fileiter,encoding=encoding))
+            self.iter=nullify(linetorow(self.fileiter,encoding=self.encoding))
             namelist.append("C1")
             
     def __iter__(self):
