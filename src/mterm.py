@@ -258,7 +258,8 @@ while True:
             print e
             continue
         except Exception, e:
-            raise
+            print "Unknown error:"+e
+            #raise
         finally:
             try:
                 cursor.close()
