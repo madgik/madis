@@ -147,9 +147,21 @@ class LTable: ####Init means setschema and execstatus
 
         self._setschema()
 
+        self.dedupl={}
         self.data=[]
+        ro=[]
         for r in q:
-            self.data.append(r)
+            ro=[]
+            for i in r:
+                if i not in self.dedupl:
+                    self.dedupl[i]=i
+                    ro.append(i)
+                else:
+                    ro.append(self.dedupl[i])
+
+            self.data.append(tuple(ro))
+
+        del(self.dedupl)
 
     @echocall
     def _setschema(self):
