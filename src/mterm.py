@@ -258,7 +258,7 @@ while True:
             print e
             continue
         except Exception, e:
-            print "Unknown error:"+e
+            print "Unknown error:"+str(e)
             #raise
         finally:
             try:
