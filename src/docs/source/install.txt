@@ -5,7 +5,8 @@ The requirements for using madIS are:
 
 1.  Python 2.6.x: You can download a windows distribution of Python from
     http://www.python.org/download/releases/ .You need to download the latest
-    Python in the 2.6 series. madIS hasn't been tested at all with Python 3.x
+    Python in the 2.6 series. madIS doesn't work with Python 2.4 or Python 2.5.
+    madIS hasn't been tested at all with Python 3.x.
 
     Most Linux distributions come with Python 2.6 preinstalled.
 
@@ -16,6 +17,14 @@ The requirements for using madIS are:
     APSW should be build from source. The instructions for building APSW are in:
 
     http://apsw.googlecode.com/svn/publish/build.html
+
+    A quick command line to build and install APSW is:
+
+        sudo python setup.py fetch --all --missing-checksum-ok build install
+
+    If you are using Ubuntu linux, you'll also need the packages:
+
+        build-essential libreadline5-dev zlib1g-dev python-dev
 
 3.  Readline: This is needed only in Windows (most Linux distributions come with
     readline preinstalled). You'll find a Python readline for Windows in:
