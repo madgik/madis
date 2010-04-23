@@ -188,8 +188,11 @@ class Transclass:
 
         # process virtual tables in from range
         if from_start!=None:
+            if from_start==query.tokens[-1]:
+                raise functions.MadisError("Error in FROM range of: '"+str(query)+"'")
             if from_end is None:
                 from_end = query.tokens[-1]
+                print query.tokens
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end))
             else:
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end, exclude_end=True))
@@ -371,6 +374,7 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"toggle tracing ;"]
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala'"]
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala' union select * from file('lala')"]
+    sql+=[r"select a from (select * from);"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
