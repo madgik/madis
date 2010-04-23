@@ -192,7 +192,6 @@ class Transclass:
                 raise functions.MadisError("Error in FROM range of: '"+str(query)+"'")
             if from_end is None:
                 from_end = query.tokens[-1]
-                print query.tokens
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end))
             else:
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end, exclude_end=True))
