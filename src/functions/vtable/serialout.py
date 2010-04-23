@@ -23,7 +23,10 @@ def binData(diter,*args,**formatAgrs):
         filename=args[0]
     else:
         raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
-    f=open(filename,'wb')
+    if 'append' in formatAgrs and formatAgrs['append']:
+        f=open(filename,'ab')
+    else:
+        f=open(filename,'wb')
     iter=peekable(diter)
     try:
         r,schema=iter.peek()
@@ -41,10 +44,11 @@ def binData(diter,*args,**formatAgrs):
         
     f.close()
 
+boolargs=['append']
 
 def Source():
-    
-    return SourceNtoOne(binData)
+    global boolargs
+    return SourceNtoOne(binData,boolargs)
 
 
 if not ('.' in __name__):
