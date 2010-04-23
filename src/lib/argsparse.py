@@ -48,7 +48,7 @@ def unquote(p):
         return p[1:-1].replace('""','"')
     return p
 
-re_params=re.compile(ur'^(?!\w:\\\\\w)(\w+):(.*)')
+re_params=re.compile(ur'^(?!\w:\\\w)(\w+):(.*)')
 
 
 def parametrize(*args,**kargs):

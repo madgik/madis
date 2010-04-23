@@ -6,12 +6,12 @@ class BufferException(Exception):
 def mempack(obj):
     """
     >>> a={1:'la',2:'l'}
-    >>> a==memunzip(memzip(a))
+    >>> a==memunpack(mempack(a))
     True
     >>> a=dict([(i,i) for i in xrange(2000)])
     >>> import sys
-    >>> print "Compressed size / Initial size: %s%%" %(int(sys.getsizeof(memzip(a))*100/(sys.getsizeof(a)*1.0)))
-    Compressed size / Initial size: 27%
+    >>> print "Compressed size / Initial size: %s%%" %round((sys.getsizeof(mempack(a))*100.0/(sys.getsizeof(a)*1.0)),3)
+    Compressed size / Initial size: 0.033%
     """
     return buffer(compress(cPickle.dumps(obj),9))
 
