@@ -4,6 +4,8 @@
 Read input *location* file that serialised table values, probably produced by :func:`~functions.vtable.serialout.serialout` function.
 
 """
+#TODO Make it capable of reading multiline chunknum serialised
+
 
 registered=True
 external_stream=True
@@ -16,7 +18,14 @@ import cPickle
 from lib.iterutils import peekable
 
 
-def deserialize(fileiter):
+def deserialize(fileiter,hasnums):
+    if not hasnums:
+        while True:
+            try:
+                yield cPickle.load(fileiter)
+            except EOFError:
+                return
+
     while True:
         linelens=fileiter.read(4)
         if len(linelens)==0:
@@ -32,6 +41,9 @@ def deserialize(fileiter):
 
 class BininCursor:
     def __init__(self,first,names,types,*largs,**kargs):
+        addnums=False
+        if 'chunknums' in kargs and kargs['chunknums']:
+            addnums=True
         self.cols=names
         self.types=types
         if len(largs)>0:
@@ -39,7 +51,7 @@ class BininCursor:
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
         self.f=open(filename,'rb')
-        self.iter=deserialize(self.f)
+        self.iter=deserialize(self.f,addnums)
         if first:
             first = False
             try:
