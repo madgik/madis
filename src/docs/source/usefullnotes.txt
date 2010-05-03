@@ -4,7 +4,7 @@ Usefull notes
 This section contains useful tips to help with understanding function usage, ease
 shell interaction and introduce some basic characteristics of the dynamic virtual tables.
 
-.. _tipexamples:
+.. _unotesexamples:
 
 Understanding function examples
 ===============================
@@ -25,7 +25,7 @@ However in the interactive shell column names are not shown. In the interactive 
 	Query executed in 0 min. 0 sec 33 msec
 
 
-.. _tipparameters:
+.. _unotesparameters:
 
 Understanding function parameters
 =================================
@@ -89,7 +89,7 @@ This function adds a *rowid* column to the query result that indicates the order
 The result of :mod:`~functions.vtable.rowidvt` function is forwarded into :mod:`~functions.vtable.output` which writes the result in the *outfile.csv* file.
 
 
-.. _tipreturntypes:
+.. _unotesreturntypes:
 
 Understanding function return types
 ===================================
@@ -119,7 +119,7 @@ In conclusion, the returned values from row and aggregate functions, even :ref:`
 
 The same result could be reached using the virtual table functions, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`.
 
-.. _tipshell:
+.. _unotesshell:
 
 Shell interaction
 =================
@@ -150,7 +150,7 @@ Function :mod:`~functions.vtable.coltypes`, has similar functionality, additiona
 	Population|text
 
 
-.. _tipemptyschema:
+.. _unotesemptyschema:
 
 Empty schema exception
 ======================
@@ -176,7 +176,7 @@ In the example above, *cache* function has a possibility of producing an empty s
 Other possible causes of empty schema exceptions are also :ref:`multiset <tutmultiset>` functions which are actually implemented
 through the :mod:`~functions.vtable.expand` virtual table function.
 
-.. _tipefficiencyvt:
+.. _unotesefficiencyvt:
 
 Efficiency in streaming virtual tables
 ======================================
