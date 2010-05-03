@@ -1,4 +1,4 @@
-Usefull notes
+Useful notes
 *************
 
 This section contains useful tips to help with understanding function usage, ease
