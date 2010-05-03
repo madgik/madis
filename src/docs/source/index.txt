@@ -31,7 +31,7 @@ Contents:
    install
    about
    manual
-   trickypoints
+   usefullnotes
    row
    aggregate
    vtable
