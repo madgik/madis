@@ -117,7 +117,7 @@ In conclusion, the returned values from row and aggregate functions, even :ref:`
 
 .. note::
 
-The same result could be reached using the virtual table functions, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`.
+    The same result could be reached using the virtual table functions, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`.
 
 .. _unotesshell:
 
@@ -129,7 +129,7 @@ These can be listed in the terminal with the *.help* command.
 
 **Names function**
 
-Function :mod:`~functions.vtable.names` is a virtual table function that operates over a query (See :ref:`tipparameters`)
+Function :mod:`~functions.vtable.names` is a virtual table function that operates over a query (See :ref:`unotesparameters`)
 and returns the column names of the query result.
 
 ::
