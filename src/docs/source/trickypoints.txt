@@ -1,4 +1,4 @@
-Tricky Points
+Usefull notes
 *************
 
 This section contains useful tips to help with understanding function usage, ease
@@ -16,9 +16,9 @@ While reading each function's description, you will notice examples like this:
     ------
     yes
 
-Because examples serve also as tests for the madIS, they are coded and displayed as actual Python code. The string inside the Python function "sql()" is
-an SQL query, having its results displayed in the lines following the sql() statement. Query results in examples also include the column names for clarity.
-However in the interactive shell column names are not shown. In the interactive shell, the same as above example, would look like following::
+Because examples also serve as tests for madIS's functions, they are coded and displayed as actual Python code. The string inside Python function "sql()" is
+an SQL query, having its results displayed in the lines following it. Query results in examples also include the column names for clarity.
+However in the interactive shell column names are not shown. In the interactive shell, the same as above example, would look like the following::
 
 	mterm> select ifthenelse(1>0,'yes','no') as answer;
 	yes
@@ -33,55 +33,60 @@ Understanding function parameters
 **Named parameters**
 
 All types of functions (row, aggregate and virtual table) can take simple or named parameters. 
-At simple parameters ordering is important and should follow function's definition while named 
-parameters can be placed anywhere in the parameters lists, with few exceptions that it is clearly stated. 
-Named parameters are strings (so they must be placed inside quotes) of the format *paramname:paramvalue*.
+For simple parameters, ordering is important and should follow function's definition. Named
+parameters can be placed anywhere in the parameters lists, with few exceptions that are clearly stated.
+Named parameters are strings (so they must be placed inside quotes) using the format *paramname:paramvalue*.
 
 For example :mod:`~functions.vtable.file` function is declared as::
 
- file(location[, formatting options])
+    file(location[, formatting options])
 
-where *location* is a simple parameter of the file name or network resource to read and *formatting options* is a list of named parameters (eg. parameter *dialect* with values *tsv* or *csv*). So using this function to import a csv file would look like this::
+where *location* is a simple parameter containing the file name or network resource to read from,
+and *formatting options* is a list of named parameters (eg. parameter *dialect* which accepts one of values *tsv* or *csv*).
+So using this function to import a csv file would look like this::
 	
 	select * from file('myfile','dialect:csv');
 
-Using the inverted syntax of functions (see :ref:`SQL extensions <inversion>`), the query would look like this::
+By using inverted syntax (see :ref:`SQL extensions <inversion>`), the query would look like this::
 	
 	select * from (file 'myfile' dialect:csv);
 	
-Notice that non named parameters must be quoted again while quoting named parameters is optional and also that parameters are separated with spaces instead of commas. 
-If in a named parameter value, space character should be included, quoting must be used. So importing a file that uses space as values delimiter, with inverted syntax would look like this::
+Notice that non named parameters must be quoted. However named parameters quoting is optional. Also parameters are separated with spaces instead of commas.
+If a space character appears in a named parameter's value field, quoting should be used.
+So importing a file that uses spaces as value delimiters, would look like following (using inverted syntax)::
 
 	select * from (file 'myfile' 'delimiter: ');
 
-A function definition including the named parameters is :mod:`~functions.vtable.output`::	
+An example of a function definition which contains named parameters is :mod:`~functions.vtable.output`::
 	
 	output(query:None, file[, formatting options])
 
-Where it takes the named parameter *query* that has no default value. (Usually the value following the ":" character 
-of the named parameter in functions' definition, representes the default value).
+The definition above states, that the function output receives the named parameter *query* which has no default value (the value following the ":" character
+of a named parameter in a functions' definition, represents the default value).
 
 **The query parameter**
 
-The named parameter *query* shown in the example above, holds for the SQL query that function *output* will execute and take the results to write them at the *file* given. 
-When using a function that takes the *query* parameter in inverted syntax (see :ref:`SQL extensions <inversion>`) the *query* keyword can be ommitted and the actual query 
-should be placed at the end. For example to output some query's result, do::
+Named parameter *query* shown in the definition above, defines which SQL query the function *output* will execute
+and then write the query's results in the given *file*.
+When using, in inverted syntax, a function that takes a *query* parameter  (see :ref:`SQL extensions <inversion>`) the *query* keyword should be omitted.
+Instead the actual query should be placed at the end of the statement. For example to output, in inverted syntax, some query's result, the following could be used::
 
 	output 'outfile' dialect:tsv select * from table1;
 
-This is actually equivalent to::
+In non inverted syntax, this is equivalent to::
 
 	select  * from output('query:select * from table1','outfile','dialect:tsv');
 
-Inverting queries that include the *query* parameter, permits "pipelining" of many virtual table functions, with an easy to read syntax. 
+Inverting queries that include the *query* parameter, permits "pipelining" of many virtual table functions, while using an easy to read syntax.
 So to re-order a file and add line numbers you can do::
 
 	output 'outfile.csv' rowidvt select * from (file 'infile.csv') order by C2;
 
-Let's look at the details of this query. :mod:`~functions.vtable.file` function reads *infile.csv* and returns the data as a table. Returned data are then ordered by column C2.
-The result of the query, *select \* from (file 'infile.csv') order by C2* is the *query* parameter for :mod:`~functions.vtable.rowidvt` functions that adds a *rowid* column to 
-the query result that indicates the order of the row in the result and not in the initial table. The result of :mod:`~functions.vtable.rowidvt` function is "fed" 
-into :mod:`~functions.vtable.output` which writes the result to the *outfile.csv* file.
+Let's look at the details of this query. :mod:`~functions.vtable.file` function reads *infile.csv* and returns the data as a table.
+Returned data are then ordered by column C2.
+The result of the query, *select \* from (file 'infile.csv') order by C2* is the *query* parameter for :mod:`~functions.vtable.rowidvt` function. 
+This function adds a *rowid* column to the query result that indicates the order of the row in the result (and not in the initial table).
+The result of :mod:`~functions.vtable.rowidvt` function is forwarded into :mod:`~functions.vtable.output` which writes the result in the *outfile.csv* file.
 
 
 .. _tipreturntypes:
@@ -90,16 +95,17 @@ Understanding function return types
 ===================================
 
 To understand how function return types works, make sure you understand how `SQLite types <http://www.sqlite.org/datatype3.html>`_ work. 
-The return type of the row and aggregate madIS functions refers to the storage class usually returned by the function.
-Virtual table functions return a table that has a static or dynamic schema with column names and `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_. 
+The return type of the row and aggregate madIS functions refers to the storage class typically returned by the function.
+Virtual table functions return a table having a static (or dynamic) schema with column names and `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_.
 To clarify the difference of the returned types of row/aggregate functions and virtual table functions consider the following example::
 
 	mterm> select * from (select kwnum('lol') as a) where a=='1';
 	Query executed in 0 min. 0 sec 17 msec
 
-Here :func:`~functions.row.text.kwnum` function returns the number of keywords of the 'lol' string which is an integer. Although it is an integer, meaning column a is integer, 
-the literal text '1' at the *where* part is not converted to integer, so the condition fails. In contrast at the following example using the built in SQLite function *cast* an integer type affinity
-is suggested so the text literal '1' is converted to integer and the condition is evaluated to true.
+Here :func:`~functions.row.text.kwnum` function returns the number of keywords of the 'lol' string which is an integer.
+Although the first returned column (named *a*) is of integer type, the literal text '1' in the *where* part is not converted to an integer,
+so the condition fails. In the following example, by using the built in SQLite function *cast*, an integer type affinity
+is suggested so the text literal '1' is automatically converted to an integer and the condition is evaluated to true.
 
 ::
 	
@@ -107,21 +113,24 @@ is suggested so the text literal '1' is converted to integer and the condition i
 	1
 	Query executed in 0 min. 0 sec 21 msec
 
-The same result could be reached using a virtual table function, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`. 
+In conclusion, the returned values from row and aggregate functions, even :ref:`multisets <tutmultiset>` do not also imply data affinity.
 
-So the returned values from row and aggregate functions, even :ref:`multisets <tutmultiset>` do not imply data affinity.
+.. note::
 
+The same result could be reached using the virtual table functions, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`.
 
 .. _tipshell:
 
 Shell interaction
 =================
 
-While working on interactive mode with the shell there are helpful shell commands, that show up with *.help* command, but also some functions that facilitate complex queries composition.
+In madIS's interactive shell mode some helpful shell commands and functions helping with complex query composition are supported.
+These can be listed in the terminal with the *.help* command.
 
 **Names function**
 
-Function :mod:`~functions.vtable.names` is a virtual table function that operates over a query (See :ref:`tipparameters`) and returns the column names of the query result.
+Function :mod:`~functions.vtable.names` is a virtual table function that operates over a query (See :ref:`tipparameters`)
+and returns the column names of the query result.
 
 ::
 
@@ -129,7 +138,8 @@ Function :mod:`~functions.vtable.names` is a virtual table function that operate
 	City|Region|Country|Population
 	Query executed in 0 min. 0 sec 24 msec
 	
-Similar functionality, has :mod:`~functions.vtable.coltypes` function presenting also the column `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_ if specified, .
+Function :mod:`~functions.vtable.coltypes`, has similar functionality, additionally presenting the column's
+`type affinity <http://www.sqlite.org/datatype3.html#affinity>`_  when this information is contained in its input.
 
 ::
 
@@ -145,34 +155,34 @@ Similar functionality, has :mod:`~functions.vtable.coltypes` function presenting
 Empty schema exception
 ======================
 
-A price to pay when using virtual tables with dynamic schema creation is that if no data are provided, for example an empty file for :mod:`~functions.vtable.file` function or
-a query that returns no rows for the virtual tables that take input *query* (eg. :mod:`~functions.vtable.cache` function). Doing so will result to an exception::
+A price to pay for using virtual tables having dynamic schema creation, is that if no data are provided, for example an empty file
+to the :mod:`~functions.vtable.file` function or
+a query that returns no rows to virtual tables that accept input *queries* (eg. :mod:`~functions.vtable.cache` function), is an exception as a result::
 
 	mterm> select * from (cache select 5 as a where a!=5);
 	Madis SQLError: operator cache: Cannot initialise dynamic schema virtual table without data
 
-
-To avoid this issue, especially in automatic flow execution where a flow crash is desirable because a query does not have results, :mod:`~functions.vtable.file` function can be used.
-*Setschema* is virtual table function that defines a schema and in case of non empty resultset can be used to project, rename and typecast inner query columns, while in case of an empty 
-resultset works as static schema definition. 
-
+To avoid this issue, especially in automatic flow execution where a flow crash is undesirable, the :mod:`~functions.vtable.setschema` function can be used.
+*Setschema* is virtual table function that enforces a given schema. In the case of non empty resultsets, it can be used to project,
+rename and typecast inner query columns, while in case of an empty resultset, it works as a static schema definition.
 ::
 
 	mterm> select * from (setschema 'a' cache select 5 as a where a!=5);
 	Query executed in 0 min. 0 sec 62 msec
 
-So in the example above since *cache* function as a dynamic schema function can result to an empty schema exception, applying on the query setschema function with the desirable schema
-(column a with NONE type) the proble is eliminated.
+In the example above, *cache* function has a possibility of producing an empty schema exception. Applying the *setschema* function with the desirable schema
+(column a with NONE type) this problem is avoided.
 
-Possible causes of this phenomenon are also :ref:`multiset <tutmultiset>` functions that are actually implemented with :mod:`~functions.vtable.expand` virtual table function.
+Other possible causes of empty schema exceptions are also :ref:`multiset <tutmultiset>` functions which are actually implemented
+through the :mod:`~functions.vtable.expand` virtual table function.
 
 .. _tipefficiencyvt:
 
 Efficiency in streaming virtual tables
 ======================================
 
-Virtual table functions that work as streams do not materialise the data before returning them, they just produce them on demand. 
-So making a join between streaming virtual tables for many data is not a good idea as the data will be re-produced over and over again. Using 
-:ref:`cache <tutcache>` virtual table function at one of the *streaming* queries will significantly increase performance.
+Virtual table functions that work as streams do not need to materialise the whole input/output data streams before returning them, they can produce them on demand.
+So executing, for example a *join*, between streaming virtual tables for a huge volume of data is not a good idea, as the data will have to be re-produced
+over and over again. Using :ref:`cache <tutcache>` virtual table function on one of the *streaming* queries will significantly increase performance.
 
 
