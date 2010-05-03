@@ -32,6 +32,7 @@ Contents:
    about
    manual
    usefulnotes
+   examples
    row
    aggregate
    vtable
