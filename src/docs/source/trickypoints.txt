@@ -1,9 +1,8 @@
 Tricky Points
 *************
 
-This section includes useful tips to help you understand the functions documentation, to ease 
-the shell interaction and intoduce you to some characteristics of the dynamic virtual tables that 
-should be stressed from the beginning. 
+This section contains useful tips to help with understanding function usage, ease
+shell interaction and introduce some basic characteristics of the dynamic virtual tables.
 
 .. _tipexamples:
 
@@ -17,9 +16,9 @@ While reading each function's description, you will notice examples like this:
     ------
     yes
 
-This is actually Python code, because examples serve also as test for the system. The string inside the sql function is
-the sql query that results to the output in the following lines. Examples include also the column names for clarity, 
-while in the interactive shell it is not shown. So the above example in the interactive shell would look like that::
+Because examples serve also as tests for the madIS, they are coded and displayed as actual Python code. The string inside the Python function "sql()" is
+an SQL query, having its results displayed in the lines following the sql() statement. Query results in examples also include the column names for clarity.
+However in the interactive shell column names are not shown. In the interactive shell, the same as above example, would look like following::
 
 	mterm> select ifthenelse(1>0,'yes','no') as answer;
 	yes
@@ -93,13 +92,13 @@ Understanding function return types
 To understand how function return types works, make sure you understand how `SQLite types <http://www.sqlite.org/datatype3.html>`_ work. 
 The return type of the row and aggregate madIS functions refers to the storage class usually returned by the function.
 Virtual table functions return a table that has a static or dynamic schema with column names and `types affinity <http://www.sqlite.org/datatype3.html#affinity>`_. 
-To make more clear the difference of the returned types of row/aggregate functions and virtual table functions consider the following example::
+To clarify the difference of the returned types of row/aggregate functions and virtual table functions consider the following example::
 
 	mterm> select * from (select kwnum('lol') as a) where a=='1';
 	Query executed in 0 min. 0 sec 17 msec
 
 Here :func:`~functions.row.text.kwnum` function returns the number of keywords of the 'lol' string which is an integer. Although it is an integer, meaning column a is integer, 
-the literal text is not converted to integer, so the condition fails. In contrast at the following example using the built in SQLite function *cast* an integer type affinity 
+the literal text '1' at the *where* part is not converted to integer, so the condition fails. In contrast at the following example using the built in SQLite function *cast* an integer type affinity
 is suggested so the text literal '1' is converted to integer and the condition is evaluated to true.
 
 ::
@@ -110,9 +109,7 @@ is suggested so the text literal '1' is converted to integer and the condition i
 
 The same result could be reached using a virtual table function, eg. :mod:`~functions.vtable.typing` or :mod:`~functions.vtable.setschema`. 
 
-So the returned values from row and aggregate functions, even :ref:`multisets <tutmultiset>` do not imply data affinity. ONLY in ....
-
-******CHANGE expand not to produce affinity or not****************
+So the returned values from row and aggregate functions, even :ref:`multisets <tutmultiset>` do not imply data affinity.
 
 
 .. _tipshell:
@@ -179,9 +176,3 @@ So making a join between streaming virtual tables for many data is not a good id
 :ref:`cache <tutcache>` virtual table function at one of the *streaming* queries will significantly increase performance.
 
 
-.. _workflowexample:
-
-Building workoflows
-===================
-
-setexecdb //Return current db , if new argument provided it will be used in exec
