@@ -11,6 +11,8 @@ Pivot
 First import data from a tsv file (Tab Separated Values) with :func:`~functions.vtable.file.file` virtual table function.
 :download:`sales.tsv <../../functions/row/testing/sales.tsv>`
 
+.. code-block:: python
+
         >>> sql("""create table sales as
         ...             select Product,Region,Month,cast(Sales as int) as Sales
         ...                 from
@@ -42,6 +44,8 @@ Then :func:`~functions.aggregate.packing.vecpack` must be performed over *Region
 
 To use :func:`~functions.aggregate.packing.vecpack` the first argument must be a pack of the dimensions. This is the
 result of packing the distinct *Region* values, grouping over all the table.
+
+.. code-block:: python
 
     >>> sql("""select Product,unpackcol(vpck)
     ...      from
@@ -77,7 +81,9 @@ The query mining workflow includes the following five main steps:
    so as to assign a country code to each one of the logged sessions
 5. Apply an `Apriori-based <http://en.wikipedia.org/wiki/Apriori_algorithm>`_ technique for extracting frequent term sets per country.
 
-A sample from the log file used is presented below::
+A sample from the log file used is presented below:
+
+.. code-block:: none
 
    36506	guest	X.X.X.134	p93t9q5eqaa0u0p8isd9skp1n6	en	("paradis riedinger")	search_sim  2010-01-01 00:28:23
    36507	guest	X.X.X.134	p93t9q5eqaa0u0p8isd9skp1n6	en	("paradis riedinger")	view_brief  2010-01-01 00:28:34
