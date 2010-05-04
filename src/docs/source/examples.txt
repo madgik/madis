@@ -8,8 +8,8 @@ Examples
 Pivot
 =====
 
-    First import data from a tsv file (Tab Separated Values) with :func:`~functions.vtable.file.file` virtual table function.
-    :download:`sales.tsv <../../functions/row/testing/sales.tsv>`
+First import data from a tsv file (Tab Separated Values) with :func:`~functions.vtable.file.file` virtual table function.
+:download:`sales.tsv <../../functions/row/testing/sales.tsv>`
 
         >>> sql("""create table sales as
         ...             select Product,Region,Month,cast(Sales as int) as Sales
@@ -30,16 +30,18 @@ Pivot
         Bikes   | Paris  | 2010-02 | 20
         Boats   | Paris  | 2010-01 | 200
 
-    Let's say we want the result to be a table with columns:
-        - Product
-        - NY: the total sales in NY for this product
-        - Paris: the total sales in Paris for this product
-        - Athens: the total sales in Athens for this product
+Let's say we want the result to be a table with columns:
 
-    We will perform the aggregate function *sum* over *Sales* column, grouping by *Product* and *Region* columns.
-    Then :func:`~functions.aggregate.packing.vecpack` must be performed over *Region* and *Sales* sums, grouping on *Product*.
-    To use :func:`~functions.aggregate.packing.vecpack` the first argument must be a pack of the dimensions. This is the
-    result of packing the distinct *Region* values, grouping over all the table.
+- Product
+- NY: the total sales in NY for this product
+- Paris: the total sales in Paris for this product
+- Athens: the total sales in Athens for this product
+
+We will perform the aggregate function *sum* over *Sales* column, grouping by *Product* and *Region* columns.
+Then :func:`~functions.aggregate.packing.vecpack` must be performed over *Region* and *Sales* sums, grouping on *Product*.
+
+To use :func:`~functions.aggregate.packing.vecpack` the first argument must be a pack of the dimensions. This is the
+result of packing the distinct *Region* values, grouping over all the table.
 
     >>> sql("""select Product,unpackcol(vpck)
     ...      from
