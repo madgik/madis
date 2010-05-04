@@ -3,10 +3,10 @@ Examples
 
 .. _pivoting:
 
+.. highlight:: mysql
+
 Pivot
 =====
-
-
 
     First import data from a tsv file (Tab Separated Values) with :func:`~functions.vtable.file.file` virtual table function.
     :download:`sales.tsv <../../functions/row/testing/sales.tsv>`
