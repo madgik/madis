@@ -544,6 +544,10 @@ To **build** the data processing system, the above steps have to be followed, fi
 In practice we have found that there is always some overlap between the designing and building stages and between steps.
 Great care should be given, when designing, on the most difficult and time consuming step, which is step 1. When step 1 is successfully executed, the speed with which the rest of the steps are designed and following that, building them from bottom to top, is extremely fast in our experience.
 
+.. note::
+
+    An example of a madIS workflow can be found in the :ref:`examples section <applexample>`.
+
 .. _tutlimitations:
 
 Limitations of madIS

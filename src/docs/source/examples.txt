@@ -128,8 +128,8 @@ However, a great amount of malformed queries has been observed, so it is only qu
 This filtering step is performed using the :func:`~functions.row.text.isvalidutf8` function in the where clause of the corresponding madSQL fragment. 
 
 Thereafter, stop word removal is performed over the selected queries through the corresponding function.
-Moreover, since queries are issued and logged using the Common Query Language (CQL) syntax, an additional filtering step is executed for removing CQL constructs,
-through the madIS function :func:`~functions.row.text.cqlkeywords`. The processed queries are then stored in table QueriesPerSession.
+Moreover, since queries are issued and logged using the Common Query Language (CQL) syntax, an additional filtering step is executed for removing *CQL* constructs,
+through the madIS function :func:`~functions.row.text.cqlkeywords`. The processed queries are then stored in table *QueriesPerSession*.
 One of the advantages offered by madIS framework, is that all the powerful Python capabilities and
 open source libraries for text processing can be exploited for the rapid implementation of customized functions,
 hence significantly easing the “flow-level programming”, in madSQL.
