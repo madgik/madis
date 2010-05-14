@@ -250,6 +250,7 @@ class freqitemsets:
             splist.append({})
             self.belowthres={}
             self.overthres={}
+            prevl=l-1
 
             # Autothresholding
             if self.autothres==1:
@@ -264,8 +265,8 @@ class freqitemsets:
             for k,v in self.input.iteritems():
                 for k in itertools.combinations(k,l):
                     insertit=True
-                    for i1 in itertools.combinations(k,l-1):
-                        if not splist[l-1].has_key(i1):
+                    for i1 in itertools.combinations(k, prevl):
+                        if not splist[prevl].has_key(i1):
                             insertit=False
                             break
 
@@ -276,7 +277,7 @@ class freqitemsets:
             statsstr+=str(l)+'|'+"# of combinations:"+str(len(splist[l]))+'|'+"# of passed transactions:"+ str(len(self.input))+'|'+ "# of valid keywords:"+str(len(self.passedkw))+'\n'
 
             if not self.stats:
-                self.save(splist[l-1])
+                self.save(splist[prevl])
             splist[l-1]={}
 
         if not self.stats:
