@@ -178,18 +178,21 @@ def register(connection=None):
 
     if os.path.exists(dbpath):
         sys.path.append((os.path.abspath(os.path.join(dbpath))))
+
         if os.path.exists(os.path.join(dbpath, 'row')):
             lrowfiles = findmodules(dbpath, 'row')
             sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'row'))))
             for module in lrowfiles:
                 row.__dict__[module]=__import__(module)
             rowfiles+=lrowfiles
+
         if os.path.exists(os.path.join(dbpath, 'aggregate')):
             sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'aggregate'))))
             laggrfiles += findmodules(dbpath, 'aggregate')
             for module in laggrfiles:
                 aggregate.__dict__[module]=__import__(module)
             aggrfiles+=lrowfiles
+
         if os.path.exists(os.path.join(dbpath, 'vtable')):
             sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'vtable'))))
             lvtabfiles += findmodules(dbpath, 'vtable')

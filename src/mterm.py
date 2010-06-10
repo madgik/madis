@@ -106,8 +106,12 @@ if len(sys.argv) >= 2:
 
 connection = functions.Connection(db)
 
+if db=='' or db==':memory':
+    functions.variables.execdb=None
+else:
+    functions.variables.execdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
+    
 functions.register(connection)
-functions.variables.execdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
 functions.variables.flowname='main'
 
 if len(sys.argv)>2:
