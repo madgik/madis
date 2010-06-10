@@ -1,8 +1,17 @@
 import re
 from unicodeops import unistr
 
-def parse(args,boolargs=[],nonstringargs=dict(),needsescape=[]):
-    listargs, keyargs= parametrize(*[unquote(unistr(a)) for a in args],**{'escapelists':needsescape})
+def parse(args,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None):
+    if boolargs==None:
+        boolargs=[]
+    if nonstringargs==None:
+        nonstringargs=dict()
+    if needsescape==None:
+        needsescape=[]
+    if notsplit==None:
+        notsplit=[]
+
+    listargs, keyargs= parametrize(*[unquote(unistr(a)) for a in args],**{'escapelists':needsescape,'notsplit':notsplit})
     keyargsdict=translate(keyargs,boolargs,nonstringargs)
     return listargs, keyargsdict
 
@@ -57,15 +66,19 @@ def parametrize(*args,**kargs):
     escapelists=[]
     if 'escapelists' in kargs:
         escapelists=kargs['escapelists']
-    for p in args:
-        v=re_params.match(p)
-        if not v:
+
+    for p in args:        
+        splitable=re_params.match(p)
+        if not splitable:
             ps.append(p)
         else:
-            if v.groups()[0] in escapelists:
-                kps[str(v.groups()[0])]=unescape(v.groups()[1])
+            if splitable.groups()[0] in kargs['notsplit']:
+                ps.append(p)
+                continue
+            if splitable.groups()[0] in escapelists:
+                kps[str(splitable.groups()[0])]=unescape(splitable.groups()[1])
             else:
-                kps[str(v.groups()[0])]=v.groups()[1]
+                kps[str(splitable.groups()[0])]=splitable.groups()[1]
     return ps,kps
 
 
