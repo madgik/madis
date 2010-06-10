@@ -30,23 +30,37 @@ def echocall(func):
 
 
 class SourceVT:
-    def __init__(self,table,boolargs=[],nonstringargs=dict(),needsescape=[],staticschema=False):
+    def __init__(self,table,boolargs=None,nonstringargs=None,needsescape=None,staticschema=False,notsplit=None):
         self.tableObjs=dict()
-        self.tableCl=table        
-        self.boolargs=boolargs
-        self.nonstringargs=nonstringargs
-        self.needsescape=needsescape
+        self.tableCl=table
+        if boolargs==None:
+            self.boolargs=[]
+        else:
+            self.boolargs=boolargs
+        if nonstringargs==None:
+            self.nonstringargs=dict()
+        else:
+            self.nonstringargs=nonstringargs
+        if needsescape==None:
+            self.needsescape=[]
+        else:
+            self.needsescape=needsescape
+        if notsplit==None:
+            self.notsplit=[]
+        else:
+            self.notsplit=notsplit
         self.staticschema=staticschema
+
     @echocall
     def Create(self, db, modulename, dbname, tablename,*args):
         dictargs={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
-        self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.staticschema,*args,**dictargs)
+        self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,self.staticschema,*args,**dictargs)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
     @echocall
     def Connect(self, db, modulename, dbname, tablename,*args):
         if tablename not in self.tableObjs:
             dictargs={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
-            self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.staticschema,*args,**dictargs)
+            self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,self.staticschema,*args,**dictargs)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
 
 import sys
@@ -64,7 +78,7 @@ class emptyiter:
 class LTable: ####Init means setschema and execstatus
     autostring='automatic_vtable'
     @echocall
-    def __init__(self,vtable,tblist,boolargs,nonstringargs,needsescape,staticschema,*args,**envars): # envars tablename, auto  , OPTIONAL []
+    def __init__(self,vtable,tblist,boolargs,nonstringargs,needsescape,notsplit,staticschema,*args,**envars): # envars tablename, auto  , OPTIONAL []
         self.delayedexception=None
         self.tblist=tblist
         self.auto=False
@@ -74,9 +88,9 @@ class LTable: ####Init means setschema and execstatus
         self.tablename=envars['tablename']
         largs, kargs = [] ,dict()
         try:
-            largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape)
+            largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
         except Exception,e:
-            raise functions.MadisError(e)
+            raise #functions.MadisError(e)
         if self.autostring in kargs:
             del kargs[self.autostring]
             self.auto=True
