@@ -1,5 +1,6 @@
 """functions
 """
+import os.path
 import os
 import apsw
 import setpath
@@ -28,7 +29,11 @@ variables=lambda x:x
 variables.flowname=''
 variables.execdb=None
 
+privatevars=lambda x:x
+
 rowfuncs=lambda x:x
+
+oldexecdb=-1
 
 class MadisError(Exception):
     def __init__(self,msg):
@@ -144,7 +149,7 @@ class Connection(apsw.Connection):
         apsw.Connection.close(self)
 
 def register(connection=None):
-    global firstimport
+    global firstimport, oldexecdb
 
     functionspath=os.path.abspath(__path__[0])
 
@@ -166,40 +171,6 @@ def register(connection=None):
     [__import__("functions.aggregate" + "." + module) for module in aggrfiles]
     [__import__("functions.vtable" + "." + module) for module in vtabfiles]
 
-    #import local functions
-    if variables.execdb==None:
-        currentpath=os.path.abspath(os.path.join(os.path.abspath('.'), 'local'))
-        if os.path.exists(currentpath):
-            dbpath=currentpath
-        else:
-            dbpath=os.path.join(os.path.split(functionspath)[0], 'local')
-    else:
-        dbpath=os.path.join(os.path.abspath('.'), 'local')
-
-    if os.path.exists(dbpath):
-        sys.path.append((os.path.abspath(os.path.join(dbpath))))
-
-        if os.path.exists(os.path.join(dbpath, 'row')):
-            lrowfiles = findmodules(dbpath, 'row')
-            sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'row'))))
-            for module in lrowfiles:
-                row.__dict__[module]=__import__(module)
-            rowfiles+=lrowfiles
-
-        if os.path.exists(os.path.join(dbpath, 'aggregate')):
-            sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'aggregate'))))
-            laggrfiles += findmodules(dbpath, 'aggregate')
-            for module in laggrfiles:
-                aggregate.__dict__[module]=__import__(module)
-            aggrfiles+=lrowfiles
-
-        if os.path.exists(os.path.join(dbpath, 'vtable')):
-            sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'vtable'))))
-            lvtabfiles += findmodules(dbpath, 'vtable')
-            for module in laggrfiles:
-                vtable.__dict__[module]=__import__(module)
-            vtabfiles+=lvtabfiles
-
     # Register aggregate functions
     for module in aggrfiles:
         moddict = aggregate.__dict__[module]
@@ -211,6 +182,71 @@ def register(connection=None):
         register_ops(moddict,connection)
 
     register_ops(vtable,connection)
+
+    # Register madis local functions
+    functionslocalpath=os.path.abspath(os.path.join(functionspath,'..','functionslocal'))
+
+    flrowfiles = findmodules(functionslocalpath, 'row')
+    flaggrfiles = findmodules(functionslocalpath, 'aggregate')
+    flvtabfiles = findmodules(functionslocalpath, 'vtable')
+
+    for module in flrowfiles:
+        tmp=__import__("functionslocal.row" + "." + module)
+        register_ops(tmp.row.__dict__[module], connection)
+
+    for module in flaggrfiles:
+        tmp=__import__("functionslocal.aggregate" + "." + module)
+        register_ops(tmp.aggregate.__dict__[module], connection)
+
+    localvtable=lambda x:x
+    for module in flvtabfiles:
+        localvtable.__dict__[module]=__import__("functionslocal.vtable" + "." + module)
+
+    if len(flvtabfiles)!=0:
+        register_ops(localvtable.vtable,connection)
+
+    # Register db local functions
+    if variables.execdb!=oldexecdb:
+        oldexecdb=variables.execdb
+        dbpath=None
+        
+        if variables.execdb!=None:
+            dbpath=os.path.join(os.path.abspath(os.path.dirname(variables.execdb)),'functions')
+
+        if dbpath==None or not os.path.exists(dbpath):
+            currentpath=os.path.abspath(os.path.join(os.path.abspath('.'), 'functions'))
+            if os.path.exists(currentpath):
+                dbpath=currentpath
+
+        if dbpath!=None and os.path.exists(dbpath):
+            if os.path.abspath(dbpath)!=os.path.abspath(functionspath):
+
+                sys.path.append(dbpath)
+
+                if os.path.exists(os.path.join(dbpath, 'row')):
+                    lrowfiles = findmodules(dbpath, 'row')
+                    sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'row'))))
+                    for module in lrowfiles:
+                        tmp=__import__(module)
+                        register_ops(tmp, connection)
+
+                if os.path.exists(os.path.join(dbpath, 'aggregate')):
+                    sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'aggregate'))))
+                    laggrfiles = findmodules(dbpath, 'aggregate')
+                    for module in laggrfiles:
+                        tmp=__import__(module)
+                        register_ops(tmp, connection)
+
+                if os.path.exists(os.path.join(dbpath, 'vtable')):
+                    sys.path.append((os.path.abspath(os.path.join(os.path.join(dbpath),'vtable'))))
+                    lvtabfiles = findmodules(dbpath, 'vtable')
+                    tmp=lambda x:x
+                    for module in lvtabfiles:
+                        tmp.__dict__[module]=__import__(module)
+
+                    if localvtable!=None:
+                        register_ops(tmp,connection)
+
     firstimport=False
 
 def register_ops(module, connection):
