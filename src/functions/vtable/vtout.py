@@ -79,23 +79,36 @@ def diter(iter,func):
 
 
 class SourceNtoOne:
-    def __init__(self,func,boolargs=[],nonstringargs=dict(),needsescape=[],connectionhandler=False,retalways=False):
+    def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):
         self.func=func
-        self.boolargs=boolargs
-        self.nonstringargs=nonstringargs
-        self.needsescape=needsescape
+        if boolargs==None:
+            self.boolargs=[]
+        else:
+            self.boolargs=boolargs
+        if nonstringargs==None:
+            self.nonstringargs=dict()
+        else:
+            self.nonstringargs=nonstringargs
+        if needsescape==None:
+            self.needsescape=[]
+        else:
+            self.needsescape=needsescape
+        if notsplit==None:
+            self.notsplit=[]
+        else:
+            self.notsplit=notsplit
         self.connectionhandler=connectionhandler
         self.retalways=retalways
     def Create(self, db, modulename, dbname, tablename, *args):
 
         schema="create table %s(return_value)" %(tablename)
-        return [schema,Table(lambda:maincode(args,self.boolargs,self.nonstringargs,self.needsescape,db,self.func,self.retalways,self.connectionhandler))]
+        return [schema,Table(lambda:maincode(args,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,db,self.func,self.retalways,self.connectionhandler))]
     Connect=Create
 
-def maincode(args,boolargs,nonstringargs,needsescape,db,func,retalways,connectionhandler):
+def maincode(args,boolargs,nonstringargs,needsescape,notsplit,db,func,retalways,connectionhandler):
     autostring='automatic_vtable'
     try:
-        largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape)
+        largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
     except Exception,e:
             raise functions.MadisError(e)
     if 'query' not in kargs:
