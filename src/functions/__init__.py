@@ -39,11 +39,11 @@ class MadisError(Exception):
     def __init__(self,msg):
         self.msg=msg
     def __str__(self):
-        return "Madis SQLError: "+str(self.msg)
+        return repr("Madis SQLError: "+unicode(self.msg))
 
 class OperatorError(MadisError):
     def __init__(self,opname,msg):
-        self.msg="operator %s: %s" %(str(opname),str(msg))
+        self.msg="operator %s: %s" %(unicode(opname),unicode(msg))
 
 class DynamicSchemaWithEmptyResultError(MadisError):
     def __init__(self,opname):

@@ -64,6 +64,9 @@ An example of a function definition which contains named parameters is :mod:`~fu
 The definition above states, that the function output receives the named parameter *query* which has no default value (the value following the ":" character
 of a named parameter in a functions' definition, represents the default value).
 
+.. _unoteqparameter::
+
+
 **The query parameter**
 
 Named parameter *query* shown in the definition above, defines which SQL query the function *output* will execute
