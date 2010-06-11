@@ -11,6 +11,12 @@
 ^/src/docs/build/_sources/.*$
 ^src/docs/html/(?!readme.txt$).*$
 ^/src/docs/html/(?!readme.txt$).*$
+^src/functionslocal/row/(?!__init__.py$).*$
+^/src/functionslocal/row/(?!__init__.py$).*$
+^src/functionslocal/aggregate/(?!__init__.py$).*$
+^/src/functionslocal/aggregate/(?!__init__.py$).*$
+^src/functionslocal/vtable/(?!__init__.py$).*$
+^/src/functionslocal/vtable/(?!__init__.py$).*$
 ^src/docs/build/.*$
 ^/src/docs/build/.*$
 ^src/docs/source/row\.txt$
