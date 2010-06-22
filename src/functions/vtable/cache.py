@@ -66,6 +66,7 @@ import bisect
 import operator
 from lib import argsparse
 from lib import kdtree
+from lib import schemaUtils
 
 constraints={
 2:'SQLITE_INDEX_CONSTRAINT_EQ',
@@ -166,22 +167,11 @@ class LTable: ####Init means setschema and execstatus
     @echocall
     def _setschema(self):
         descr=self.description ### get list of tuples columnname, type
-        names=[]
-        types=[]
-        for tp in descr:
-            names+=[tp[0]]
-            if len(tp)==1:
-                types+=['None']
-            else:
-                if tp[1]!=None:
-                    types+=[tp[1]]
-                else:
-                    types+=['None']
-        self.schema=schemastr(self.tablename,names,types)
+        self.schema=schemaUtils.CreateStatement(descr, self.tablename)
 
     @echocall
     def getschema(self):
-        if functions.settings['vtdebug']:
+        if functions.settings['tracing']:
             print "VT schema:%s" %(self.schema)
         return self.schema
 
