@@ -8,7 +8,7 @@ import functions
 import apsw
 from lib import argsparse
 
-
+from lib import schemaUtils
 
 
 # Decorator to extended a function by calling first another function with no arguments
@@ -52,7 +52,7 @@ class SourceVT:
         self.staticschema=staticschema
 
     @echocall
-    def Create(self, db, modulename, dbname, tablename,*args):
+    def Create(self, db, modulename, dbname, tablename,*args):        
         dictargs={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
         self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,self.staticschema,*args,**dictargs)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
@@ -86,6 +86,7 @@ class LTable: ####Init means setschema and execstatus
         self.staticschema=staticschema
         self.schema="create table %s('Error')" % (envars['tablename'])
         self.tablename=envars['tablename']
+        self.envars=envars
         largs, kargs = [] ,dict()
         try:
             largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
@@ -106,7 +107,7 @@ class LTable: ####Init means setschema and execstatus
                 self.iter.close()
         except (StopIteration,apsw.ExecutionCompleteError),e: ###
             try:
-                raise functions.DynamicSchemaWithEmptyResultError(vtable.__module__.rsplit('.')[-1])
+                raise functions.DynamicSchemaWithEmptyResultError(self.envars['modulename'])
             finally:
                 try:
                     self.iter.close()
@@ -116,22 +117,11 @@ class LTable: ####Init means setschema and execstatus
     @echocall
     def _setschema(self):
         descr=self.vtable.getdescription() ### get list of tuples columnname, type
-        names=[]
-        types=[]
-        for tp in descr:            
-            names+=[tp[0]]
-            if len(tp)==1:
-                types+=['None']
-            else:
-                if tp[1]!=None:
-                    types+=[tp[1]]
-                else:
-                    types+=['None']
-        self.schema=schemastr(self.tablename,names,types)
+        self.schema=schemaUtils.CreateStatement(descr, self.tablename)
     @echocall
     def getschema(self):
-        if functions.settings['vtdebug']:
-            print "VT schema:%s" %(self.schema)
+        if functions.settings['tracing']:
+            print 'VT_Schema: %s' %(self.schema)
         return self.schema
     @echocall
     def BestIndex(self, *args):
@@ -215,7 +205,7 @@ class Cursor:
         try:
             return self.row[col]
         except IndexError:
-            raise functions.OperatorError(self.table.vtable.__module__.rsplit('.')[-1] ,"Not enough data in rowid: %s" %(self.pos+1))
+            raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in rowid: %s" %(self.pos+1))
     @echocall
     def Next(self):
         try:
