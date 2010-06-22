@@ -243,6 +243,8 @@ class FileVT:
                     if domain in inoutargs['filename']:
                         self.extraheader=domainExtraHeaders[domain]
                         break
+                if 'User-Agent' not in self.extraheader:
+                    self.extraheader['User-Agent']='Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
             if inoutargs['url'] and inoutargs['compression']:
                 inoutargs['filename']=lib.inoutparsing.cacheurl(inoutargs['filename'],self.extraheader)
                 self.destroyfiles=[inoutargs['filename']]
