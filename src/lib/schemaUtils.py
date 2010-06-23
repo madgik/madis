@@ -1,4 +1,6 @@
-#########################################
+import re
+
+reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 
 def CreateStatement(description,tablename):
     names=[]
@@ -46,7 +48,7 @@ onlyalphnum=re.compile('[a-zA-Z]\w*$')
 
 
 def schemastr(tablename,colnames,typenames=None):
-    stripedcolnames=[el if onlyalphnum.match(el) else '"'+el.replace('"','""')+'"' for el in unify(colnames)]
+    stripedcolnames=[el if onlyalphnum.match(el) else '"'+reduce_spaces.sub(' ', el.replace('\n','').replace('\t','')).strip().replace('"','""')+'"' for el in unify(colnames)]
     if not typenames:
         return "create table %s(%s)" %(tablename,','.join([c for c in stripedcolnames]))
     else:
