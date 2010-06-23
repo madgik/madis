@@ -143,7 +143,7 @@ class SourceCachefreeVT:
                     raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])
                 finally:
                     try:
-                        if hasatrr(iterator,'close'):
+                        if hasattr(iterator,'close'):
                             iterator.close()
                     except:
                         pass
@@ -152,7 +152,7 @@ class SourceCachefreeVT:
         if auto and iterator!=None:
             if functions.settings['vtdebug']:
                 print "Manual vtable creation:Closing Vtable iterator"
-            if hasatrr(iterator,'close'):
+            if hasattr(iterator,'close'):
                 iterator.close()
             iterator=None
 
@@ -242,7 +242,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.pos=-1
 
         if not self.firsttime:
-            if hasatrr(self.iter,'close'):
+            if hasattr(self.iter,'close'):
                 self.iter.close()
             self.iter=self.openFunc()
         self.firsttime=False
@@ -281,6 +281,6 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
             self.eof=True
     @echocall
     def Close(self):
-        if hasatrr(self.iter,'close'):
+        if hasattr(self.iter,'close'):
             self.iter.close()        
 
