@@ -28,7 +28,7 @@ from lib.iterutils import peekable
 
 ###staticSchema?????
 class SimpleVT():
-    def parse(self,args):
+    def parse(self,*args):
         return args
     def full_parse(self,args,boolargs=None,nonstringargs=None,needsescape=None, notsplit=None):
         return argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
@@ -143,7 +143,7 @@ class SourceCachefreeVT:
                     raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])
                 finally:
                     try:
-                        if iterator.__class__.__dict__.has_key('close') or iterator.__dict__.has_key('close'):
+                        if hasatrr(iterator,'close'):
                             iterator.close()
                     except:
                         pass
@@ -152,7 +152,7 @@ class SourceCachefreeVT:
         if auto and iterator!=None:
             if functions.settings['vtdebug']:
                 print "Manual vtable creation:Closing Vtable iterator"
-            if iterator.__class__.__dict__.has_key('close') or iterator.__dict__.has_key('close'):
+            if hasatrr(iterator,'close'):
                 iterator.close()
             iterator=None
 
@@ -242,7 +242,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.pos=-1
 
         if not self.firsttime:
-            if self.iter.__class__.__dict__.has_key('close') or self.iter.__dict__.has_key('close'):
+            if hasatrr(self.iter,'close'):
                 self.iter.close()
             self.iter=self.openFunc()
         self.firsttime=False
@@ -281,7 +281,6 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
             self.eof=True
     @echocall
     def Close(self):
-        if self.iter.__class__.__dict__.has_key('close') or self.iter.__dict__.has_key('close'):
-            self.iter.close()
-        self.iter.close()
+        if hasatrr(self.iter,'close'):
+            self.iter.close()        
 
