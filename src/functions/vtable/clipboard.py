@@ -1,24 +1,12 @@
 """
-.. function:: webtable(query:None[,defaulttype[,column:type]])
+.. function:: clipboard()
 
-    Returns the result of the input *query* casting types according to *column:type* pairs and cast rest of the columns to optional *defaulttype*.
+    Returns the contents of the system's clipboard. If the clipboard's contents are guessed to be a table, then it automatically splits the contents in its output.
 
 :Returned table schema:
-    Column names same as input query, types as defined in parameters.
-
-Examples:
-
-    >>> sql("select * from webtable('http://en.wikipedia.org/wiki/List_of_countries_by_public_debt') limit 3")
-    Rank | Country               | % of GDP[1] | Date
-    ------------------------------------------------------
-    1    | Zimbabwe              | 304.30      | 2009 est.
-    2    | Japan                 | 192.10      | 2009 est.
-    3    | Saint Kitts and Nevis | 185.00      | 2009 est.
+    Column names start from C1... , all column types are text
 
 """
-import setpath
-
-import functions
 import vtiters
 
 registered=True
