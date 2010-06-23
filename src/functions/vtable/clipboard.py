@@ -24,7 +24,7 @@ class clipboard(vtiters.InitBySampleVT):
         data=clip.getcbtext().split('\n')
 
         #delete empty lines from the end
-        for i in xrange(len(data)-1,0,-1):
+        for i in xrange(len(data)-1,-1,-1):
             if len(data[i])==0:
                 del data[i]
             else:
@@ -34,14 +34,17 @@ class clipboard(vtiters.InitBySampleVT):
         hasschema=True
         count=0
         if len(data)>0:
-            count=data[0].count('\t')+1
-            for i in data[1:]:
-                if i.count('\t')+1!=count:
-                    hasschema=False
-                    break
+            count=data[0].count('\t')
+            if count==0:
+                hasschema=False
+            else:
+                for i in data[1:]:
+                    if i.count('\t')!=count:
+                        hasschema=False
+                        break
 
         if hasschema:
-            self.schema=[('C'+str(i),'text') for i in xrange(1,count+1)]
+            self.schema=[('C'+str(i),'text') for i in xrange(1,count+2)]
             data=[i.split('\t') for i in data]
         else:
             data=[[r] for r in data]
