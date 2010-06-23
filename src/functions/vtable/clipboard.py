@@ -14,7 +14,7 @@ external_stream=True
 
 class clipboard(vtiters.InitBySampleVT):
     def __init__(self):
-        self.schema=['C1']
+        self.schema=[('C1', 'text')]
 
     def getschema(self,samplerow):
         return self.schema
