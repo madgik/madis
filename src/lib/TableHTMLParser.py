@@ -5,6 +5,8 @@ piencodingRegExp = '.*encoding=\"([^\"]+)\"'
 
 metaencodingRegExp = '.*charset=([^\" ;]+)'
 
+delete_non_letters=re.compile(ur'[\W]',re.UNICODE)
+reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 
 class TableHTMLParser(HTMLParser):
     "HTMLParser derived parser."
@@ -82,7 +84,7 @@ class TableHTMLParser(HTMLParser):
             self.bInspecting = True
         elif tag == "th":
             if self.bInspecting == False:
-                self.header+=[self.value]
+                self.header+=[reduce_spaces.sub(' ',delete_non_letters.sub(' ',self.value)).strip()]
             self.state = self.inraw
         elif tag == "tr" and self.bInspecting == False:
             if self.header!=[]:
