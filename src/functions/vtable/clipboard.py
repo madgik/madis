@@ -23,6 +23,14 @@ class clipboard(vtiters.InitBySampleVT):
         import lib.clip as clip
         data=clip.getcbtext().split('\n')
 
+        #delete empty lines from the end
+        for i in xrange(len(data)-1,0,-1):
+            if len(data[i])==0:
+                del data[i]
+            else:
+                break
+
+        #check for regular schema
         hasschema=True
         count=0
         if len(data)>0:
