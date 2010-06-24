@@ -50,8 +50,8 @@ class TableHTMLParser(HTMLParser):
             self.value += data
 
     def handle_starttag(self, tag, attrs):
+        dattrs=dict(attrs)
         if tag=='meta':
-            dattrs=dict(attrs)
             if 'content' in dattrs:
                 lst=re.findall(metaencodingRegExp,dattrs['content'])
                 if len(lst):
@@ -64,6 +64,10 @@ class TableHTMLParser(HTMLParser):
                 self.bInspecting = False # table found
             else: self.bInspecting = True
         elif tag == "th":
+            if 'colspan' in dattrs:
+                self.replicate=int(dattrs['colspan'])
+            else:
+                self.replicate=0
             self.state = self.incolumn
             self.value=''
             
@@ -72,6 +76,10 @@ class TableHTMLParser(HTMLParser):
             self.header = []
             self.state = self.inraw
         elif tag == "td":
+            if 'colspan' in dattrs:
+                self.replicate=int(dattrs['colspan'])
+            else:
+                self.replicate=0
             self.value=''
             self.state = self.incolumn
 
@@ -81,7 +89,10 @@ class TableHTMLParser(HTMLParser):
             self.bInspecting = True
         elif tag == "th":
             if self.bInspecting == False:
-                self.header+=[self.value]
+                if self.replicate:                    
+                    self.header+=[self.value+str(i) for i in range(1,self.replicate+1)]
+                else:
+                    self.header+=[self.value]
             self.state = self.inraw
         elif tag == "tr" and self.bInspecting == False:
             if self.header!=[]:
@@ -93,5 +104,5 @@ class TableHTMLParser(HTMLParser):
             self.state = self.intable
         elif tag == "td":
             if self.bInspecting == False:
-                self.line+=[self.value]
+                self.line+=[self.value]*(self.replicate+1)
             self.state = self.inraw
