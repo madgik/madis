@@ -877,6 +877,70 @@ class frecency:
     def final(self):
         return self.frecency
 
+from Numeric import *
+from math import *
+
+
+class pearson:
+
+    """
+     .. function:: pearson(X,Y) -> float
+
+    Computes the pearson coefficient of X and Y datasets
+
+    Examples:
+
+    >>> sql("select pearson(value,1/value) from range(1,91)")
+    pearson(value,1/value)
+    ----------------------
+    -0.181568259801
+    >>> sql("select pearson(value,17*value+5) from range(1,91)")
+    pearson(value,17*value+5)
+    -------------------------
+    1.0
+    >>> sql("select pearson(value,pyfun('math.pow',2,value)) from range(1,41)")
+    pearson(value,pyfun('math.pow',2,value))
+    ----------------------------------------
+    0.456349821381
+    """
+
+    registered=True #Value to define db operator
+    sum_x=0
+    sum_y=0
+
+    def __init__(self):
+        self.a = []
+        self.b = []
+
+    def step(self,*args):
+        if len(args)<2:pass ####ERROR
+        x, y = [float(i) for i in args[:2]]
+        self.sum_x+=x
+        self.sum_y+=y
+        self.a+=[float(x)]
+        self.b+=[float(y)]
+
+    def final(self):
+        sum_XX=0
+        sum_YY=0
+        sum_XY=0
+        n=len(self.a)
+        p=self.sum_x/n    #mean of x
+        q=self.sum_y/n    #mean of y
+
+        for i in range(n):
+            X=self.a[i]-p
+            Y=self.b[i]-q
+            XX=math.pow(X,2)
+            YY=math.pow(Y,2)
+            sum_XX+=XX
+            sum_YY+=YY
+            XY=X*Y
+            sum_XY+=XY
+        return sum_XY/(math.sqrt(sum_XX*sum_YY))
+
+
+
 
 if not ('.' in __name__):
     """
