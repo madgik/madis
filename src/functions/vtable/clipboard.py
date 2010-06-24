@@ -6,6 +6,15 @@
 :Returned table schema:
     Column names start from C1... , all column types are text
 
+Examples:
+
+    >>> sql("select * from clipboard()")
+    C1   | C2                    | C3          | C4
+    ------------------------------------------------------
+    1    | Zimbabwe              | 304.30      | 2009 est.
+    2    | Japan                 | 192.10      | 2009 est.
+    3    | Saint Kitts and Nevis | 185.00      | 2009 est.
+
 """
 import vtiters
 
