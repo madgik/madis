@@ -1,10 +1,10 @@
 """
-.. function:: webtable(query:None[,defaulttype[,column:type]])
+.. function:: webtable(url[,tableNumber])
 
-    Returns the result of the input *query* casting types according to *column:type* pairs and cast rest of the columns to optional *defaulttype*.
+    Returns the result of the first or the *tableNumber* HTML table from the *url*.
 
 :Returned table schema:
-    Column names same as input query, types as defined in parameters.
+    Column names same as HTML table column headers. If there are no headers columns are named as C1,C2....Cn
 
 Examples:
     
