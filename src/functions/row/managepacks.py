@@ -9,8 +9,8 @@ def unpackcol(*args):
     .. function:: unpackcol(pack[,colname1,colname2,...]) -> [packd_colname1,packd_colname2,...]
     
     This multiset row function unpacks in columns the vector-like object which is returned by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` functions
-    using the key values of the vector object as column headers concatenated with underscore character with the provided *colname1,colname2*. Provided *colnames* must be at least as many as
-    the arithmetic values of the pack, except if it is only one where no *colnames* are necessary.
+    using the key values of the vector object as column headers concatenated with underscore character with the provided *colname1,colname2*. If provided *colnames* are less than
+    the arithmetic values of the pack then names t1,t2,tn are given.
     
 
     :Returned multiset schema:
@@ -36,12 +36,12 @@ def unpackcol(*args):
     2       | 1       | 2       | 1
 
     Here more than one arithmetic value is included in the pack, so equal number of
-    *colname* arguments should be provided.
+    *colname* arguments should be provided, or the non named column will be named as t1, t2...tn.
 
     >>> sql("select unpackcol(pk)  from (select pack(a,b,c) as pk from table1)")
-    Traceback (most recent call last):
-    ...
-    OperatorError: Madis SQLError: operator unpackcol: To unpack at least 2 tags is needed
+    string4_t1 | string4_t2 | string2_t1 | string2_t2 | string3_t1 | string3_t2 | string1_t1 | string1_t2
+    -----------------------------------------------------------------------------------------------------
+    2          | 90         | 1          | 30         | 2          | 40         | 1          | 20
 
     Using :func:`showpack` to view the pack of the previous example.
 
@@ -76,10 +76,11 @@ def unpackcol(*args):
         if hasattr(vec[key],'__iter__'):
             mintags=len(vec[key])
             break
-    if len(tags)<mintags:
-        raise functions.OperatorError("unpackcol","To unpack at least %s tags is needed" %(str(mintags)))
-    elif len(tags)>mintags and len(tags)>1:
-        tags=tags[:mintags]
+    tagsLen=len(tags)
+    if tagsLen<mintags:
+        tags+=['t'+str(i+1) for i in range(mintags-tagsLen)]
+    elif tagsLen>mintags and tagsLen>1:
+        tags=tags[:max(mintags,1)]
 
     if len(tags)>0:        
         headers=[key+'_'+tag for key in vec for tag in tags]
