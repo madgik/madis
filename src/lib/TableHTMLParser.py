@@ -30,6 +30,7 @@ class TableHTMLParser(HTMLParser):
         self.encoding = 'utf-8'
         self.rowIndex = 0
         self.columnIndex = 0
+        self.columnsNumber=0
         self.rowRepeats=dict()
 
     def close(self):
@@ -38,10 +39,15 @@ class TableHTMLParser(HTMLParser):
 
     def parse(self, s):
         "Parse the given string 's'."
-        #print s
         self.lines = []
         self.feed(unicode(s,self.encoding))
+        if self.columnsNumber==0 and self.lines!=[]:
+            self.columnsNumber=len(self.lines[0])
         for el in self.lines:
+            lineSize=len(el)
+            if lineSize<self.columnsNumber:
+                el+=['']*(self.columnsNumber-lineSize)
+
             yield el
     def handle_pi(self,data):
 
@@ -113,6 +119,8 @@ class TableHTMLParser(HTMLParser):
                     self.columnIndex+=1
 
                 if self.replicatecolumn or self.replicaterow:
+                    if self.replicatecolumn:self.replicatecolumn-=1
+                    if self.replicaterow:self.replicaterow-=1
                     for i in range(self.replicaterow+1):
                         for j in range(self.replicatecolumn+1):
                             if i==j and i==0:
@@ -124,6 +132,16 @@ class TableHTMLParser(HTMLParser):
                 self.header+=[self.value]
             self.state = self.inraw
         elif tag == "tr" and self.bInspecting == False:
+            self.columnIndex+=1
+            if self.header!=[]:
+                while self.rowIndex in self.rowRepeats and self.columnIndex in self.rowRepeats[self.rowIndex]:
+                    self.header+=[self.rowRepeats[self.rowIndex][self.columnIndex]]
+                    self.columnIndex+=1
+            else:
+                while self.rowIndex in self.rowRepeats and self.columnIndex in self.rowRepeats[self.rowIndex]:
+                    self.line+=[self.rowRepeats[self.rowIndex][self.columnIndex]]
+                    self.columnIndex+=1
+
             if self.header!=[]:
                 self.lines+=[tuple(self.header)]
             else:
@@ -131,22 +149,29 @@ class TableHTMLParser(HTMLParser):
             self.line=[]
             self.header=[]
             self.state = self.intable
+
+            if self.rowIndex in self.rowRepeats:
+                 del self.rowRepeats[self.rowIndex]
         elif tag == "td":       ### koitame an proigountai kapoia kopy ta vazoume kai colindex++
             if self.bInspecting == False:
-                while self.rowIndex in self.rowRepeats and self.columnIndex in self.rowRepeats[self.rowIndex]:
+                while self.rowIndex in self.rowRepeats and self.columnIndex in self.rowRepeats[self.rowIndex]:                    
                     self.line+=[self.rowRepeats[self.rowIndex][self.columnIndex]]
                     self.columnIndex+=1
 
                 if self.replicatecolumn or self.replicaterow:
+                    
+                    if self.replicatecolumn:self.replicatecolumn-=1
+                    if self.replicaterow:self.replicaterow-=1
                     for i in range(self.replicaterow+1):
                         for j in range(self.replicatecolumn+1):
                             if i==j and i==0:
                                 continue
+                            
                             curRow=i+self.rowIndex
                             if curRow not in self.rowRepeats:
                                 self.rowRepeats[curRow]=dict()
                             self.rowRepeats[curRow][j+self.columnIndex]=self.value
-                #self.line+=[self.value]
+                
                 self.line+=[self.value]
-                #self.line+=[self.value]*(self.replicate+1)
+                
             self.state = self.inraw
