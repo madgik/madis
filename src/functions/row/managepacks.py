@@ -206,6 +206,30 @@ def normalisepack(*args):
 
 normalisepack.registered=True
 
+def setpack(*args):
+    """
+    .. function:: setpack(key1, key2, ...)
+
+    Setpack function, creates a pack containing all keys given to it as arguments.
+    The default value of the keys is 1.
+
+    Examples:
+
+    >>> sql("select showpack(setpack('dog', 'cat'))")
+    showpack(setpack('dog', 'cat'))
+    -------------------------------
+    [{u'dog': 1, u'cat': 1}]
+
+    """
+
+    outset={}
+    for i in args:
+        outset[i]=1
+
+    return mempack(outset)
+
+setpack.registered=True
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
