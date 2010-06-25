@@ -35,11 +35,17 @@ rowfuncs=lambda x:x
 
 oldexecdb=-1
 
+def unicodetostr(s):
+    o=repr(s)
+    if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
+        o=o[2:-1]
+    return o
+
 class MadisError(Exception):
     def __init__(self,msg):
         self.msg=msg
     def __str__(self):
-        return repr("Madis SQLError: "+unicode(self.msg))
+        return unicodetostr("Madis SQLError: "+unicode(self.msg))
 
 class OperatorError(MadisError):
     def __init__(self,opname,msg):

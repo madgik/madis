@@ -37,10 +37,10 @@ class vecpack:
     
     >>> sql("select a as fcol,showpack(pack(b,c)) as vpk from table1 group by a")
     fcol | vpk
-    ------------------------------------------------------------
-    a    | [ { u ' n u m ' :   4 ,   u ' s t r i n g ' :   5 } ]
-    b    | [ { u ' n u m ' :   3 } ]
-    c    | [ { u ' s t r i n g ' :   9 } ]
+    ----------------------------------
+    a    | [{u'num': 4, u'string': 5}]
+    b    | [{u'num': 3}]
+    c    | [{u'string': 9}]
     
     Using vecpack instead of pack the resulting packs will have the same dimensions, the ones given as first argument of vecpack. So
     statement *select pack(distinct b) as pk from table1* serves to form the dimensions pack (*num* and *string*) to be given as
@@ -48,10 +48,10 @@ class vecpack:
     
     >>> sql("select a as fcol,showpack(vecpack(pk,b,c)) as vpk from table1, (select pack(distinct b) as pk from table1) group by a")
     fcol | vpk
-    ------------------------------------------------------------
-    a    | [ { u ' n u m ' :   4 ,   u ' s t r i n g ' :   5 } ]
-    b    | [ { u ' n u m ' :   3 ,   u ' s t r i n g ' :   0 } ]
-    c    | [ { u ' n u m ' :   0 ,   u ' s t r i n g ' :   9 } ]
+    ----------------------------------
+    a    | [{u'num': 4, u'string': 5}]
+    b    | [{u'num': 3, u'string': 0}]
+    c    | [{u'num': 0, u'string': 9}]
     """
 
 
@@ -145,16 +145,16 @@ class pack:
     ... ''')
     >>> sql("select showpack(pk) as spk from (select pack(a,b) as pk from table1)")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------
-    [ { u ' s t r i n g 4 ' :   2 ,   u ' s t r i n g 2 ' :   1 ,   u ' s t r i n g 3 ' :   2 ,   u ' s t r i n g 1 ' :   1 } ]
+    --------------------------------------------------------------
+    [{u'string4': 2, u'string2': 1, u'string3': 2, u'string1': 1}]
     >>> sql("select showpack(pk) as spk from (select pack(a) as pk from table1)")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------
-    [ { u ' s t r i n g 4 ' :   1 ,   u ' s t r i n g 2 ' :   1 ,   u ' s t r i n g 3 ' :   1 ,   u ' s t r i n g 1 ' :   1 } ]
+    --------------------------------------------------------------
+    [{u'string4': 1, u'string2': 1, u'string3': 1, u'string1': 1}]
     >>> sql("select showpack(pk) as spk from (select pack('title',a,b,b*b) as pk from table1)")
     spk
-    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    [ { u ' t i t l e . s t r i n g 4 ' :   [ 2 ,   4 ] ,   u ' t i t l e . s t r i n g 1 ' :   [ 1 ,   1 ] ,   u ' t i t l e . s t r i n g 2 ' :   [ 1 ,   1 ] ,   u ' t i t l e . s t r i n g 3 ' :   [ 2 ,   4 ] } ]
+    ----------------------------------------------------------------------------------------------------------
+    [{u'title.string4': [2, 4], u'title.string1': [1, 1], u'title.string2': [1, 1], u'title.string3': [2, 4]}]
     """
 
     registered=True #Value to define db operator

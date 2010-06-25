@@ -48,8 +48,8 @@ def unpackcol(*args):
     >>> sql(\"""select showpack(pk) as spk
     ...             from (select pack(a,b,c) as pk from table1)\""")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    [ { u ' s t r i n g 4 ' :   [ 2 ,   9 0 ] ,   u ' s t r i n g 2 ' :   [ 1 ,   3 0 ] ,   u ' s t r i n g 3 ' :   [ 2 ,   4 0 ] ,   u ' s t r i n g 1 ' :   [ 1 ,   2 0 ] } ]
+    --------------------------------------------------------------------------------------
+    [{u'string4': [2, 90], u'string2': [1, 30], u'string3': [2, 40], u'string1': [1, 20]}]
 
     Providing the necessary *colnames* :func:`unpackcol` work correct and the provided names
     are appended with underscore at the column names.
@@ -114,22 +114,22 @@ def showpack(*args):
     ... ''')
     >>> sql("select showpack(pk) as spk from (select pack(a,b) as pk from table1)")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------
-    [ { u ' s t r i n g 4 ' :   2 ,   u ' s t r i n g 2 ' :   1 ,   u ' s t r i n g 3 ' :   2 ,   u ' s t r i n g 1 ' :   1 } ]
+    --------------------------------------------------------------
+    [{u'string4': 2, u'string2': 1, u'string3': 2, u'string1': 1}]
     >>> sql("select showpack(pk) as spk from (select pack(a) as pk from table1)")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------
-    [ { u ' s t r i n g 4 ' :   1 ,   u ' s t r i n g 2 ' :   1 ,   u ' s t r i n g 3 ' :   1 ,   u ' s t r i n g 1 ' :   1 } ]
+    --------------------------------------------------------------
+    [{u'string4': 1, u'string2': 1, u'string3': 1, u'string1': 1}]
     >>> sql("select showpack(pk) as spk from (select pack('title',a,b,b*b) as pk from table1)")
     spk
-    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    [ { u ' t i t l e . s t r i n g 4 ' :   [ 2 ,   4 ] ,   u ' t i t l e . s t r i n g 1 ' :   [ 1 ,   1 ] ,   u ' t i t l e . s t r i n g 2 ' :   [ 1 ,   1 ] ,   u ' t i t l e . s t r i n g 3 ' :   [ 2 ,   4 ] } ]
+    ----------------------------------------------------------------------------------------------------------
+    [{u'title.string4': [2, 4], u'title.string1': [1, 1], u'title.string2': [1, 1], u'title.string3': [2, 4]}]
     """
 
     out=[]
     for pack in args:
         out+=[memunpack(pack)]
-    return ' '.join(repr(out))
+    return repr(out)
 
 showpack.registered=True
 
@@ -155,13 +155,14 @@ def normalisepack(*args):
     >>> sql(\"""select showpack(normalisepack(pk)) as spk
     ...         from (select pack(a,b) as pk from table1)\""")
     spk
-    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    [ { u ' m o v i e 2 ' :   0 . 2 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 ,   u ' m o v i e 3 ' :   0 . 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ,   u ' m o v i e 1 ' :   0 . 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 ,   u ' m o v i e 4 ' :   0 . 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 } ]
+    ----------------------------------------------------------------------------------------------------------------------------------
+    [{u'movie2': 0.29999999999999999, u'movie3': 0.20000000000000001, u'movie1': 0.40000000000000002, u'movie4': 0.10000000000000001}]
+
     >>> sql(\"""select showpack(normalisepack(pk)) as spk
     ...         from (select pack(a,b,c) as pk from table1)\""")
     spk
-    ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    [ { u ' m o v i e 2 ' :   [ 0 . 2 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 ,   0 . 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ] ,   u ' m o v i e 3 ' :   [ 0 . 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ,   0 . 5 ] ,   u ' m o v i e 1 ' :   [ 0 . 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 ,   0 . 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ] ,   u ' m o v i e 4 ' :   [ 0 . 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ,   0 . 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 ] } ]
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    [{u'movie2': [0.29999999999999999, 0.20000000000000001], u'movie3': [0.20000000000000001, 0.5], u'movie1': [0.40000000000000002, 0.10000000000000001], u'movie4': [0.10000000000000001, 0.20000000000000001]}]
 
 
 .. doctest::
@@ -176,13 +177,13 @@ def normalisepack(*args):
     >>> sql(\"""select showpack(pk) as spk
     ...         from (select pack(a,b) as pk from table1)\""")
     spk
-    -------
-    [ { } ]
+    ----
+    [{}]
     >>> sql(\"""select showpack(normalisepack(pk)) as spk
     ...         from (select pack(a,b) as pk from table1)\""")
     spk
-    -------
-    [ { } ]
+    ----
+    [{}]
     """
     if len(args)>1:
         raise functions.OperatorError("normalisepack","operator takes only one argument")
@@ -205,6 +206,30 @@ def normalisepack(*args):
     return mempack(vec)
 
 normalisepack.registered=True
+
+def setpack(*args):
+    """
+    .. function:: setpack(key1, key2, ...)
+
+    Setpack function, creates a pack containing all keys given to it as arguments.
+    The default value of the keys is 1.
+
+    Examples:
+
+    >>> sql("select showpack(setpack('dog', 'cat'))")
+    showpack(setpack('dog', 'cat'))
+    -------------------------------
+    [{u'dog': 1, u'cat': 1}]
+
+    """
+
+    outset={}
+    for i in args:
+        outset[i]=1
+
+    return mempack(outset)
+
+setpack.registered=True
 
 if not ('.' in __name__):
     """
