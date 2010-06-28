@@ -103,7 +103,7 @@ by selecting the appropriate columns from the ".tsv" file.
 ::
 
    create table logs as
-      select C1 as id, C2 as userid, C3 as userip, C4 as sesid, C6 as query, C8 as date
+      select C1 as id, C2 as userid, C3 as userip, C4 as sesid, C6 as query, c7 as action, C8 as date
       from file('raw_logs.tsv','delimiter:\t','quoting:QUOTE_NONE');
 
 **Step 2**
@@ -144,8 +144,8 @@ hence significantly easing the “flow-level programming”, in madSQL.
 
 ::
 
-   create  QueriesPerSession as
-   select filterstopwords( cqlkeywords (query)) as cleanquery , sesidnew, userid
+   create table QueriesPerSession as
+   select filterstopwords(cqlkeywords(query)) as cleanquery , sesidnew, userid
    from logs
    where action like 'search%' and cleanquery!='' and isvalidutf8(query)
    group by query, sesidnew;
@@ -184,9 +184,9 @@ Frequent query term sets are computed over each one of the country codes that oc
 
    create table FrequentItemsets as
    select 'nat', CountryCode,
-	freqitemsets(cleanquery,'threshold:3','maxlen:6')
+	freqitemsets(cleanquery,'threshold:2','maxlen:5')
    from QueriesPerSession as qs, Session2Country as sc
-   where  qs.sesidnew= sc.sesidnew
+   where  qs.sesidnew = sc.sesidnew
    group by CountryCode;
 
 
