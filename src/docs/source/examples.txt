@@ -104,7 +104,7 @@ by selecting the appropriate columns from the ".tsv" file.
 
    create table logs as
       select C1 as id, C2 as userid, C3 as userip, C4 as sesid, C6 as query, C8 as date
-      from file('raw_logs.tsv','delimiter:\t','quoting:NONE');
+      from file('raw_logs.tsv','delimiter:\t','quoting:QUOTE_NONE');
 
 **Step 2**
 
