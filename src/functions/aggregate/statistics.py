@@ -877,9 +877,7 @@ class frecency:
     def final(self):
         return self.frecency
 
-from Numeric import *
-from math import *
-
+import math
 
 class pearson:
 
@@ -938,8 +936,6 @@ class pearson:
             XY=X*Y
             sum_XY+=XY
         return sum_XY/(math.sqrt(sum_XX*sum_YY))
-
-
 
 
 if not ('.' in __name__):
