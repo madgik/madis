@@ -70,7 +70,7 @@ class TableParse:
             self.ufile = urllib2.urlopen(req)
             headers = self.ufile.info()
         except Exception:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Cannot load url:'%s'" %(str(url)))
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Cannot load url:'%s'" %(repr(url)))
         parser = TableHTMLParser.TableHTMLParser(tableNum)
         
         self.iterator=linkiter(self.ufile,parser.parse)
