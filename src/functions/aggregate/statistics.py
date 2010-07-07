@@ -877,7 +877,7 @@ class frecency:
     def final(self):
         return self.frecency
 
-import math
+
 
 class pearson:
 
