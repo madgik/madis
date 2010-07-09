@@ -26,6 +26,11 @@ The requirements for using madIS are:
 
         build-essential libreadline5-dev zlib1g-dev python-dev
 
+.. note::
+    Starting from Ubuntu 10.04, it is not necessary to do the above steps to build and install
+    APSW. You can simply install the distribution's package named "python-apsw".
+
+
 3.  *Readline*: This is needed only in Windows (most Linux distributions come with
     readline preinstalled). You'll find a Python readline for Windows in:
 
