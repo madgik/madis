@@ -139,7 +139,6 @@ class Cursor(object):
                     pass
 
     def getdescription(self):
- #       print "In My GetDescription!!!"
         return self.__wrapped.getdescription()
     def close(self, force=False):
         if self.__vtables!=[]:
