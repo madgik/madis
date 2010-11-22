@@ -201,7 +201,7 @@ while True:
                 statement="select sql from sqlite_master where sql is not null;"
             else:
                 argument=argument.rstrip(';')
-                statement="select sql from sqlite_master where tbl_name='%s' and sql is not null;" %(argument)
+                statement="select sql from sqlite_master where tbl_name like '%s' and sql is not null;" %(argument)
         elif "quit".startswith(command):
             connection.close()
             exit(0)
