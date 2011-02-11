@@ -64,6 +64,12 @@ def mcomplete(text,state):
     else:
         return
 
+def schemaprint(schema):
+    if schema!=None:
+        print "--- Column names ---"
+        print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 else x[0] for x in schema])+" |"
+
+
 intromessage="""mTerm - Extended Sqlite shell - version 0.5
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
@@ -77,6 +83,8 @@ helpmessage=""".functions             Lists all function operators
 .schema ?TABLE?        Show the CREATE statements
 .separator STRING      Change separator used by output mode and .import   
 .tables                List names of tables """
+
+lastschema=None
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
@@ -248,14 +256,25 @@ while True:
         printer=writer(output,dialect=mtermoutput(),delimiter=separator)
         cursor = connection.cursor()
         try:
-            for row in cursor.execute(statement):
-              #  printer.writerow(cursor1.getdescription())
+            cexec=cursor.execute(statement)
+
+            try:
+                lastschema=cursor.getdescription()
+            except apsw.ExecutionCompleteError, e:
+                lastschema=None
+
+            for row in cexec:
                 printer.writerow(row)
             cursor.close()
+
             after=datetime.datetime.now()
             tmdiff=after-before
+
+            schemaprint(lastschema)
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+
         except KeyboardInterrupt:
+            schemaprint(lastschema)
             print "KeyboardInterrupt exception: Query execution stopped"
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
