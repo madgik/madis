@@ -67,7 +67,7 @@ def mcomplete(text,state):
 def schemaprint(schema):
     if schema!=None:
         print "--- Column names ---"
-        print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 else x[0] for x in schema])+" |"
+        print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
 
 
 intromessage="""mTerm - Extended Sqlite shell - version 0.5
