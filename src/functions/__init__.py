@@ -322,6 +322,9 @@ def sql(sqlquery):
     
     language, output_encoding = locale.getdefaultlocale()
 
+    if output_encoding==None:
+        output_encoding="UTF8"
+
     test_cursor=test_connection.cursor()
         
     e=test_cursor.execute(sqlquery.decode(output_encoding))
