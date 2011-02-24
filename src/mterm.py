@@ -57,10 +57,20 @@ def update_tablelist():
     alltables=[x[0].lower().encode('ascii') for x in cursor.fetchall()]
     cursor.close()
 
+def normalizename(col):
+    if re.match(ur'[\w_$\d]+$', col,re.UNICODE):
+        return col
+    else:
+        return "`"+col+"`"
+
 def mcomplete(text,state):
-    hits= [x.lower() for x in allfuncs+alltables if x.lower()[:len(text)]==text.lower()]
+    if lastschema==None:
+        completitions=allfuncs+alltables
+    else:
+        completitions=[x[0] for x in lastschema]+allfuncs+alltables
+    hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
     if state<len(hits):
-        return hits[state]
+        return normalizename(hits[state])
     else:
         return
 
