@@ -2,10 +2,10 @@
 Basis code for Virtual table, without cache.
 
 Static schema Virtual table:
-    subclass StaticschemaVT
+    subclass StaticSchemaVT
 
-Dynamic schema Virtual table that the schema can be extracted by a samplerow:
-    subclass InitBySampleVT
+Dynamic schema Virtual table. The schema is extracted from a samplerow:
+    subclass SchemaFromSampleVT
 
     **Note: to ommit header info from being returned to the system but to be in the sample row,
     if the iterator returns a tuple it is ignored and not promoted to sqlite. The first row usually independed of the type will be given to getschema function
@@ -40,16 +40,16 @@ class SimpleVT():
         pass
 
 
-class InitBySampleVT(SimpleVT):
+class SchemaFromSampleVT(SimpleVT):
     def getschema(self,samplerow):
         raise NotImplementedError
 
-class StaticschemaVT(SimpleVT):
-    def getstaticschema(self):
+class StaticSchemaVT(SimpleVT):
+    def getschema(self):
         raise NotImplementedError
 
-class DynamicInitVT(SimpleVT):
-    def openBySchema(self,args):
+class SchemaFromArgsVT(SimpleVT):
+    def getschema(self,args):
         raise NotImplementedError
 
 
@@ -62,19 +62,19 @@ FuncTypes={
 
 def getTypeOfInstance(cls):
     try:
-        if issubclass(cls, StaticschemaVT):
+        if issubclass(cls, StaticSchemaVT):
             return FuncTypes['static']
         else:
             raise Exception
     except Exception:
         try:
-            if issubclass(cls, DynamicInitVT):
+            if issubclass(cls, SchemaFromArgsVT):
                 return FuncTypes['dynamic']
             else:
                 raise Exception
         except Exception:
             try:
-                if issubclass(cls, InitBySampleVT):
+                if issubclass(cls, SchemaFromSampleVT):
                     return FuncTypes['sample']
                 else:
                     raise Exception
@@ -123,11 +123,11 @@ class SourceCachefreeVT:
         openIterFunc=None
 
         if self.typeOfObj==FuncTypes['static']:
-            schema = TableVT.getstaticschema()
-            openIterFunc= lambda:TableVT.getstaticschema(*parsedArgs,**envars)
+            schema = TableVT.getschema()
+            openIterFunc= lambda:TableVT.open(*parsedArgs,**envars)
         elif self.typeOfObj==FuncTypes['dynamic']:
             try:
-                schema , iterator = TableVT.openBySchema(*parsedArgs,**envars)
+                schema , iterator = TableVT.getschema(*parsedArgs,**envars)
                 openIterFunc= lambda:TableVT.open(*parsedArgs,**envars)
             except (StopIteration,apsw.ExecutionCompleteError),e: ###
                 raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])

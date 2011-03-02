@@ -32,7 +32,7 @@ external_stream=True
 
 
 
-class WebTable(vtiters.InitBySampleVT):
+class WebTable(vtiters.SchemaFromSampleVT):
     def parse(self,*args):
         tableNum=1
         argsnum=len(args)

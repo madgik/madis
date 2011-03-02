@@ -21,7 +21,7 @@ import vtiters
 registered=True
 external_stream=True
 
-class clipboard(vtiters.InitBySampleVT):
+class clipboard(vtiters.SchemaFromSampleVT):
     def __init__(self):
         self.schema=[('C1', 'text')]
 
