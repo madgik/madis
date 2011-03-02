@@ -8,12 +8,12 @@
 
 Examples:
     
-    >>> sql("select * from webtable('http://en.wikipedia.org/wiki/List_of_countries_by_public_debt') limit 3")
-    Rank | Country               | % of GDP[1] | Date
-    ------------------------------------------------------
-    1    | Zimbabwe              | 304.30      | 2009 est.
-    2    | Japan                 | 192.10      | 2009 est.
-    3    | Saint Kitts and Nevis | 185.00      | 2009 est.
+    >>> sql("select * from webtable('http://en.wikipedia.org/wiki/List_of_countries_by_public_debt',2) limit 3")
+    Rank | Country               | % of GDP[1] | Date      | Continent
+    ----------------------------------------------------------------------
+    1    | Zimbabwe              | 241.60      | 2010 est. | Africa
+    2    | Japan                 | 196.40      | 2010 est. | Asia
+    3    | Saint Kitts and Nevis | 185.00      | 2010 est. | North America
     
 """
 import setpath
