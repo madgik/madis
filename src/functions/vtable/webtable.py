@@ -43,7 +43,7 @@ class WebTable(vtiters.InitBySampleVT):
             try:
                 tableNum=int(args[1])
             except Exception:
-                raise functions.OperatorError(__name__.rsplit('.')[-1],"Table number ot extract must be integer")
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Table number must be integer")
         return (tableUrl, tableNum)
 
     def getschema(self,samplerow):
