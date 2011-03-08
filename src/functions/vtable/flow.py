@@ -17,9 +17,9 @@ Examples:
 
 .. doctest::
     
-    >>> sql("select * from (flow file 'testing/testflow.sql') limit 2") # doctest: +NORMALIZE_WHITESPACE
+    >>> sql("select * from (flow file 'testing/testflow.sql') limit 1") # doctest: +NORMALIZE_WHITESPACE
     query
-    ------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------
     /*====== countries: table of Country ISO codes , country names ===========*/
     CREATE TABLE countries (
         country2 PRIMARY KEY UNIQUE,
@@ -28,7 +28,7 @@ Examples:
     >>> sql("select * from (flow file 'testing/colpref.csv' limit 5) ")
     Traceback (most recent call last):
     ...
-    OperatorError: madIS SQLError: operator flow: Incompete statement found : userid colid pr ... 41 416900.0 agr
+    OperatorError: Madis SQLError: operator flow: Incompete statement found : userid colid pr ... 41 416900.0 agr
 
 
 Test files:
