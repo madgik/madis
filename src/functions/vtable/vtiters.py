@@ -8,7 +8,7 @@ Dynamic schema Virtual table. The schema is extracted from a samplerow:
     subclass SchemaFromSampleVT
 
     **Note: to ommit header info from being returned to the system but to be in the sample row,
-    if the iterator returns a tuple it is ignored and not promoted to sqlite. The first row usually independed of the type will be given to getschema function
+    if the iterator returns a tuple it is ignored and not promoted to sqlite. The first row usually independent of the type will be given to getschema function
 
 """
 
