@@ -127,7 +127,7 @@ class SourceCachefreeVT:
             openIterFunc= lambda:TableVT.open(*parsedArgs,**envars)
         elif self.typeOfObj==FuncTypes['dynamic']:
             try:
-                schema , iterator = TableVT.getschema(*parsedArgs,**envars)
+                schema = TableVT.getschema(*parsedArgs,**envars)
                 openIterFunc= lambda:TableVT.open(*parsedArgs,**envars)
             except (StopIteration,apsw.ExecutionCompleteError),e: ###
                 raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])
