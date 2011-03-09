@@ -36,8 +36,7 @@ class oaiget(vtiters.StaticSchemaVT):
         import urllib2
         import re
 
-        from lib import argsparse
-        opts= argsparse.parse(parsedArgs)[1]
+        opts= self.full_parse(parsedArgs)[1]
 
         if 'http' not in opts:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"An OAIPMH URL should be provided")
