@@ -23,6 +23,7 @@ import vtiters
 import functions
 
 registered=True
+external_stream=True
 
 class oaiget(vtiters.StaticSchemaVT):
     def getschema(self):
