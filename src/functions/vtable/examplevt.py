@@ -10,21 +10,25 @@ Examples:
 
     >>> sql("select * from examplevt(1, '2', 'var3')")    # doctest:+ELLIPSIS
     varname          | value
-    --------------------------------------------------------------
+    -------------------------------------------------------------...
     parsedarg1       | 1
     parsedarg2       | 2
     parsedarg3       | var3
-    ...
+    envar:tablename  | vt_...
+    envar:modulename | examplevt
+    envar:db         | <functions.Connection object at 0x...>
     envar:dbname     | temp
 
     >>> sql("select * from (examplevt 'var1' 'var2' v1:test select 5)")    # doctest:+ELLIPSIS
     varname          | value
-    --------------------------------------------------------------
+    -------------------------------------------------------...
     parsedarg1       | query:select 5
     parsedarg2       | var1
     parsedarg3       | var2
     parsedarg4       | v1:test
-    ...
+    envar:tablename  | vt_...
+    envar:modulename | examplevt
+    envar:db         | <functions.Connection object at 0x...>
     envar:dbname     | temp
 
 """
