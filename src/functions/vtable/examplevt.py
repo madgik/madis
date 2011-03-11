@@ -1,5 +1,5 @@
 """
-.. function:: examplevt()
+.. function:: examplevt(arguments)
 
     A minimal example of a virtual table. Returns all the arguments passed to it.
 
