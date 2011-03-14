@@ -190,7 +190,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 if self.start:
                     self.start=False
                     return "<xmlparce-forced-root-element>"
-                return " ".join(self.qiter.next())
+                return ''.join(self.qiter.next())
 
         etreeparse=iter(etree.iterparse(inputio(envars['db'], self.query), ("start", "end")))
 
