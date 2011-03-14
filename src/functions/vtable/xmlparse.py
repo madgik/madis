@@ -8,13 +8,19 @@
 
 Examples:
     >>> table1('''
-    ... '<t><a><b>row1val1</b></a>'
+    ... '<a><b>row1val1</b></a>'
     ... '<a>'
     ... '<b>'
     ... 'row2val1</b><c><d>row2val</d></c>'
-    ... '</a></t>'
+    ... '</a>'
     ... ''')
-    >>> sql("select * from (xmlparse 'root:a' '<a><b>val1</b><c><d>val2</d></c></a>' select * from table1)")
+    >>> sql("select * from (xmlparse '<a><b>val1</b><c><d>val2</d></c></a>' select * from table1)")
+    b        | c_d
+    ------------------
+    row1val1 |
+    row2val1 | row2val
+
+    >>> sql("select * from (xmlparse root:a '<t><a><b>val1</b><c><d>val2</d></c></a></t>' select * from table1)")
     b        | c_d
     ------------------
     row1val1 |
@@ -39,11 +45,17 @@ def shortifypath(path):
     return "_".join(outpath)
 
 def shorttag(t):
-    if t[0] == "{":
+    if t[0] == '{':
         tag = t[1:].split("}")[1]
         return tag
     else:
         return t
+
+def matchtag(a, b):
+    if b[0] == '{':
+        return a==b
+    else:
+        return shorttag(a)==b
 
 def pathwithoutns(path):
     outpath=[]
@@ -117,7 +129,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
             opts=self.full_parse(parsedArgs)
 
-            self.subtreeroot=opts[1]['root']
+            if 'root' in opts[1]:
+                self.subtreeroot=opts[1]['root']
+
             try:
                 self.query=opts[1]['query']
             except:
@@ -127,32 +141,29 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
             xpath=[]
             capture=False
-            schemaproc=0
 
             import StringIO
 
             for ev, el in etree.iterparse(StringIO.StringIO(xp), ("start", "end")):
                 if ev=="start":
+                    if self.subtreeroot==None:
+                        self.subtreeroot=el.tag
                     if capture:
                         xpath.append(el.tag)
-                    if shorttag(el.tag)==self.subtreeroot and not capture:
+                    if matchtag(el.tag, self.subtreeroot) and not capture:
                         capture=True
-                        if schemaproc==0: schemaproc=1
                     if capture and el.attrib!={}:
-                        if schemaproc==1:
-                            for k in el.attrib:
-                                s.addtoschema(xpath+[k])
+                        for k in el.attrib:
+                            s.addtoschema(xpath+[k])
                     continue
 
                 if capture:
                     if el.text!=None and el.text.strip()!='':
-                        if schemaproc==1:
+                        if capture:
                             s.addtoschema(xpath)
                     if ev=="end":
                         if el.tag==self.subtreeroot:
                             capture=False
-                            if schemaproc==1:
-                                schemaproc=2
                         if len(xpath)>0:
                             xpath.pop()
 
@@ -172,54 +183,28 @@ class XMLparse(vtiters.SchemaFromArgsVT):
     def open(self, *parsedArgs, **envars):
         class inputio():
             def __init__(self, connection, query):
-                self.start=False
-                self.iterstopped=False
+                self.start=True
                 self.qiter=connection.cursor().execute(query)
 
             def read(self,n):
-                if self.start==False:
-                    self.start=True
-                    return "<forced-root-element>"
-                if self.iterstopped:
-                    raise StopIteration
-                try:
-                    return " ".join(self.qiter.next())
-                except StopIteration:
-                    self.iterstopped=True
-                    return "</forced-root-element>"
+                if self.start:
+                    self.start=False
+                    return "<xmlparce-forced-root-element>"
+                return " ".join(self.qiter.next())
 
-        def nsshort(name):
-            if name[0] == "{":
-                uri, tag = name[1:].split("}")
-                if uri in ns_map and ns_map[uri]!='':
-                    return ns_map[uri] +":" + tag
-                else:
-                    return tag
-            else:
-                return name
+        etreeparse=iter(etree.iterparse(inputio(envars['db'], self.query), ("start", "end")))
 
-        rawinput=inputio(envars['db'], self.query)
-
-        root=None
-        ns_map = {}
+        root=etreeparse.next()[1]
         capture=False
         schemaproc=2
         xpath=[]
 
-        for ev, el in etree.iterparse(rawinput, ("start", "end", "start-ns")):
-            if ev == "start-ns":
-                ns_map[el[1]]=el[0]
-                continue
-
-            shorttag=nsshort(el.tag)
-
+        for ev, el in etreeparse:
             if ev=="start":
-                if root==None:
-                    root=el
                 root.clear()
                 if capture:
                     xpath.append(el.tag)
-                if shorttag==self.subtreeroot and not capture:
+                if matchtag(el.tag, self.subtreeroot) and not capture:
                     capture=True
                     if schemaproc==0: schemaproc=1
                 if capture and el.attrib!={}:
@@ -237,7 +222,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.rowobj.addtorow(xpath, el.text)
 
                 if ev=="end":
-                    if shorttag==self.subtreeroot:
+                    if matchtag(el.tag,self.subtreeroot):
                         capture=False
                         yield self.rowobj.row
                         self.rowobj.resetrow()
