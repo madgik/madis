@@ -159,8 +159,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 if capture:
                     if el.text!=None and el.text.strip()!='':
-                        if capture:
-                            s.addtoschema(xpath)
+                        s.addtoschema(xpath)
                     if ev=="end":
                         if el.tag==self.subtreeroot:
                             capture=False
