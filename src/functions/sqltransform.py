@@ -29,6 +29,8 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
 
     trans=Transclass(multiset_functions,vtables, row_functions)
     s_out=''
+    sqp=('', [], [])
+
     for s in st:
         # delete question mark
         strs=re.match(r"(.*?);*\s*$",unicode(s),re.DOTALL| re.UNICODE).groups()[0]
