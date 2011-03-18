@@ -46,19 +46,6 @@ import xml.etree.cElementTree as etree
 
 registered=True
 
-def shortifypath(path):
-    outpath=[]
-    for i in path:
-        if i=='<atr>':
-            continue
-        if i[0]=="{":
-            i=i.split('}')[1]
-        elif ":" in i:
-            i=i.split(':')[1]
-        i="".join([x for x in i if x.lower() >="a" and x<="z"])
-        outpath+=[i]
-    return "_".join(outpath)
-
 def shorttag(t):
     if t[0] == '{':
         tag = t[1:].split("}")[1]
@@ -134,13 +121,26 @@ class schemaobj():
                 i=i+1
 
     def colname(self, path):
-        sp=shortifypath(path)
+        sp=self.shortifypath(path)
         if sp not in self.colnames:
             self.colnames[sp]=0
             return sp
         else:
             self.colnames[sp]+=1
             return sp+str(self.colnames[sp])
+
+    def shortifypath(self, path):
+        outpath=[]
+        for i in path:
+            if i=='<atr>':
+                continue
+            if i[0]=="{":
+                i=i.split('}')[1]
+            elif ":" in i:
+                i=i.split(':')[1]
+            i="".join([x for x in i if x.lower() >="a" and x<="z"])
+            outpath+=[i]
+        return "_".join(outpath)
 
 
 class XMLparse(vtiters.SchemaFromArgsVT):
