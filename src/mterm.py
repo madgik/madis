@@ -68,10 +68,10 @@ def mcomplete(text,state):
         completitions=[]
     else:
         completitions=[x[0] for x in lastschema]
-    completitions+=sqlstatements+allfuncs+alltables
+    completitions+=sqlandmtermstatements+allfuncs+alltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
     if state<len(hits):
-        if hits[state] in sqlstatements:
+        if hits[state] in sqlandmtermstatements:
             return hits[state]+' '
         else:
             return normalizename(hits[state])
@@ -84,7 +84,7 @@ def schemaprint(schema):
         print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
 
 
-intromessage="""mTerm - Extended Sqlite shell - version 0.5
+intromessage="""mTerm - Extended Sqlite shell - version 0.6
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
@@ -156,7 +156,8 @@ if len(sys.argv)>2:
             pass
     sys.exit()
 
-sqlstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter']
+sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter',
+                        '.help', '.colnames', '.schema', '.functions', '.tables']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 update_tablelist()
@@ -179,7 +180,10 @@ while True:
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
     iscommand=re.match("\s*\.(?P<command>\w*)\s*(?P<argument>(\w*))\s*$", statement)
+    validcommand=False
+
     if iscommand:
+        validcommand=True
         command=iscommand.group('command')
         argument=iscommand.group('argument')        
         statement=None
@@ -244,7 +248,12 @@ while True:
             automatic_reload=automatic_reload ^ True
             print "Automatic reload is now: " + str(automatic_reload)
         else:
+            validcommand=False
             print """unknown command. Enter ".help" for help"""
+
+        if validcommand:
+            histstatement='.'+command+' '+argument
+            readline.add_history(histstatement.encode('utf-8'))
 
     if statement:
         histstatement=statement
@@ -263,7 +272,8 @@ while True:
             print
             continue
         try:
-            readline.add_history(histstatement.encode('utf-8'))
+            if not validcommand:
+                readline.add_history(histstatement.encode('utf-8'))
         except:
             pass
 
