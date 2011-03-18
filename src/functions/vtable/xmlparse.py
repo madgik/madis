@@ -49,7 +49,7 @@ registered=True
 def shortifypath(path):
     outpath=[]
     for i in path:
-        if i=='<attrib>':
+        if i=='<atr>':
             continue
         if i[0]=="{":
             i=i.split('}')[1]
@@ -180,7 +180,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         capture=True
                     if capture and el.attrib!={}:
                         for k in el.attrib:
-                            s.addtoschema(xpath+['<attrib>', k])
+                            s.addtoschema(xpath+['<atr>', k])
                     continue
 
                 if capture:
@@ -237,7 +237,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         for k,v in el.attrib.iteritems():
                             addtoschema("/".join(xpath+[k]), schema)
                     for k,v in el.attrib.iteritems():
-                        self.rowobj.addtorow(xpath+['<attrib>', k], v)
+                        self.rowobj.addtorow(xpath+['<atr>', k], v)
                 continue
 
             if capture:
