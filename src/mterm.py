@@ -65,12 +65,16 @@ def normalizename(col):
 
 def mcomplete(text,state):
     if lastschema==None:
-        completitions=allfuncs+alltables
+        completitions=[]
     else:
-        completitions=[x[0] for x in lastschema]+allfuncs+alltables
+        completitions=[x[0] for x in lastschema]
+    completitions+=sqlstatements+allfuncs+alltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
     if state<len(hits):
-        return normalizename(hits[state])
+        if hits[state] in sqlstatements:
+            return hits[state]+' '
+        else:
+            return normalizename(hits[state])
     else:
         return
 
@@ -84,9 +88,9 @@ intromessage="""mTerm - Extended Sqlite shell - version 0.5
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
-helpmessage=""".functions             Lists all function operators
-.function NAME         Show NAME function description
-.help                  Show this message
+helpmessage=""".functions             Lists all functions
+.help                  Show this message (also accepts '.h' )
+.help FUNCTION         Show FUNCTION's help page
 .output FILENAME       Send output to FILENAME
 .output stdout         Send output to the screen
 .quit                  Exit this program
@@ -152,6 +156,7 @@ if len(sys.argv)>2:
             pass
     sys.exit()
 
+sqlstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 update_tablelist()
@@ -173,7 +178,7 @@ while True:
             break
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
-    iscommand=re.match("\s*\.(?P<command>\w*)\s*(?P<argument>(\w*))$", statement)
+    iscommand=re.match("\s*\.(?P<command>\w*)\s*(?P<argument>(\w*))\s*$", statement)
     if iscommand:
         command=iscommand.group('command')
         argument=iscommand.group('argument')        
@@ -223,18 +228,18 @@ while True:
         elif "quit".startswith(command):
             connection.close()
             exit(0)
-        elif command=="function":
-            for type in functions.functions:
-                if argument in functions.functions[type]:
-                    print "Function "+ argument + ":"
-                    print functions.functions[type][argument].__doc__
         elif command=="functions":
             for type in functions.functions:
                 for f in functions.functions[type]:
-                    print f+separator+type
-            
+                    print f+' :'+type
         elif "help".startswith(command):
-            print helpmessage
+            if not argument:
+                print helpmessage
+            else:
+                for type in functions.functions:
+                    if argument in functions.functions[type]:
+                        print "Function "+ argument + ":"
+                        print functions.functions[type][argument].__doc__
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
             print "Automatic reload is now: " + str(automatic_reload)
