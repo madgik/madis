@@ -26,6 +26,19 @@ Examples:
     row1val1 |
     row2val1 | row2val
 
+    >>> table2('''
+    ... '<a b="attrval1"><b>row1val1</b></a>'
+    ... '<a>'
+    ... '<b>'
+    ... 'row2val1</b><c><d>row2val</d></c>'
+    ... '</a>'
+    ... ''')
+    >>> sql("select * from (xmlparse '<a b=\\"v\\"><b>v</b><c><d>v</d></c></a>' select * from table2)")
+    b        | b1       | c_d
+    -----------------------------
+    attrval1 | row1val1 |
+             | row2val1 | row2val
+
 """
 import vtiters
 import functions
@@ -36,6 +49,8 @@ registered=True
 def shortifypath(path):
     outpath=[]
     for i in path:
+        if i=='<attrib>':
+            continue
         if i[0]=="{":
             i=i.split('}')[1]
         elif ":" in i:
@@ -102,20 +117,31 @@ class rowobj():
 class schemaobj():
     def __init__(self):
         self.schema={}
+        self.colnames={}
 
     def addtoschema(self, path):
-        attrib="/".join(path)
-        if attrib not in self.schema:
-            self.schema[attrib]=(len(self.schema), shortifypath(path))
+        fpath="/".join(path)
+        if fpath not in self.schema:
+            self.schema[fpath]=(len(self.schema), self.colname(path))
         else:
-            attrib1=attrib
+            fpath1=fpath
             i=1
             while True:
-                attrib1=attrib+str(i)
-                if attrib1 not in self.schema:
-                    self.schema[attrib1]=(len(self.schema), shortifypath(path)+str(i))
+                fpath1=fpath+str(i)
+                if fpath1 not in self.schema:
+                    self.schema[fpath1]=(len(self.schema), self.colname(path))
                     break
                 i=i+1
+
+    def colname(self, path):
+        sp=shortifypath(path)
+        if sp not in self.colnames:
+            self.colnames[sp]=0
+            return sp
+        else:
+            self.colnames[sp]+=1
+            return sp+str(self.colnames[sp])
+
 
 class XMLparse(vtiters.SchemaFromArgsVT):
     def __init__(self):
@@ -154,7 +180,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         capture=True
                     if capture and el.attrib!={}:
                         for k in el.attrib:
-                            s.addtoschema(xpath+[k])
+                            s.addtoschema(xpath+['<attrib>', k])
                     continue
 
                 if capture:
@@ -211,7 +237,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         for k,v in el.attrib.iteritems():
                             addtoschema("/".join(xpath+[k]), schema)
                     for k,v in el.attrib.iteritems():
-                        self.rowobj.addtorow(xpath+[k], v)
+                        self.rowobj.addtorow(xpath+['<attrib>', k], v)
                 continue
 
             if capture:
