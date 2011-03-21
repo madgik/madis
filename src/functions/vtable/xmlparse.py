@@ -1,7 +1,14 @@
 """
 .. function:: xmlparse(root:None, xmlprototype, query:None)
 
-    Parses an input xml stream. It starts parsing when it finds a root tag. An provided xml prototype fragment is used to create an schema, mapping from xml to a relational table.
+Parses an input xml stream. It starts parsing when it finds a root tag. An provided xml prototype fragment is used to create an schema, mapping from xml to a relational table.
+
+:'strict' option:
+
+    - strict:2  ,if a failure occurs, the current transaction will be cancelled. Additionally if a tag isn't found in the xml prototype it will be regarded as failure.
+    - strict:1  (default), if a failure occurs, the current transaction will be cancelled.
+    - strict:0  , returns all data that succesfully parses.
+    - strict:-1 , returns all input lines in which the xml parser finds a problem
 
 :Returned table schema:
     Column names are named according to the schema of the provided xml prototype.
@@ -39,6 +46,44 @@ Examples:
     attrval1 | row1val1 |
              | row2val1 | row2val
 
+    >>> table2('''
+    ... '<a b="attrval1"><b>row1val1</b></a>'
+    ... '<a>'
+    ... '</b>'
+    ... 'row2val1</b><c><d>row2val</d></c>'
+    ... '</a>'
+    ... ''')
+    >>> sql("select * from (xmlparse strict:0 '<a b=\\"v\\"><b>v</b><c><d>v</d></c></a>' select * from table2)")
+    b        | b1       | c_d
+    -------------------------
+    attrval1 | row1val1 |
+
+    >>> table3('''
+    ... '<a><b>row1val1</b></a>'
+    ... '<a>'
+    ... '<b np="np">'
+    ... 'row2val1</b><c><d>row2val</d></c>'
+    ... '</a>'
+    ... ''')
+    >>> sql("select * from (xmlparse strict:2 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table3)") #doctest:+ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared (in xml-prototype) tag: b/@/np: was found in the input data : Last input line was: <b np="np">
+
+    >>> table4('''
+    ... '<a><b>row1val1</b</a>'
+    ... '<a><b>row1val1</b></a>'
+    ... '<a><b np="np">row1val1</b></a>'
+    ... '<a><b>row1val1</b></a>'
+    ... '<a><b>row1val1</b</a>'
+    ... ''')
+    >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
+    C1
+    ------------------------------
+    <a><b>row1val1</b</a>
+    <a><b np="np">row1val1</b></a>
+    <a><b>row1val1</b</a>
+
 """
 import vtiters
 import functions
@@ -70,33 +115,45 @@ def pathwithoutns(path):
     return "/".join(outpath)
 
 class rowobj():
-    def __init__(self, schema):
+    def __init__(self, schema, strictness):
         self.schema=schema.schema
+        self.sobj=schema
         self.row=['']*len(self.schema)
+        self.strict= strictness
 
     def addtorow(self, xpath, data):
-        fullattrib="/".join(xpath)
+        fullp="/".join(xpath)
 
-        shortattrib=pathwithoutns(xpath)
+        path=None
 
-        if fullattrib in self.schema:
-            attrib=fullattrib
-        elif shortattrib in self.schema:
-            attrib=shortattrib
+        if fullp in self.schema:
+            path=fullp
         else:
-            return
+            shortp=pathwithoutns(xpath)
+            if shortp in self.schema:
+                path=shortp
 
-        if self.row[self.schema[attrib][0]]=='':
-            self.row[self.schema[attrib][0]]=data
-        else:
-            i=1
-            attribnum=attrib+str(i)
-            while attribnum in self.schema:
-                if self.row[self.schema[attribnum][0]]=='':
-                    self.row[self.schema[attribnum][0]]=data
-                    return
-                i+=1
-                attribnum=attrib+str(i)
+        if path!=None:
+            if self.row[self.schema[path][0]]=='':
+                self.row[self.schema[path][0]]=data
+                return
+            else:
+                i=1
+                attribnum=path+str(i)
+                while attribnum in self.schema:
+                    if self.row[self.schema[attribnum][0]]=='':
+                        self.row[self.schema[attribnum][0]]=data
+                        return
+                    i+=1
+                    attribnum=path+str(i)
+        if self.strict==2 or self.strict==-1:
+            path=[]
+            for i in xpath:
+                if i==self.sobj.attribguard:
+                    i='@'
+                path.append(i)
+            self.resetrow()
+            raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared (in xml-prototype) tag: '+'/'.join(path)+ ': was found in the input data')
 
     def resetrow(self):
         self.row=['']*len(self.schema)
@@ -105,6 +162,7 @@ class schemaobj():
     def __init__(self):
         self.schema={}
         self.colnames={}
+        self.attribguard='<at:r>'
 
     def addtoschema(self, path):
         fpath="/".join(path)
@@ -132,7 +190,7 @@ class schemaobj():
     def shortifypath(self, path):
         outpath=[]
         for i in path:
-            if i=='<atr>':
+            if i==self.attribguard:
                 continue
             if i[0]=="{":
                 i=i.split('}')[1]
@@ -149,6 +207,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
         self.subtreeroot=None
         self.rowobj=None
         self.query=None
+        self.strict=1
 
     def getschema(self, *parsedArgs,**envars):
             s=schemaobj()
@@ -158,12 +217,18 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             if 'root' in opts[1]:
                 self.subtreeroot=opts[1]['root']
 
+            if 'strict' in opts[1]:
+                self.strict=int(opts[1]['strict'])
+
             try:
                 self.query=opts[1]['query']
             except:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"An input query should be provided as a parameter")
 
-            xp=opts[0][0]
+            try:
+                xp=opts[0][0]
+            except:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"An XML prototype should be provided")
 
             xpath=[]
             capture=False
@@ -180,7 +245,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         capture=True
                     if capture and el.attrib!={}:
                         for k in el.attrib:
-                            s.addtoschema(xpath+['<atr>', k])
+                            s.addtoschema(xpath+[s.attribguard, k])
                     continue
 
                 if capture:
@@ -202,12 +267,17 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             for x,y in s.schema.itervalues():
                 relschema[x]=(y, 'text')
 
-            self.rowobj=rowobj(s)
-            return relschema
+            self.rowobj=rowobj(s, self.strict)
+            if self.strict>=0:
+                return relschema
+            else:
+                return [('C1', 'text')]
 
     def open(self, *parsedArgs, **envars):
         class inputio():
+
             def __init__(self, connection, query):
+                self.lastline=''
                 self.start=True
                 self.qiter=connection.cursor().execute(query)
 
@@ -215,49 +285,65 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 if self.start:
                     self.start=False
                     return "<xmlparce-forced-root-element>"
-                return ''.join(self.qiter.next())
+                self.lastline=''.join(self.qiter.next())
+                return self.lastline
 
-        etreeparse=iter(etree.iterparse(inputio(envars['db'], self.query), ("start", "end")))
+        rio=inputio(envars['db'], self.query)
+        etreeended=False
 
-        root=etreeparse.next()[1]
-        capture=False
-        schemaproc=2
-        xpath=[]
+        while not etreeended:
+            etreeparse=iter(etree.iterparse(rio, ("start", "end")))
 
-        for ev, el in etreeparse:
-            if ev=="start":
-                root.clear()
-                if capture:
-                    xpath.append(el.tag)
-                if matchtag(el.tag, self.subtreeroot) and not capture:
-                    capture=True
-                    if schemaproc==0: schemaproc=1
-                if capture and el.attrib!={}:
-                    if schemaproc==1:
-                        for k,v in el.attrib.iteritems():
-                            addtoschema("/".join(xpath+[k]), schema)
-                    for k,v in el.attrib.iteritems():
-                        self.rowobj.addtorow(xpath+['<atr>', k], v)
-                continue
+            root=etreeparse.next()[1]
+                
+            capture=False
+            schemaproc=2
+            xpath=[]
+            try:
 
-            if capture:
-                if (el.text!=None):
-                    if schemaproc==1:
-                        addtoschema("/".join(xpath), schema)
-                    self.rowobj.addtorow(xpath, el.text)
+                for ev, el in etreeparse:
+                    if ev=="start":
+                        root.clear()
+                        if capture:
+                            xpath.append(el.tag)
+                        if matchtag(el.tag, self.subtreeroot) and not capture:
+                            capture=True
+                            if schemaproc==0: schemaproc=1
+                        if capture and el.attrib!={}:
+    #                        if schemaproc==1:
+    #                            for k,v in el.attrib.iteritems():
+    #                                addtoschema("/".join(xpath+[k]), self.schema)
+                            for k,v in el.attrib.iteritems():
+                                self.rowobj.addtorow(xpath+[self.schema.attribguard, k], v)
+                        continue
 
-                if ev=="end":
-                    if matchtag(el.tag,self.subtreeroot):
-                        capture=False
-                        yield self.rowobj.row
-                        self.rowobj.resetrow()
-                        if schemaproc==1:
-                            schemaproc=2
-                    if len(xpath)>0:
-                        xpath.pop()
+                    if capture:
+                        if (el.text!=None):
+    #                        if schemaproc==1:
+    #                            addtoschema("/".join(xpath), schema)
+                            self.rowobj.addtorow(xpath, el.text)
 
-            if ev=="end":
-                el.clear()
+                        if ev=="end":
+                            if matchtag(el.tag,self.subtreeroot):
+                                capture=False
+                                if self.strict>=0:
+                                    yield self.rowobj.row
+                                self.rowobj.resetrow()
+                                if schemaproc==1:
+                                    schemaproc=2
+                            if len(xpath)>0:
+                                xpath.pop()
+
+                    if ev=="end":
+                        el.clear()
+
+                etreeended=True
+            except Exception,e:
+                rio.start=True
+                if self.strict>=1:
+                    raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+' : '+'Last input line was: '+rio.lastline)
+                if self.strict==-1:
+                    yield [rio.lastline]
 
 
 def Source():
