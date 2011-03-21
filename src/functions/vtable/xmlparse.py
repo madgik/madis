@@ -79,9 +79,8 @@ Examples:
     ... ''')
     >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
     C1
-    ------------------------------
+    ---------------------
     <a><b>row1val1</b</a>
-    <a><b np="np">row1val1</b></a>
     <a><b>row1val1</b</a>
 
 """
@@ -147,7 +146,7 @@ class rowobj():
                     i+=1
                     attribnum=path+str(i)
 
-        if self.strict==2 or self.strict==-1:
+        if self.strict==2:
             path=[]
             for i in xpath:
                 if i==self.sobj.attribguard:
