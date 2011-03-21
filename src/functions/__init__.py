@@ -374,7 +374,7 @@ def table(tab, num=''):
     if num=='':
         num='0'
 
-    createsql="create table table"+str(num)+"("
+    createsql='create table table'+str(num)+'('
     insertsql="insert into table"+str(num)+" values("
     for i in range(0,numberofcols):
         createsql=createsql+colnames[i]+' str'+','
@@ -400,6 +400,15 @@ def table2(tab):
 
 def table3(tab):
     table(tab, num=3)
+
+def table4(tab):
+    table(tab, num=4)
+
+def table5(tab):
+    table(tab, num=5)
+
+def table6(tab):
+    table(tab, num=6)
 
 def setlogfile(file):
     pass
