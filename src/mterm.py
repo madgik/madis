@@ -156,7 +156,7 @@ if len(sys.argv)>2:
             pass
     sys.exit()
 
-sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter',
+sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter', 'limit', 
                         '.help', '.colnames', '.schema', '.functions', '.tables']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
