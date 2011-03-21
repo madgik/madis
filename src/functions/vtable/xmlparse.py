@@ -68,7 +68,7 @@ Examples:
     >>> sql("select * from (xmlparse strict:2 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table3)") #doctest:+ELLIPSIS
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared (in xml-prototype) tag: b/@/np: was found in the input data : Last input line was: <b np="np">
+    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared or too few tags in xml-prototype: b/@/np: was found in the input data : Last input line was: <b np="np">
 
     >>> table4('''
     ... '<a><b>row1val1</b</a>'
@@ -146,6 +146,7 @@ class rowobj():
                         return
                     i+=1
                     attribnum=path+str(i)
+
         if self.strict==2 or self.strict==-1:
             path=[]
             for i in xpath:
@@ -153,7 +154,7 @@ class rowobj():
                     i='@'
                 path.append(i)
             self.resetrow()
-            raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared (in xml-prototype) tag: '+'/'.join(path)+ ': was found in the input data')
+            raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared or too few tags in xml-prototype: '+'/'.join(path)+ ': was found in the input data')
 
     def resetrow(self):
         self.row=['']*len(self.schema)
