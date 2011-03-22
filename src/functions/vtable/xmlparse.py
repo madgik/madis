@@ -2,36 +2,37 @@
 .. function:: xmlparse(root:None, xmlprototype, query:None)
 
 Parses an input xml stream. It starts parsing when it finds a root tag. An provided xml prototype fragment is used to create an schema, mapping from xml to a relational table.
+If multiple values are found for the same tag in the input stream, then all values are returned separated with a tab (use tab-set operators to process them).
 
 :'strict' option:
 
     - strict:2  ,if a failure occurs, the current transaction will be cancelled. Additionally if a tag isn't found in the xml prototype it will be regarded as failure.
-    - strict:1  (default), if a failure occurs, the current transaction will be cancelled.
-    - strict:0  , returns all data that succesfully parses.
-    - strict:-1 , returns all input lines in which the xml parser finds a problem
+    - strict:1  (default), if a failure occurs, the current transaction will be cancelled. Undeclared tags aren't regarded as failure.
+    - strict:0  , returns all data that succesfully parses. The difference with strict 1, is that strict 0 tries to restart the xml-parsing after the failures and doesn't fail the transaction.
+    - strict:-1 , returns all input lines in which the xml parser finds a problem. In essence this works as a negative xml parser.
 
 :Returned table schema:
     Column names are named according to the schema of the provided xml prototype.
 
 Examples:
     >>> table1('''
-    ... '<a><b>row1val1</b></a>'
+    ... '<a><b>row1val1</b><b>row1val1b</b><b>row1val1c</b></a>'
     ... '<a>'
     ... '<b>'
     ... 'row2val1</b><c><d>row2val</d></c>'
     ... '</a>'
     ... ''')
-    >>> sql("select * from (xmlparse '<a><b>val1</b><c><d>val2</d></c></a>' select * from table1)")
-    b        | c_d
-    ------------------
-    row1val1 |
-    row2val1 | row2val
+    >>> sql("select * from (xmlparse '<a><b>val1</b><b>val1</b><c><d>val2</d></c></a>' select * from table1)") # doctest: +NORMALIZE_WHITESPACE
+    b        | b1                  | c_d
+    ----------------------------------------
+    row1val1 | row1val1b        row1val1c |
+    row2val1 |                     | row2val
 
-    >>> sql("select * from (xmlparse root:a '<t><a><b>val1</b><c><d>val2</d></c></a></t>' select * from table1)")
-    b        | c_d
-    ------------------
-    row1val1 |
-    row2val1 | row2val
+    >>> sql("select * from (xmlparse root:a '<t><a><b>val1</b><c><d>val2</d></c></a></t>' select * from table1)") # doctest: +NORMALIZE_WHITESPACE
+    b                            | c_d
+    --------------------------------------
+    row1val1        row1val1b        row1val1c |
+    row2val1                     | row2val
 
     >>> table2('''
     ... '<a b="attrval1"><b>row1val1</b></a>'
@@ -68,7 +69,7 @@ Examples:
     >>> sql("select * from (xmlparse strict:2 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table3)") #doctest:+ELLIPSIS
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared or too few tags in xml-prototype: b/@/np: was found in the input data : Last input line was: <b np="np">
+    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared tag in xml-prototype: b/@/np: was found in the input data : Last input line was: <b np="np">
 
     >>> table4('''
     ... '<a><b>row1val1</b</a>'
@@ -119,6 +120,7 @@ class rowobj():
         self.sobj=schema
         self.row=['']*len(self.schema)
         self.strict= strictness
+        self.tabreplace='    '
 
     def addtorow(self, xpath, data):
         fullp="/".join(xpath)
@@ -131,29 +133,35 @@ class rowobj():
             shortp=pathwithoutns(xpath)
             if shortp in self.schema:
                 path=shortp
+        
+        if path==None:
+            if self.strict==2:
+                path=[]
+                for i in xpath:
+                    if i==self.sobj.attribguard:
+                        i='@'
+                    path.append(i)
+                self.resetrow()
+                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype: '+'/'.join(path)+ ': was found in the input data')
+        else:
+            i=1
+            attribnum=path+'1'
 
-        if path!=None:
             if self.row[self.schema[path][0]]=='':
-                self.row[self.schema[path][0]]=data
+                self.row[self.schema[path][0]]=data.replace('\t', self.tabreplace)
                 return
-            else:
-                i=1
+            
+            oldattribnum=path
+            while attribnum in self.schema:
+                if self.row[self.schema[attribnum][0]]=='':
+                    self.row[self.schema[attribnum][0]]=data.replace('\t', self.tabreplace)
+                    return
+                i+=1
+                oldattribnum=attribnum
                 attribnum=path+str(i)
-                while attribnum in self.schema:
-                    if self.row[self.schema[attribnum][0]]=='':
-                        self.row[self.schema[attribnum][0]]=data
-                        return
-                    i+=1
-                    attribnum=path+str(i)
 
-        if self.strict==2:
-            path=[]
-            for i in xpath:
-                if i==self.sobj.attribguard:
-                    i='@'
-                path.append(i)
-            self.resetrow()
-            raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared or too few tags in xml-prototype: '+'/'.join(path)+ ': was found in the input data')
+            self.row[self.schema[oldattribnum][0]]+='\t'+data.replace('\t', self.tabreplace)
+
 
     def resetrow(self):
         self.row=['']*len(self.schema)
