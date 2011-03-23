@@ -111,10 +111,6 @@ Test files:
 
 """
 
-
-
-
-
 import copy
 import os.path
     
@@ -134,8 +130,11 @@ registered=True
 
 def execflow(diter,connection,*args,**kargs):
     ignoreflag='ignorefail'
-    
-    con=functions.Connection(functions.variables.execdb)
+
+    if functions.variables.execdb==None:
+        con=functions.Connection('')
+    else:
+        con=functions.Connection(functions.variables.execdb)
     
     functions.register(con)
     oldvars=functions.variables
@@ -201,8 +200,9 @@ def execflow(diter,connection,*args,**kargs):
                     pass
             except Exception,e: #Cathing IGNORE FAIL EXCEPTION                
                 if catchexception:
-                    lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-                    lg.exception("Ignoring Exception: "+str(e))
+                    if functions.settings['logging']:
+                        lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+                        lg.exception("Ignoring Exception: "+str(e))
                     continue
                 else:
                     raise
@@ -216,8 +216,9 @@ def execflow(diter,connection,*args,**kargs):
             c.close()
 
     except Exception,e:
-        lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-        lg.exception(e)
+        if functions.settings['logging']:
+            lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+            lg.exception(e)
         raise functions.OperatorError(__name__.rsplit('.')[-1],"Error in statement no. %s query '%s':\n%s" %(line,query,str(e)))
     finally:
         after=datetime.datetime.now()
