@@ -21,12 +21,12 @@ from vtout import SourceNtoOne
 registered=True
 
 def Clipout(diter):
-    import lib.clip as clip
+    import lib.pyperclip as clip
     a=[]
     for row,header in diter:
         a.append('\t'.join([str(i).replace('\t','    ') for i in row]))
 
-    clip.setcbtext('\n'.join(a))
+    clip.setcb('\n'.join(a))
 
 def Source():
     return SourceNtoOne(Clipout)
