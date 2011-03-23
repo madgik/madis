@@ -253,7 +253,10 @@ while True:
 
         if validcommand:
             histstatement='.'+command+' '+argument
-            readline.add_history(histstatement.encode('utf-8'))
+            try:
+                readline.add_history(histstatement.encode('utf-8'))
+            except:
+                pass
 
     if statement:
         histstatement=statement
