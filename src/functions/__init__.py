@@ -43,9 +43,12 @@ def unicodetostr(s):
 
 class MadisError(Exception):
     def __init__(self,msg):
-        self.msg=msg
+        if unicode(msg)=='' and str(msg)!='':
+            self.msg=str(msg)
+        else:
+            self.msg=unicode(msg)
     def __str__(self):
-        return unicodetostr("Madis SQLError: "+unicode(self.msg))
+        return unicodetostr("Madis SQLError: "+self.msg)
 
 class OperatorError(MadisError):
     def __init__(self,opname,msg):
