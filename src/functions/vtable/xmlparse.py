@@ -142,7 +142,7 @@ class rowobj():
                         i='@'
                     path.append(i)
                 self.resetrow()
-                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype: '+'/'.join(path)+ ': was found in the input data')
+                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype: '+'/'.join(path)+ ' : was found in the input data')
         else:
             i=1
             attribnum=path+'1'
