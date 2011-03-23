@@ -179,7 +179,7 @@ while True:
             break
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
-    iscommand=re.match("\s*\.(?P<command>\w*)\s*(?P<argument>(\w*))\s*$", statement)
+    iscommand=re.match("\s*\.(?P<command>\w*)\s*(?P<argument>(\w*))\s*;?\s*$", statement)
     validcommand=False
 
     if iscommand:
@@ -210,8 +210,19 @@ while True:
                 output=open(argument,"w")
 
         elif command=='tables':
-            #pragma database_list;# TODO look for other dbs and make union with main.sqlite_master and other db's except temp
-            statement="select name from sqlite_master where type='table';"
+            cursor = connection.cursor()
+            cexec=cursor.execute('PRAGMA database_list;')
+            for row in cexec:
+                if row[1]!='temp':
+                    cursor1 = connection.cursor()
+                    cexec1 = cursor1.execute("select name from "+row[1]+".sqlite_master where type='table';")
+                    for row1 in cexec1:
+                        if row[1]=='main':
+                            print row1[0]
+                        else:
+                            print row[1]+'.'+row1[0]
+                    cursor1.close()
+            cursor.close()
            
         elif command=='colnames':
                 if argument:
