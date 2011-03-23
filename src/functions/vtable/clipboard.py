@@ -29,8 +29,8 @@ class clipboard(vtiters.SchemaFromSampleVT):
         return self.schema
 
     def open(self, **envars):
-        import lib.clip as clip
-        data=clip.getcbtext().split('\n')
+        import lib.pyperclip as clip
+        data=clip.getcb().split('\n')
 
         #delete empty lines from the end
         for i in xrange(len(data)-1,-1,-1):
