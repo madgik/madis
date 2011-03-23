@@ -30,16 +30,9 @@ class clipboard(vtiters.SchemaFromSampleVT):
 
     def open(self, **envars):
         import lib.pyperclip as clip
-        countn=0
-        countr=0
         data=clip.getcb()
-        for i in data:
-            if i=='\n':
-                countn+=1
-            if i=='\r':
-                countr+=1
 
-        if countn>=countr:
+        if data.count('\n')>=data.count('\r'):
             data=data.split('\n')
         else:
             data=data.split('\r')
