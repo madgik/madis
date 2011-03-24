@@ -66,10 +66,15 @@ Examples:
     ... 'row2val1</b><c><d>row2val</d></c>'
     ... '</a>'
     ... ''')
-    >>> sql("select * from (xmlparse strict:2 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table3)") #doctest:+ELLIPSIS
+    >>> sql("select * from (xmlparse strict:2 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table3)") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator xmlparse: Madis SQLError: operator xmlparse: Undeclared tag in xml-prototype: b/@/np: was found in the input data : Last input line was: <b np="np">
+    OperatorError: Madis SQLError:
+    Operator XMLPARSE: Madis SQLError:
+    Operator XMLPARSE: Undeclared tag in xml-prototype was found in the input data. The tag is:
+    b/@/np
+    Last input line was:
+    <b np="np">
 
     >>> table4('''
     ... '<a><b>row1val1</b</a>'
@@ -142,7 +147,7 @@ class rowobj():
                         i='@'
                     path.append(i)
                 self.resetrow()
-                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype: '+'/'.join(path)+ ' : was found in the input data')
+                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype was found in the input data. The tag is:\n'+'/'.join(path))
         else:
             i=1
             attribnum=path+'1'
@@ -349,7 +354,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             except Exception,e:
                 rio.start=True
                 if self.strict>=1:
-                    raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+' : '+'Last input line was: '+rio.lastline)
+                    raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
                 if self.strict==-1:
                     yield [rio.lastline]
 
