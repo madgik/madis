@@ -35,24 +35,43 @@ rowfuncs=lambda x:x
 
 oldexecdb=-1
 
-def unicodetostr(s):
-    o=repr(s)
+def mstr(s):
+    strs=''
+    unis=''
+    try:
+        strs=str(s)
+    except:
+        pass
+    try:
+        unis=unicode(s)
+    except:
+        pass
+    fs=''
+    if unis=='' and strs!='':
+        fs=strs
+    else:
+        fs=unis
+    o=repr(fs)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
+    elif (o[0]=="'" and o[-1]=="'") or (o[0]=='"' and o[-1]=='"'):
+        o=o[1:-1]
+    o=o.replace('''\\n''','\n')
     return o
 
 class MadisError(Exception):
     def __init__(self,msg):
-        if unicode(msg)=='' and str(msg)!='':
-            self.msg=str(msg)
-        else:
-            self.msg=unicode(msg)
+        self.msg=mstr(msg)
     def __str__(self):
-        return unicodetostr("Madis SQLError: "+self.msg)
+        merrormsg="Madis SQLError: \n"
+        if self.msg.startswith(merrormsg):
+            return self.msg
+        else:
+            return merrormsg+self.msg
 
 class OperatorError(MadisError):
     def __init__(self,opname,msg):
-        self.msg="operator %s: %s" %(unicode(opname),unicode(msg))
+        self.msg="Operator %s: %s" %(mstr(opname.upper()),mstr(msg))
 
 class DynamicSchemaWithEmptyResultError(MadisError):
     def __init__(self,opname):
