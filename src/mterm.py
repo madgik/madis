@@ -51,10 +51,19 @@ def raw_input_no_history(*args):
 
 def update_tablelist():
     global alltables, connection
-
+    alltables=[]
     cursor = connection.cursor()
-    cursor.execute("select name from sqlite_master where type='table'", parse=False)
-    alltables=[x[0].lower().encode('ascii') for x in cursor.fetchall()]
+    cexec=cursor.execute('PRAGMA database_list;')
+    for row in cexec:
+        if row[1]!='temp':
+            cursor1 = connection.cursor()
+            cexec1 = cursor1.execute("select name from "+row[1]+".sqlite_master where type='table';")
+            for row1 in cexec1:
+                if row[1]=='main':
+                    alltables.append(row1[0].lower().encode('ascii'))
+                else:
+                    alltables.append((row[1]+'.'+row1[0]).lower().encode('ascii'))
+            cursor1.close()
     cursor.close()
 
 def normalizename(col):
@@ -68,11 +77,17 @@ def mcomplete(text,state):
         completitions=[]
     else:
         completitions=[x[0] for x in lastschema]
+
+    altset=set(alltables)
+    sqlstatem=set(sqlandmtermstatements)
+    
     completitions+=sqlandmtermstatements+allfuncs+alltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
     if state<len(hits):
-        if hits[state] in sqlandmtermstatements:
+        if hits[state] in sqlstatem:
             return hits[state]+' '
+        elif hits[state] in altset:
+            return hits[state]
         else:
             return normalizename(hits[state])
     else:
@@ -209,20 +224,10 @@ while True:
             else:
                 output=open(argument,"w")
 
-        elif command=='tables':
-            cursor = connection.cursor()
-            cexec=cursor.execute('PRAGMA database_list;')
-            for row in cexec:
-                if row[1]!='temp':
-                    cursor1 = connection.cursor()
-                    cexec1 = cursor1.execute("select name from "+row[1]+".sqlite_master where type='table';")
-                    for row1 in cexec1:
-                        if row[1]=='main':
-                            print row1[0]
-                        else:
-                            print row[1]+'.'+row1[0]
-                    cursor1.close()
-            cursor.close()
+        elif 'tables'.startswith(command):
+            update_tablelist()
+            for i in alltables:
+                print i
            
         elif command=='colnames':
                 if argument:
