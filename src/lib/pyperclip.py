@@ -111,7 +111,7 @@ if os.name == 'nt':
     import ctypes
     getcb = winGetClipboard
     setcb = winSetClipboard
-elif os.uname()[0].lower() == 'darwin':
+elif os.uname()[0].lower() == 'darwin' or os.name=='mac':
     getcb = macGetClipboard
     setcb = macSetClipboard
 elif os.name == 'posix':
