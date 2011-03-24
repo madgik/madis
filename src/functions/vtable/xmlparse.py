@@ -297,8 +297,15 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def read(self,n):
                 if self.start:
                     self.start=False
-                    return "<xmlparce-forced-root-element>"
-                self.lastline=''.join(self.qiter.next())
+                    self.lastline=''.join(self.qiter.next())+'\n'
+                    if self.lastline.startswith('<?xml version='):
+                        return self.lastline+'\n<xmlparce-forced-root-element>\n'
+                    else:
+                        return "<xmlparce-forced-root-element>\n"+self.lastline
+
+                self.lastline=''.join(self.qiter.next())+'\n'
+                if self.lastline.startswith('<?xml version='):
+                    self.lastline=''.join(self.qiter.next())+'\n'
                 return self.lastline
 
         rio=inputio(envars['db'], self.query)
@@ -352,6 +359,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 etreeended=True
             except Exception,e:
+#                if str(e).find('XML or text declaration')!=-1:
+#                    rio.start=
                 rio.start=True
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
