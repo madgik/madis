@@ -40,15 +40,12 @@ Test files:
 
 """
 import setpath
-from lib.sqlitetypes import typestoSqliteTypes
 from vtiterable import SourceVT
-from lib.iterutils import peekable
 import functions
 import apsw
-
+import re
 
 registered=True
-
 
 def sqlstatement(iter):
     st=''
@@ -63,7 +60,7 @@ def sqlstatement(iter):
         if apsw.complete(st):
             yield [st]
             st=''
-    if len(st)>0:
+    if len(st)>0 and not re.match(r'\s+$', st, re.DOTALL| re.UNICODE):
         if len(st)>35:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Incompete statement found : %s ... %s" %(st[:15],st[-15:]))
         else:
