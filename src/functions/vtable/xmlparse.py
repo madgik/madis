@@ -294,12 +294,17 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.start=True
                 self.qiter=connection.cursor().execute(query)
 
-            def read(self,n):
+            def read(self, n):
                 if self.start:
                     self.start=False
                     self.lastline=self.normalizeinput(self.qiter.next())
+
                     if self.lastline.startswith('<?xml version='):
-                        return self.lastline.replace('?>','?>\n<xmlparce-forced-root-element>\n')
+                        ll=self.lastline
+                        while ll.find('?>')==-1:
+                            ll+=self.normalizeinput(self.qiter.next())
+                        self.lastline=ll
+                        return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
                     else:
                         return "<xmlparce-forced-root-element>\n"+self.lastline
 
@@ -308,8 +313,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.lastline=self.normalizeinput(self.qiter.next())
                 return self.lastline
 
-            def normalizeinput(self,i):
+            def normalizeinput(self, i):
                 i=''.join(i)
+                return i
                 if len(i)>0 and i[-1]=='\n':
                     return i
                 else:
@@ -321,13 +327,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
         while not etreeended:
             etreeparse=iter(etree.iterparse(rio, ("start", "end")))
-
-            root=etreeparse.next()[1]
-                
             capture=False
-            schemaproc=2
             xpath=[]
             try:
+                root=etreeparse.next()[1]
 
                 for ev, el in etreeparse:
                     if ev=="start":
@@ -336,19 +339,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             xpath.append(el.tag)
                         if matchtag(el.tag, self.subtreeroot) and not capture:
                             capture=True
-                            if schemaproc==0: schemaproc=1
                         if capture and el.attrib!={}:
-    #                        if schemaproc==1:
-    #                            for k,v in el.attrib.iteritems():
-    #                                addtoschema("/".join(xpath+[k]), self.schema)
                             for k,v in el.attrib.iteritems():
                                 self.rowobj.addtorow(xpath+[self.schema.attribguard, k], v)
                         continue
 
                     if capture:
                         if el.text!=None and el.text!='\n':
-    #                        if schemaproc==1:
-    #                            addtoschema("/".join(xpath), schema)
                             self.rowobj.addtorow(xpath, el.text)
 
                         if ev=="end":
@@ -357,8 +354,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                 if self.strict>=0:
                                     yield self.rowobj.row
                                 self.rowobj.resetrow()
-                                if schemaproc==1:
-                                    schemaproc=2
+                  
                             if len(xpath)>0:
                                 xpath.pop()
 
@@ -366,9 +362,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         el.clear()
 
                 etreeended=True
-            except Exception,e:
-#                if str(e).find('XML or text declaration')!=-1:
-#                    rio.start=
+            except (etree.ParseError, functions.OperatorError), e:
                 rio.start=True
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
