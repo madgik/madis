@@ -297,16 +297,24 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def read(self,n):
                 if self.start:
                     self.start=False
-                    self.lastline=''.join(self.qiter.next())+'\n'
+                    self.lastline=self.normalizeinput(self.qiter.next())
                     if self.lastline.startswith('<?xml version='):
-                        return self.lastline+'\n<xmlparce-forced-root-element>\n'
+                        return self.lastline.replace('?>','?>\n<xmlparce-forced-root-element>\n')
                     else:
                         return "<xmlparce-forced-root-element>\n"+self.lastline
 
-                self.lastline=''.join(self.qiter.next())+'\n'
+                self.lastline=self.normalizeinput(self.qiter.next())
                 if self.lastline.startswith('<?xml version='):
-                    self.lastline=''.join(self.qiter.next())+'\n'
+                    self.lastline=self.normalizeinput(self.qiter.next())
                 return self.lastline
+
+            def normalizeinput(self,i):
+                i=''.join(i)
+                if len(i)>0 and i[-1]=='\n':
+                    return i
+                else:
+                    return i+'\n'
+
 
         rio=inputio(envars['db'], self.query)
         etreeended=False
@@ -338,7 +346,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         continue
 
                     if capture:
-                        if (el.text!=None):
+                        if el.text!=None and el.text!='\n':
     #                        if schemaproc==1:
     #                            addtoschema("/".join(xpath), schema)
                             self.rowobj.addtorow(xpath, el.text)
