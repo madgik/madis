@@ -13,10 +13,11 @@ def var(*args):
 
     Examples:
 
-    >>> sql("var 'v'")
+    >>> sql("var 'v'")  # doctest: +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
         ...
-    MadisError: Madis SQLError: Variable 'v' does not exist
+    OperatorError: Madis SQLError:
+    Operator VAR: Variable 'v' does not exist
     >>> sql("var 'v' 5")
     var('v','5')
     ------------
@@ -37,14 +38,9 @@ def var(*args):
         if hasattr(functions.variables,var):
             return functions.variables.__dict__[var]
         else:
-            raise functions.MadisError("Variable '" +var+"' does not exist")
+            raise functions.OperatorError('var', "Variable '" +var+"' does not exist")
     elif len(args)==2:
-#        print "Input 1 %s" %(args[1])
         functions.variables.__dict__[var]=args[1]
-#        try:
-#            functions.variables.__dict__[var]=int(args[1])
-#        except:
-#            functions.variables.__dict__[var]=str(args[1])
         return functions.variables.__dict__[var]
     else:
         return None
@@ -74,10 +70,11 @@ def requirevars(*args):
     requirevars('cv1 cv2')
     ----------------------
     1
-    >>> sql("requirevars 'cv1' 'testvar'")
+    >>> sql("requirevars 'cv1' 'testvar'") # doctest: +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator requirevars: Variable testvar isn't initialized
+    OperatorError: Madis SQLError:
+    Operator REQUIREVARS: Variable testvar isn't initialized
     """
 
     for v in (' '.join(args).strip()).split():
@@ -103,10 +100,11 @@ def flowname(*args):
     flowname()
     ----------
     test flow
-    >>> sql("flowname 'arg1' arg2")
+    >>> sql("flowname 'arg1' arg2") # doctest: +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
         ...
-    OperatorError: Madis SQLError: operator flowname: Flowname accepts only 1 argument
+    OperatorError: Madis SQLError:
+    Operator FLOWNAME: Flowname accepts only 1 argument
     """
 
     var='flowname'
