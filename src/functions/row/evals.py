@@ -29,10 +29,11 @@ def pyeval(*args):
     pyeval('1+1')
     -------------
     2
-    >>> sql("select var('test')")
+    >>> sql("select var('test')")  # doctest: +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    MadisError: Madis SQLError: Variable 'test' does not exist
+    OperatorError: Madis SQLError:
+    Operator VAR: Variable 'test' does not exist
     >>> sql("select var('test', pyeval('1+1'))")
     var('test', pyeval('1+1'))
     --------------------------
