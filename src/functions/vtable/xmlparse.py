@@ -70,9 +70,10 @@ Examples:
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator XMLPARSE: Madis SQLError:
-    Operator XMLPARSE: Undeclared tag in xml-prototype was found in the input data. The tag is:
+    Operator XMLPARSE: Undeclared path in xml-prototype was found in the input data. The path is:
     b/@/np
+    The data to insert into path was:
+    np
     Last input line was:
     <b np="np">
 
@@ -147,7 +148,7 @@ class rowobj():
                         i='@'
                     path.append(i)
                 self.resetrow()
-                raise functions.OperatorError(__name__.rsplit('.')[-1],'Undeclared tag in xml-prototype was found in the input data. The tag is:\n'+'/'.join(path))
+                raise etree.ParseError('Undeclared path in xml-prototype was found in the input data. The path is:\n'+'/'.join(path)+'\nThe data to insert into path was:\n'+data)
         else:
             i=1
             attribnum=path+'1'
@@ -362,7 +363,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         el.clear()
 
                 etreeended=True
-            except (etree.ParseError, functions.OperatorError), e:
+            except etree.ParseError, e:
                 rio.start=True
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
