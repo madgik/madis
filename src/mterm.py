@@ -99,8 +99,8 @@ def schemaprint(schema):
         print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
 
 
-intromessage="""mTerm - Extended Sqlite shell - version 0.6
-Enter ".help" for instructions
+mtermdetails="mTerm - version 0.7"
+intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
 helpmessage=""".functions             Lists all functions
@@ -180,8 +180,12 @@ update_tablelist()
 readline.set_completer(mcomplete)
 readline.parse_and_bind("tab: complete")
 
-#print functions.functions
+#Intro Message
+print mtermdetails
+print "running on Python: "+'.'.join([str(x) for x in sys.version_info[0:3]])+', APSW: '+apsw.apswversion()+', SQLite: '+apsw.sqlitelibversion()
 print intromessage
+
+
 number_of_kb_exceptions=0
 while True:
     statement = raw_input_no_history("mterm> ")
