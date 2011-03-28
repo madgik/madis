@@ -86,7 +86,7 @@ Examples:
     ... ''')
     >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
     C1
-    ---------------------
+    ----------------------
     <a><b>row1val1</b</a>
     <a><b>row1val1</b</a>
 
@@ -94,6 +94,13 @@ Examples:
 import vtiters
 import functions
 import xml.etree.cElementTree as etree
+import re
+
+cleandata=re.compile(r'[\n\r]*(.*)\s*$', re.DOTALL| re.UNICODE)
+
+# Workaround for older versions of elementtree
+if not hasattr(etree, 'ParseError'):
+    etree.ParseError=etree.XMLParserError
 
 registered=True
 
@@ -129,6 +136,10 @@ class rowobj():
         self.tabreplace='    '
 
     def addtorow(self, xpath, data):
+        data=cleandata.match(data).groups()[0]
+        if data=='':
+            return
+
         fullp="/".join(xpath)
 
         path=None
@@ -263,7 +274,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     continue
 
                 if capture:
-                    if el.text!=None and el.text.strip()!='':
+                    if el.text!=None:
                         s.addtoschema(xpath)
                     if ev=="end":
                         if el.tag==self.subtreeroot:
@@ -316,7 +327,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
             def normalizeinput(self, i):
                 i=''.join(i)
-                return i
                 if len(i)>0 and i[-1]=='\n':
                     return i
                 else:
@@ -346,8 +356,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         continue
 
                     if capture:
-                        if el.text!=None and el.text!='\n':
-                            self.rowobj.addtorow(xpath, el.text)
+                        if el.text!=None:
+                                self.rowobj.addtorow(xpath, el.text)
 
                         if ev=="end":
                             if matchtag(el.tag,self.subtreeroot):
