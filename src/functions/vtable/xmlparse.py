@@ -136,11 +136,12 @@ class rowobj():
         self.tabreplace='    '
 
     def addtorow(self, xpath, data):
-        data=cleandata.match(data).groups()[0]
+        if data[0]=='\n' or (len(data)>0 and data[-1]=='\n'):
+            data=cleandata.match(data).groups()[0]
         if data=='':
             return
 
-        fullp="/".join(xpath)
+        fullp='/'.join(xpath)
 
         path=None
 
@@ -159,7 +160,13 @@ class rowobj():
                         i='@'
                     path.append(i)
                 self.resetrow()
-                raise etree.ParseError('Undeclared path in xml-prototype was found in the input data. The path is:\n'+'/'.join(path)+'\nThe data to insert into path was:\n'+data)
+                msg='Undeclared path in xml-prototype was found in the input data. The path is:\n'
+                shortp='/'+pathwithoutns(path)
+                fullp='/'+'/'.join(path)
+                if shortp!=fullp:
+                    msg+=shortp+'\n'
+                msg+=fullp+'\nThe data to insert into path was:\n'+data
+                raise etree.ParseError(msg)
         else:
             i=1
             attribnum=path+'1'
