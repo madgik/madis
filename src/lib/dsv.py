@@ -56,8 +56,6 @@ class reader:
     (with default dialect sqlite dump files and utf8 encoding, multicharacter delimiter YES)
     """
     def __init__(self,tsvfile,hasheader=False,dialect=SQLITE_DIALECT,encoding="utf-8",**kwds):
-        #print "The args are:"
-        #print kwds
         self.hasheader=hasheader
         if not hasheader:
             self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
@@ -71,9 +69,6 @@ class reader:
         if self.hasheader:
             return self.reader.fieldnames()
         return None
-
-
-
 
 class UTF8Recoder:
     """
@@ -96,8 +91,6 @@ class UnicodeReader:
     """
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        #print "IN UnicodeReader"
-        #print kwds
         f = UTF8Recoder(f, encoding)
         self.replace=False
         if 'delimiter' in kwds and len(kwds['delimiter'])>1:
@@ -108,7 +101,6 @@ class UnicodeReader:
             self.reader = csv.reader(Onedel(f,self.big,self.mdel), dialect=dialect, **kwds)
         else:
             self.reader = csv.reader(f, dialect=dialect, **kwds)
-
 
     def next(self):
         row = self.reader.next()
