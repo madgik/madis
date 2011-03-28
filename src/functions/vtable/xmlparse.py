@@ -96,7 +96,7 @@ import functions
 import xml.etree.cElementTree as etree
 import re
 
-cleandata=re.compile(r'[\n\r]*(.*)\s*$', re.DOTALL| re.UNICODE)
+cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
 
 # Workaround for older versions of elementtree
 if not hasattr(etree, 'ParseError'):
