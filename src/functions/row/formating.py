@@ -14,7 +14,7 @@ def strsplit(*args): ###splits the first arguments
     
     .. function:: strsplit(str[,formatting options]) -> [C1,C2,....]
 
-    Splits *str* according to *formatting options*, default behavior is to split in comma.
+    Splits *str* according to *formatting options*, default behavior is to split on space.
     It is a multiset operator that returns one row.
 
     .. seealso::
@@ -31,7 +31,7 @@ def strsplit(*args): ###splits the first arguments
 
     :delimiter:
 
-        A string used to separate fields. It defaults to ','
+        A string used to separate fields. It defaults to ' '
 
     :doublequote: *t/f*
 
@@ -71,7 +71,7 @@ def strsplit(*args): ###splits the first arguments
 
     Examples:
 
-    >>> sql("select strsplit('First,Second,Third')")
+    >>> sql("select strsplit('First,Second,Third', 'dialect:csv')")
     C1    | C2     | C3
     ----------------------
     First | Second | Third
@@ -83,10 +83,11 @@ def strsplit(*args): ###splits the first arguments
 .. doctest::
     :hide:
 
-    >>> sql("select strsplit('-First-%Second%-Third-','quotechar:-p')")
+    >>> sql("select strsplit('-First-%Second%-Third-','quotechar:-p')")  #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    MadisError: Madis SQLError: "quotechar" must be an 1-character string
+    MadisError: Madis SQLError:
+    "quotechar" must be an 1-character string
 
     """    
     if len(args)<1:
@@ -98,11 +99,11 @@ def strsplit(*args): ###splits the first arguments
     try:
         largs, kargs = argsparse.parse(args,csvargs.boolargs,csvargs.nonstringargs,csvargs.needsescape)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     if 'dialect' not in kargs:
         kargs['dialect']=csvargs.defaultcsv()
-
-    
+        if 'delimiter' not in kargs:
+            kargs['delimiter']=' '
 
     if len(largs)>0:
         raise functions.OperatorError("strsplit","strsplit operator: Unknown argument %s" %(''.join(largs)))
@@ -113,7 +114,7 @@ def strsplit(*args): ###splits the first arguments
     try:
         r=reader(f,**kargs)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     from lib.buffer import CompBuffer
     a=CompBuffer()
     first=True
@@ -140,7 +141,7 @@ def strsplitv(*args): ###splits the first arguments
     """
     .. function:: strsplitv(str[,formatting options]) -> [C1]
 
-    Splits in rows *str* according to *formatting options*, default behavior is to split in comma.
+    Splits in rows *str* according to *formatting options*, default behavior is to split on space.
     It is a multiset operator that returns one column but many rows. :ref:`Formatting options<formattingopts>` are like in :func:`strsplit` function.
 
     .. seealso::
@@ -154,7 +155,7 @@ def strsplitv(*args): ###splits the first arguments
     First
     Second
     Third
-    >>> sql("select strsplitv('First Second Third','delimiter: ')")
+    >>> sql("select strsplitv('First Second Third')")
     C1
     ------
     First
@@ -170,11 +171,11 @@ def strsplitv(*args): ###splits the first arguments
     try:
         largs, kargs = argsparse.parse(args,csvargs.boolargs,csvargs.nonstringargs,csvargs.needsescape)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     if 'dialect' not in kargs:
         kargs['dialect']=csvargs.defaultcsv()
-
-
+        if 'delimiter' not in kargs:
+            kargs['delimiter']=' '
 
     if len(largs)>0:
         raise functions.OperatorError("strsplitv","strsplit operator: Unknown argument %s" %(''.join(largs)))
@@ -186,7 +187,7 @@ def strsplitv(*args): ###splits the first arguments
     try:
         r=reader(f,**kargs)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     a=CompBuffer()
     first=True
 
