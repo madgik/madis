@@ -71,11 +71,12 @@ Examples:
     ...
     OperatorError: Madis SQLError:
     Operator XMLPARSE: Undeclared path in xml-prototype was found in the input data. The path is:
-    b/@/np
+    /b/@/np
     The data to insert into path was:
     np
     Last input line was:
     <b np="np">
+    <BLANKLINE>
 
     >>> table4('''
     ... '<a><b>row1val1</b</a>'
@@ -382,6 +383,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 etreeended=True
             except etree.ParseError, e:
                 rio.start=True
+                self.rowobj.resetrow()
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
                 if self.strict==-1:
