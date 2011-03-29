@@ -1,0 +1,48 @@
+Installing madIS
+================
+
+The requirements for using madIS are:
+
+1.  *Python 2.6.x*: You can download a windows distribution of Python from
+    http://www.python.org/download/releases/ .You need to download the latest
+    Python in the 2.6 series. madIS doesn't work with Python 2.4 or Python 2.5.
+    madIS hasn't been tested at all with Python 3.x.
+
+    Most Linux distributions come with Python 2.6 preinstalled.
+
+2.  *Latest APSW version*: You can download a windows distribution of APSW from
+    http://code.google.com/p/apsw/downloads/list .
+
+    Most Linux distributions ship with old versions of APSW, so for best results
+    APSW should be build from source. The detailed instructions for building APSW are in:
+
+    http://apsw.googlecode.com/svn/publish/build.html
+
+    A quick command line to build and install APSW is::
+
+        sudo python setup.py fetch --all --missing-checksum-ok build install
+
+    If you are using Ubuntu linux, you'll also need the packages::
+
+        build-essential libreadline5-dev zlib1g-dev python-dev
+
+.. note::
+    Starting from Ubuntu 10.04, it is not necessary to do the above steps to build and install
+    APSW. You can simply install the distribution's package (through package management) named "python-apsw".
+
+
+3.  *Readline*: This is needed only in Windows (most Linux distributions come with
+    readline preinstalled). You'll find a Python readline for Windows in:
+
+    http://newcenturycomputers.net/projects/readline.html
+
+    Download from above page, the latest Readline-X.X.win32-py2.X.exe, and install it.
+
+4.  Download the madIS archive (.zip) from:
+
+    http://code.google.com/p/madis/downloads/list
+
+5.  Uncompress above zip file
+
+6.  Use madis by entering into the new "madis/" path and executing "python mterm.py"
+
