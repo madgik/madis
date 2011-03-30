@@ -3,12 +3,16 @@ import re
 
 import sys
 import apsw
-import readline
+
+try:
+    import readline
+except:
+    import lib.pyreadline as readline
+
 import functions
 import datetime
 import lib.reimport
 import locale
-import logging
 import os
 
 from lib.dsv import writer
