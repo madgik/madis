@@ -198,7 +198,10 @@ class schemaobj():
         self.attribguard='<at:r>'
 
     def addtoschema(self, path):
-        fpath="/".join(path)
+        fpath=cleandata.match("/".join(path)).groups()[0]
+        if fpath=='':
+            return
+
         if fpath not in self.schema:
             self.schema[fpath]=(len(self.schema), self.colname(path))
         else:
@@ -282,7 +285,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     continue
 
                 if capture:
-                    if el.text!=None:
+                    if el.text!=None and cleandata.match(el.text).groups()[0]!='':
                         s.addtoschema(xpath)
                     if ev=="end":
                         if el.tag==self.subtreeroot:
