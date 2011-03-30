@@ -19,6 +19,7 @@ settings={
 'tracing':False,
 'vtdebug':False,
 'logging':False,
+'beep':False,
 'syspath':str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(sys.path[0])))))
 }
 
