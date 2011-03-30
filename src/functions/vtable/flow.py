@@ -47,10 +47,16 @@ import re
 
 registered=True
 
+def filterlinecomment(s):
+    if re.match(r'\s*--', s, re.DOTALL| re.UNICODE):
+        return ''
+    else:
+        return s
+
 def sqlstatement(iter):
     st=''
     for row in iter:
-        strow=' '.join(row)
+        strow=filterlinecomment(' '.join(row))
         if strow=='':
             continue
         if st!='':
