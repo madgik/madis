@@ -324,6 +324,8 @@ while True:
 
             schemaprint(lastschema)
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+            if functions.settings['beep']:
+                print '\a'
 
         except KeyboardInterrupt:
             schemaprint(lastschema)
