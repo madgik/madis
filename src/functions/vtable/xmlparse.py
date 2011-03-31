@@ -337,7 +337,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return self.lastline
 
             def normalizeinput(self, i):
-                i=''.join(i)
+                i=unicode(''.join(i)).encode('utf-8')
                 if len(i)>0 and i[-1]=='\n':
                     return i
                 else:
