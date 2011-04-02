@@ -1,14 +1,14 @@
 """
-This is the jlist module
+This is the jgroup module
 
 It features conversion to and from jlists
 
 >>> create(3)
-'3'
+'[3]'
 >>> create('test')
 'test'
 >>> create('[testjsonlike]')
-3
+'"[testjsonlike]"'
 
 """
 
