@@ -35,6 +35,10 @@ It features conversion to and from jlists
 ['a']
 >>> fromj('["a", 3]')
 [u'a', 3]
+>>> fromj('["a", 3]', 'b')
+[u'a', 3, 'b']
+>>> fromj('["a", 3]', 'b', 3, '["a", 3]')
+[u'a', 3, 'b', 3, u'a', 3]
 """
 
 import json
@@ -70,16 +74,21 @@ def tojstrict(l):
         return json.dumps(l)
     return json.dumps([l])
 
-def fromj(j):
-    typej=type(j)
-    if typej==int or typej==float:
-        return [j]
-    if typej==str:
-        if j=='':
-            return []
-        if j[0]=='[' and j[-1]==']':
-            return json.loads(j)
-        return [j]
+def fromj(*jl):
+    jout=[]
+    for j in jl:
+        typej= type(j)
+        if typej==int or typej==float:
+            jout+= [j]
+            continue
+        if typej==str:
+            if j=='':
+                continue
+            if j[0]=='[' and j[-1]==']':
+                jout+= json.loads(j)
+                continue
+            jout+= [j]
+    return jout
 
 if __name__ == "__main__":
     import doctest
