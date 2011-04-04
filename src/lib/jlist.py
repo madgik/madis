@@ -10,7 +10,7 @@ It features conversion to and from jlists
 >>> toj('test')
 'test'
 >>> toj(u'test')
-'test'
+u'test'
 >>> toj('[testjsonlike]')
 '["[testjsonlike]"]'
 >>> toj('[testjsonlike')
@@ -41,6 +41,9 @@ It features conversion to and from jlists
 [u'a', 3, 'b']
 >>> fromj('["a", 3]', 'b', 3, '["a", 3]')
 [u'a', 3, 'b', 3, u'a', 3]
+>>> fromj((u'[1,2,3]',))
+[1, 2, 3]
+
 """
 
 import json
@@ -56,7 +59,7 @@ def toj(l):
             return json.dumps([l])
     if typel==int or typel==float:
         return l
-    if typel==list:
+    if typel==list or typel==tuple:
         lenl=len(l)
         if lenl==1:
             typel=type(l[0])
@@ -77,19 +80,26 @@ def tojstrict(l):
     return json.dumps([l])
 
 def fromj(*jl):
-    jout=[]
-    for j in jl:
-        typej= type(j)
+    def conv(j):
         if typej==int or typej==float:
-            jout+= [j]
-            continue
+            return [j]
         if typej==str or typej==unicode:
             if j=='':
-                continue
+                return []
             if j[0]=='[' and j[-1]==']':
-                jout+= json.loads(j)
-                continue
-            jout+= [j]
+                return json.loads(j)
+            return [j]
+
+    jout=[]
+    for j in jl:
+        typej=type(j)
+        if typej==list or typej==tuple:
+            for j1 in j:
+                typej=type(j1)
+                jout+=conv(j1)
+        else:
+            jout+=conv(j)
+
     return jout
 
 if __name__ == "__main__":
