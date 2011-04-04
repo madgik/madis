@@ -102,7 +102,7 @@ def schemaprint(schema):
         print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
 
 
-mtermdetails="mTerm - version 0.7"
+mtermdetails="mTerm - version 0.8"
 intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
