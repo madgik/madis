@@ -19,13 +19,12 @@ from lib.dsv import writer
 import csv
 class mtermoutput(csv.Dialect):
     def __init__(self):
-        self.delimiter='\t'
-        #self.doublequote=True
-        self.quotechar='"'
-        self.quoting=csv.QUOTE_MINIMAL
-        self.escapechar="\\"
-        #self.quotechar='"'
-        #self.quoting=csv.QUOTE_MINIMAL
+#        self.delimiter='\t'
+#        self.doublequote=True
+#        self.quotechar='"'
+#        self.quoting=csv.QUOTE_MINIMAL
+#        self.escapechar="\\"
+        self.quoting=csv.QUOTE_NONE
         self.lineterminator='\n'
 
 def reloadfunctions():
