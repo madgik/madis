@@ -25,6 +25,8 @@ u'test'
 '[3, "test"]'
 >>> toj(['[test'])
 '[test'
+>>> toj(None)
+'[null]'
 >>> tojstrict('asdf')
 '["asdf"]'
 >>> tojstrict(['a',3])
@@ -37,12 +39,16 @@ u'test'
 ['a']
 >>> fromj('["a", 3]')
 [u'a', 3]
+>>> fromj('[null]')
+[None]
 
 """
 
 import json
 
 def toj(l):
+    if l==None:
+        return '[null]'
     typel=type(l)
     if typel==str or typel==unicode:
         if l=='':
