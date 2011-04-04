@@ -109,7 +109,6 @@ def checkhassetschema(vts,vt):
 
 class Cursor(object):
     def __init__(self,w):
-        self.variables=variables.__dict__
         self.__wrapped=w
         self.__vtables=[]
         self.__initialised=True
@@ -129,9 +128,9 @@ class Cursor(object):
         return self.__wrapped.execute(statements,bindings)
     def execute(self,statements,bindings=None,parse=True): #overload execute statement
         if bindings==None:
-            bindings=self.variables
+            bindings=variables.__dict__
         else:
-            bindings.update(self.variables)
+            bindings.update(variables.__dict__)
 
         if not parse:            
             return self.executetrace(statements,bindings)
