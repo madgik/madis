@@ -64,6 +64,32 @@ def urlsplit(*args):
 urlsplit.registered=True
 urlsplit.multiset=True
 
+def urllocation(*args):
+
+    """
+    .. function:: urllocation(str) -> str
+
+    Returns the location part of provided URL.
+
+    Examples:
+
+    >>> table1('''
+    ... http://www.test.com/apath/bpath/fname.pdf
+    ... http://www.test.com/search.csv;p=5?q=test#hl=en
+    ... ''')
+    >>> sql("select urllocation(a) from table1")
+    urllocation(a)
+    -----------------------------------------
+    http://www.test.com/apath/bpath/fname.pdf
+    http://www.test.com/search.csv
+    """
+    
+    u=urlparse.urlparse(''.join(args))
+
+    return u[0]+u'://'+''.join(u[1:3])
+
+urllocation.registered=True
+
 def fileextension(*args):
 
     """
