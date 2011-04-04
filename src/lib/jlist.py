@@ -37,12 +37,6 @@ u'test'
 ['a']
 >>> fromj('["a", 3]')
 [u'a', 3]
->>> fromj('["a", 3]', 'b')
-[u'a', 3, 'b']
->>> fromj('["a", 3]', 'b', 3, '["a", 3]')
-[u'a', 3, 'b', 3, u'a', 3]
->>> fromj((u'[1,2,3]',))
-[1, 2, 3]
 
 """
 
@@ -79,28 +73,16 @@ def tojstrict(l):
         return json.dumps(l)
     return json.dumps([l])
 
-def fromj(*jl):
-    def conv(j):
-        if typej==int or typej==float:
-            return [j]
-        if typej==str or typej==unicode:
-            if j=='':
-                return []
-            if j[0]=='[' and j[-1]==']':
-                return json.loads(j)
-            return [j]
-
-    jout=[]
-    for j in jl:
-        typej=type(j)
-        if typej==list or typej==tuple:
-            for j1 in j:
-                typej=type(j1)
-                jout+=conv(j1)
-        else:
-            jout+=conv(j)
-
-    return jout
+def fromj(j):
+    typej=type(j)
+    if typej==int or typej==float:
+        return [j]
+    if typej==str or typej==unicode:
+        if j=='':
+            return []
+        if j[0]=='[' and j[-1]==']':
+            return json.loads(j)
+        return [j]
 
 if __name__ == "__main__":
     import doctest
