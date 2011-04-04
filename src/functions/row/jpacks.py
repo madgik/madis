@@ -1,4 +1,5 @@
 import lib.jlist as jlist
+from lib.buffer import CompBuffer,emptyBuffer
 
 def jpack(*args):
 
@@ -158,6 +159,42 @@ def jsort(*args):
 
 jsort.registered=True
 
+def jsplitv(*args):
+
+    """
+    .. function:: jsplitv(args) -> str
+
+    Returns a set representation of a jpack, unifying duplicate items.
+
+    Examples:
+
+    >>> sql("select jsplitv(jmerge('[1,2,3]', '[1,2,3]', 'b', 'a', 3 ))") # doctest: +NORMALIZE_WHITESPACE
+    C1
+    --
+    1
+    2
+    3
+    1
+    2
+    3
+    b
+    a
+    3
+
+    """
+
+    b=CompBuffer()
+    b.writeheader(['C1'])
+
+    fj=[]
+    for j in args:
+        for j1 in jlist.fromj(j):
+            b.write([j1])
+
+    return b.serialize()
+
+jsplitv.registered=True
+jsplitv.multiset=True
 
 
 if not ('.' in __name__):
