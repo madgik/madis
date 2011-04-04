@@ -9,6 +9,8 @@ It features conversion to and from jlists
 '3'
 >>> toj('test')
 'test'
+>>> toj(u'test')
+'test'
 >>> toj('[testjsonlike]')
 '["[testjsonlike]"]'
 >>> toj('[testjsonlike')
@@ -45,7 +47,7 @@ import json
 
 def toj(l):
     typel=type(l)
-    if typel==str:
+    if typel==str or typel==unicode:
         if l=='':
             return u''
         elif l[0]!='[' or l[-1]!=']':
@@ -57,13 +59,13 @@ def toj(l):
     if typel==list:
         lenl=len(l)
         if lenl==1:
-            typel0=type(l[0])
-            if typel0==str:
+            typel=type(l[0])
+            if typel==str or typel==unicode:
                 if l[0]=='':
                     return u''
                 elif  l[0][0]!='[' or l[0][-1]!=']':
                     return l[0]
-            if typel0==int or typel0==float:
+            if typel==int or typel==float:
                 return l[0]
         if lenl==0:
             return ''
@@ -81,7 +83,7 @@ def fromj(*jl):
         if typej==int or typej==float:
             jout+= [j]
             continue
-        if typej==str:
+        if typej==str or typej==unicode:
             if j=='':
                 continue
             if j[0]=='[' and j[-1]==']':
