@@ -41,6 +41,8 @@ u'test'
 [u'a', 3]
 >>> fromj('[null]')
 [None]
+>>> fromj('[asdf]')
+['[asdf]']
 
 """
 
@@ -87,7 +89,10 @@ def fromj(j):
         if j=='':
             return []
         if j[0]=='[' and j[-1]==']':
-            return json.loads(j)
+            try:
+                return json.loads(j)
+            except:
+                return [j]
         return [j]
 
 if __name__ == "__main__":
