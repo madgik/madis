@@ -28,29 +28,29 @@ def jpack(*args):
 
 jpack.registered=True
 
-def j2tpack(*args):
+def j2t(*args):
 
     """
-    .. function:: j2tpack(jpack) -> tabpack
+    .. function:: j2t(jpack) -> tabpack
 
-    Converts multiple input jpacks to a tab pack (tab separated values). If tab characters are found in
+    Converts multiple input jpacks to a tab separated pack (tab separated values). If tab characters are found in
     the source jpack
 
     Examples:
 
-    >>> sql("select j2tpack('[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
-    j2tpack('[1,2,3]')
-    ------------------
+    >>> sql("select j2t('[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
+    j2t('[1,2,3]')
+    --------------
     1        2        3
 
-    >>> sql("select j2tpack('[1,2,3]','a')") # doctest: +NORMALIZE_WHITESPACE
-    j2tpack('[1,2,3]','a')
-    ----------------------
+    >>> sql("select j2t('[1,2,3]','a')") # doctest: +NORMALIZE_WHITESPACE
+    j2t('[1,2,3]','a')
+    ------------------
     1        2        3        a
 
-    >>> sql("select j2tpack('a', 'b')") # doctest: +NORMALIZE_WHITESPACE
-    j2tpack('a', 'b')
-    -----------------
+    >>> sql("select j2t('a', 'b')") # doctest: +NORMALIZE_WHITESPACE
+    j2t('a', 'b')
+    -------------
     a        b
 
     """
@@ -61,20 +61,20 @@ def j2tpack(*args):
         
     return '\t'.join(fj)
 
-j2tpack.registered=True
+j2t.registered=True
 
-def t2jpack(*args):
+def t2j(*args):
 
     """
-    .. function:: t2jpack(tabpack) -> jpack
+    .. function:: t2j(tabpack) -> jpack
 
-    Converts a tab pack to a jpack.
+    Converts a tab separated pack to a jpack.
 
     Examples:
 
-    >>> sql("select t2jpack(j2tpack('[1,2,3]'))") # doctest: +NORMALIZE_WHITESPACE
-    t2jpack(j2tpack('[1,2,3]'))
-    ---------------------------
+    >>> sql("select t2j(j2t('[1,2,3]'))") # doctest: +NORMALIZE_WHITESPACE
+    t2j(j2t('[1,2,3]'))
+    -------------------
     ["1", "2", "3"]
 
     """
@@ -85,7 +85,7 @@ def t2jpack(*args):
 
     return jlist.toj(fj)
 
-t2jpack.registered=True
+t2j.registered=True
 
 def jmerge(*args):
 
