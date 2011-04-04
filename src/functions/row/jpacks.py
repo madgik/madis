@@ -4,7 +4,7 @@ from lib.buffer import CompBuffer,emptyBuffer
 def jpack(*args):
 
     """
-    .. function:: jpack(args...) -> str
+    .. function:: jpack(args...) -> jpack
 
     Converts multiple input arguments into a single string. Jpacks preserve the types
     of their inputs and are based on JSON encoding. Single values are represented as
@@ -31,7 +31,7 @@ jpack.registered=True
 def j2tpack(*args):
 
     """
-    .. function:: j2tpack(args) -> str
+    .. function:: j2tpack(jpack) -> tabpack
 
     Converts multiple input jpacks to a tab pack (tab separated values). If tab characters are found in
     the source jpack
@@ -66,7 +66,7 @@ j2tpack.registered=True
 def t2jpack(*args):
 
     """
-    .. function:: t2jpack(args) -> str
+    .. function:: t2jpack(tabpack) -> jpack
 
     Converts a tab pack to a jpack.
 
@@ -90,7 +90,7 @@ t2jpack.registered=True
 def jmerge(*args):
 
     """
-    .. function:: jmerge(args) -> str
+    .. function:: jmerge(jpacks) -> str
 
     Merges multiple jpacks into one jpack.
 
@@ -114,7 +114,7 @@ jmerge.registered=True
 def jset(*args):
 
     """
-    .. function:: jset(args) -> str
+    .. function:: jset(jpacks) -> str
 
     Returns a set representation of a jpack, unifying duplicate items.
 
@@ -138,9 +138,9 @@ jset.registered=True
 def jsort(*args):
 
     """
-    .. function:: jset(args) -> str
+    .. function:: jsort(jpacks) -> str
 
-    Returns a set representation of a jpack, unifying duplicate items.
+    Sorts the input jpacks.
 
     Examples:
 
@@ -162,9 +162,9 @@ jsort.registered=True
 def jsplitv(*args):
 
     """
-    .. function:: jsplitv(args) -> str
+    .. function:: jsplitv(jpacks) -> [C1]
 
-    Returns a set representation of a jpack, unifying duplicate items.
+    Splits vertically a jpack.
 
     Examples:
 
