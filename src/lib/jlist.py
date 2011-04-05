@@ -27,6 +27,10 @@ u'test'
 '[test'
 >>> toj(None)
 '[null]'
+>>> toj('')
+u''
+>>> toj([])
+u'[]'
 >>> tojstrict('asdf')
 '["asdf"]'
 >>> tojstrict(['a',3])
@@ -43,7 +47,10 @@ u'test'
 [None]
 >>> fromj('[asdf]')
 ['[asdf]']
-
+>>> fromj('')
+[u'']
+>>> fromj('[]')
+[]
 """
 
 import json
@@ -73,7 +80,7 @@ def toj(l):
             if typel==int or typel==float:
                 return l[0]
         if lenl==0:
-            return ''
+            return u'[]'
         return json.dumps(l)
 
 def tojstrict(l):
@@ -87,7 +94,7 @@ def fromj(j):
         return [j]
     if typej==str or typej==unicode:
         if j=='':
-            return []
+            return [u'']
         if j[0]=='[' and j[-1]==']':
             try:
                 return json.loads(j)
