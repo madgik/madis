@@ -4,9 +4,9 @@ import lib.jlist as jlist
 
 class jgroup:
     """
-    .. function:: concatgroup(X)
+    .. function:: jgroup(columns)
 
-    Concatenates strings in a group/dataset X.
+    Groups columns of a group into a jpack.
 
     Example:
 
