@@ -229,7 +229,7 @@ jsplit.multiset=True
 def jflatten(*args):
 
     """
-    .. function:: jflat(jpacks) -> jpack
+    .. function:: jflattten(jpacks) -> jpack
 
     Flattens all nested sub-jpacks.
 
@@ -251,7 +251,7 @@ def jflatten(*args):
     for j in args:
         fj+=jlist.fromj(j)
 
-    return jlist.toj( jlist.flatten(fj))
+    return jlist.toj( jlist.flatten(fj) )
 
 jflatten.registered=True
 
