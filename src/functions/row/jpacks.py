@@ -90,7 +90,7 @@ t2j.registered=True
 def jmerge(*args):
 
     """
-    .. function:: jmerge(jpacks) -> str
+    .. function:: jmerge(jpacks) -> jpack
 
     Merges multiple jpacks into one jpack.
 
@@ -114,7 +114,7 @@ jmerge.registered=True
 def jset(*args):
 
     """
-    .. function:: jset(jpacks) -> str
+    .. function:: jset(jpacks) -> jpack
 
     Returns a set representation of a jpack, unifying duplicate items.
 
@@ -138,7 +138,7 @@ jset.registered=True
 def jsort(*args):
 
     """
-    .. function:: jsort(jpacks) -> str
+    .. function:: jsort(jpacks) -> jpack
 
     Sorts the input jpacks.
 
@@ -195,6 +195,65 @@ def jsplitv(*args):
 
 jsplitv.registered=True
 jsplitv.multiset=True
+
+def jsplit(*args):
+
+    """
+    .. function:: jsplit(jpacks) -> [C1, C2, ...]
+
+    Splits horizontally a jpack.
+
+    Examples:
+
+    >>> sql("select jsplit('[1,2,3]', '[3,4,5]')") # doctest: +NORMALIZE_WHITESPACE
+    C1 | C2 | C3 | C4 | C5 | C6
+    ---------------------------
+    1  | 2  | 3  | 3  | 4  | 5
+
+    """
+
+    b=CompBuffer()
+    
+    fj=[]
+    for j in args:
+        fj+= jlist.fromj(j)
+            
+    b.writeheader( ['C'+str(x+1) for x in xrange(len(fj))] )
+    b.write(fj)
+
+    return b.serialize()
+
+jsplit.registered=True
+jsplit.multiset=True
+
+def jflatten(*args):
+
+    """
+    .. function:: jflat(jpacks) -> jpack
+
+    Flattens all nested sub-jpacks.
+
+    Examples:
+
+    >>> sql(''' select jflatten('1', '[2]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jflatten('1', '[2]')
+    --------------------
+    ["1", 2]
+
+    >>> sql(''' select jflatten('[["word1", 1], ["word2", 1], [["word3", 2], ["word4", 2]], 3]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jflatten('[["word1", 1], ["word2", 1], [["word3", 2], ["word4", 2]], 3]')
+    -------------------------------------------------------------------------
+    ["word1", 1, "word2", 1, "word3", 2, "word4", 2, 3]
+
+    """
+
+    fj=[]
+    for j in args:
+        fj+=jlist.fromj(j)
+
+    return jlist.toj( jlist.flatten(fj))
+
+jflatten.registered=True
 
 
 if not ('.' in __name__):
