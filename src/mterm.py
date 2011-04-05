@@ -23,7 +23,7 @@ class mtermoutput(csv.Dialect):
 #        self.doublequote=True
 #        self.quotechar='"'
 #        self.quoting=csv.QUOTE_MINIMAL
-#        self.escapechar="\\"
+        self.escapechar="\r"
         self.quoting=csv.QUOTE_NONE
         self.lineterminator='\n'
 
