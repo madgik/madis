@@ -290,7 +290,7 @@ def regexp(*args):
     This function returns a match to the first parenthesis of *pattern*
     or replaces the matches of *pattern* in *expression* with *replacestr*.
     `Pattern Syntax <http://docs.python.org/library/re.html#re-syntax>`_ is
-    according python's re module.
+    according to python's re module.
 
     Examples use `inversion`.
     
@@ -310,7 +310,6 @@ def regexp(*args):
     ----------------------------------------------------------
     nonwordtobereplacednonword
     """
-
     if len(args)<2:
         return
 
