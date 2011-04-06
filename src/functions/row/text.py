@@ -282,7 +282,7 @@ def isvalidutf8(*args):
 
 isvalidutf8.registered=True
 
-def regexp(*args):
+def regexpr(*args):
 
     """
     .. function:: regexp(pattern,expression[,replacestr])
@@ -300,16 +300,17 @@ def regexp(*args):
     ... 25
     ... ''')
     
-    >>> sql("regexp 'start\s(\w+)\send' 'start otherword end'  ")
-    regexp('start\s(\w+)\send','start otherword end')
-    -------------------------------------------------
+    >>> sql("regexpr 'start\s(\w+)\send' 'start otherword end'  ")
+    regexpr('start\s(\w+)\send','start otherword end')
+    --------------------------------------------------
     otherword
 
-    >>> sql("regexp '\W+' 'nonword' '@#$%@$#% tobereplaced @#$%@#$% ")
-    regexp('\W+','nonword','''@#$%@$#% tobereplaced @#$%@#$%')
-    ----------------------------------------------------------
+    >>> sql("regexpr '\W+' 'nonword' '@#$%@$#% tobereplaced @#$%@#$%' ")
+    regexpr('\W+','nonword','@#$%@$#% tobereplaced @#$%@#$%')
+    ---------------------------------------------------------
     nonwordtobereplacednonword
     """
+
     if len(args)<2:
         return
 
@@ -326,7 +327,7 @@ def regexp(*args):
     if len(args)==3:
         return re.sub(args[0],args[1],args[2])
 
-regexp.registered=True
+regexpr.registered=True
 
 def urldecode(*args):
     """
