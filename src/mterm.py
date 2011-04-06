@@ -1,7 +1,13 @@
 #! /usr/bin/python
-import re
 
 import sys
+
+# Workaround for windows
+try: import lib.winunicode
+except ImportError: pass
+else: del lib.winunicode
+
+import re
 import apsw
 
 try:
@@ -17,6 +23,7 @@ import os
 
 from lib.dsv import writer
 import csv
+
 class mtermoutput(csv.Dialect):
     def __init__(self):
         self.delimiter='|'
