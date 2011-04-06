@@ -19,12 +19,11 @@ from lib.dsv import writer
 import csv
 class mtermoutput(csv.Dialect):
     def __init__(self):
-#        self.delimiter='\t'
-        self.doublequote=False
-        self.quotechar='"'
-#        self.quoting=csv.QUOTE_MINIMAL
-        self.escapechar="\r"
-        self.quoting=csv.QUOTE_NONE
+        self.delimiter='|'
+#        self.doublequote=True
+        self.quotechar='|'
+        self.quoting=csv.QUOTE_MINIMAL
+        self.escapechar="\\"
         self.lineterminator='\n'
 
 def reloadfunctions():
@@ -309,6 +308,7 @@ while True:
             pass
 
         before=datetime.datetime.now()
+        printer=writer(output,dialect=mtermoutput(),delimiter=separator)
         cursor = connection.cursor()
         try:
             cexec=cursor.execute(statement)
@@ -319,7 +319,7 @@ while True:
                 lastschema=None
 
             for row in cexec:
-                print '|'.join([unicode(x) for x in row])
+                printer.writerow(row)
             cursor.close()
 
             after=datetime.datetime.now()
