@@ -257,6 +257,14 @@ class datedifffilter:
     2010-01-01T02:35:04Z | value7
     2010-01-01T03:55:04Z | value8
 
+    >>> table1('''
+    ... 2010-01-01T01:32:03Z value1
+    ... ''')
+    >>> sql("select datedifffilter(20, a,b) from table1")
+    date                 | C1
+    -----------------------------
+    2010-01-01T01:32:03Z | value1
+
     """
     registered=True
     multiset=True
@@ -302,16 +310,19 @@ class datedifffilter:
         dt=None
         dtpos=0
         diff=0
-        for el in self.vals:
-            if dtpos<self.counter-1:
-                dt = iso8601.parse_date(el[0])
-                dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
-                diff=dtnew-dt
-                if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
-                    a.write(el)
-                dtpos+=1
-                if dtpos==self.counter-1:
-                    a.write(self.vals[dtpos])
+        if self.counter==1:
+            a.write(self.vals[dtpos])
+        else:
+            for el in self.vals:
+                if dtpos<self.counter-1:
+                    dt = iso8601.parse_date(el[0])
+                    dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
+                    diff=dtnew-dt
+                    if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
+                        a.write(el)
+                    dtpos+=1
+                    if dtpos==self.counter-1:
+                        a.write(self.vals[dtpos])
 
         return a.serialize()
 
