@@ -102,6 +102,20 @@ def fromj(j):
                 return [j]
         return [j]
 
+def elemfromj(j):
+    typej=type(j)
+    if typej==int or typej==float:
+        return j
+    if typej==str or typej==unicode:
+        if j=='':
+            return u''
+        if j[0]=='[' and j[-1]==']':
+            try:
+                return json.loads(j)
+            except:
+                return j
+        return j
+
 #Flatten from BasicTypes for Python
 #	Copyright (c) 2002-2003, Michael C. Fletcher
 #	All rights reserved.
