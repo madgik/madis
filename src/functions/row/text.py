@@ -314,7 +314,7 @@ def regexpr(*args):
         return
 
     if len(args)==2:
-        a=re.search(args[0],args[1],re.UNICODE)
+        a=re.search(args[0], unicode(args[1]),re.UNICODE)
         if a!=None:
             if len(a.groups())>0 and a.groups()[0]!=None:
                 return a.groups()[0]
@@ -327,6 +327,34 @@ def regexpr(*args):
         return re.sub(args[0],args[1],args[2])
 
 regexpr.registered=True
+
+def regexprmatches(*args):
+
+    """
+    .. function:: regexprmatches(pattern, arg)
+
+    This function returns true if the pattern matches arg or false otherwise.
+
+    Examples use `inversion`.
+
+    Examples:
+
+    >>> sql("regexprmatches '(a)' 'qwer a qwer'  ")
+    regexprmatches('(a)','qwer a qwer')
+    -----------------------------------
+    1
+
+    """
+    if len(args)!=2:
+        raise functions.OperatorError('regexprmatches', 'Two parameters should be provided')
+
+    a=re.search(args[0], unicode(args[1]),re.UNICODE)
+    if a!=None:
+        return True
+    else:
+        return None
+
+regexprmatches.registered=True
 
 def urldecode(*args):
     """
