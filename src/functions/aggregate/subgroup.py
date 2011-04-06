@@ -221,7 +221,7 @@ class datediffbreak:
 class datedifffilter:
     """
 
-    .. function:: datediffbreaksimple(maxdiff, date, C1, C2 ....) -> [date,C1,C2....]
+    .. function:: datedifffilter(maxdiff, date, C1, C2 ....) -> [date,C1,C2....]
 
     Returns only a subset of the provided entries, performing a sort of entry clustering based on the entries date difference. Each cluster is 
     represented by the latest entry. 
@@ -249,7 +249,7 @@ class datedifffilter:
     ... 2010-01-01T02:35:04Z value7
     ... 2010-01-01T03:55:04Z value8
     ... ''')
-    >>> sql("select datediffbreaksimple(20, a,b) from table1")
+    >>> sql("select datedifffilter(20, a,b) from table1")
     date                 | C1
     -----------------------------
     2010-01-01T01:32:08Z | value4
