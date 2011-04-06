@@ -218,7 +218,7 @@ class datediffbreak:
 
 
 
-class datediffbreaksimple:
+class datedifffilter:
     """
 
     .. function:: datediffbreaksimple(maxdiff, date, C1, C2 ....) -> [date,C1,C2....]
