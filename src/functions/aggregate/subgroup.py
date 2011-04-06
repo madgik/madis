@@ -257,6 +257,14 @@ class datedifffilter:
     2010-01-01T02:35:04Z | value7
     2010-01-01T03:55:04Z | value8
 
+    >>> table1('''
+    ... 2010-01-01T01:32:03Z value1
+    ... ''')
+    >>> sql("select datedifffilter(20, a,b) from table1")
+    date                 | C1
+    -----------------------------
+    2010-01-01T01:32:03Z | value1
+
     """
     registered=True
     multiset=True
@@ -273,9 +281,9 @@ class datedifffilter:
     def initargs(self, args):
         self.init=False
         if not args:
-            raise functions.OperatorError("datediffbreakSimple","No arguments")
+            raise functions.OperatorError("datedifffilter","No arguments")
         if len(args)<2:
-            raise functions.OperatorError("datediffbreakSimple","Wrong number of arguments")
+            raise functions.OperatorError("datedifffilter","Wrong number of arguments")
         self.tablesize=len(args)-1
         self.maxdiff=args[0]
         
@@ -302,16 +310,126 @@ class datedifffilter:
         dt=None
         dtpos=0
         diff=0
+        if self.counter==1:
+            a.write(self.vals[dtpos])
+        else:
+            for el in self.vals:
+                if dtpos<self.counter-1:
+                    dt = iso8601.parse_date(el[0])
+                    dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
+                    diff=dtnew-dt
+                    if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
+                        a.write(el)
+                    dtpos+=1
+                    if dtpos==self.counter-1:
+                        a.write(self.vals[dtpos])
+
+        return a.serialize()
+
+
+class datediffgroup:
+    """
+
+    .. function:: datediffgroup(maxdiff, date, C1, C2 ....) -> [groupid, date,C1,C2....]
+
+    Performing a sort of entry clustering based on the entries date difference.
+    The cluster id that is assigned to each entry is reutrned in the first column, and it is followed by the entry's original contents.
+
+    The first argument defines the time differnece threshold that is employed for entry clustering, and it is provided in seconds.
+    The second argument is assumed to contain the date column. Entries are assumed to be provided in an ascending order by the date column.
+    Input dates should be in :ref:`ISO 8601 format <iso8601>`.
+    All subsequent columns remain unchanged.
+
+
+    :Returned multiset schema:
+        - *date, C1, C2 ..*
+            The selected input values of the row.
+
+    .. seealso::
+
+       * :ref:`tutmultiset` functions
+
+    >>> table1('''
+    ... 2010-01-01T01:32:03Z value1
+    ... 2010-01-01T01:32:04Z value2
+    ... 2010-01-01T01:32:06Z value3
+    ... 2010-01-01T01:32:08Z value4
+    ... 2010-01-01T01:32:29Z value5
+    ... 2010-01-01T02:35:03Z value6
+    ... 2010-01-01T02:35:04Z value7
+    ... 2010-01-01T03:55:04Z value8
+    ... ''')
+    >>> sql("select datediffgroup(20,a,b) from table1")
+    groupid | date                 | C1
+    ---------------------------------------
+    1       | 2010-01-01T01:32:03Z | value1
+    1       | 2010-01-01T01:32:04Z | value2
+    1       | 2010-01-01T01:32:06Z | value3
+    1       | 2010-01-01T01:32:08Z | value4
+    2       | 2010-01-01T01:32:29Z | value5
+    3       | 2010-01-01T02:35:03Z | value6
+    3       | 2010-01-01T02:35:04Z | value7
+    4       | 2010-01-01T03:55:04Z | value8
+    """
+    registered=True
+    multiset=True
+
+
+    def __init__(self):
+        self.init=True
+        self.vals=[]
+        self.maxdiff=0
+        self.counter=0
+        self.tablesize=0
+        self.groupIdCounter=1
+
+
+    def initargs(self, args):
+        self.init=False
+        if not args:
+            raise functions.OperatorError("datediffgroup","No arguments")
+        if len(args)<2:
+            raise functions.OperatorError("datediffgroup","Wrong number of arguments")
+        self.tablesize=len(args)-1
+        self.maxdiff=args[0]
+
+
+
+    def step(self, *args):
+        if self.init==True:
+            self.initargs(args)
+
+        self.vals.append(list(args[1:]))
+        self.counter+=1
+
+    def final(self):
+
+        from lib.buffer import CompBuffer
+        a=CompBuffer()
+        if self.tablesize<=0:
+            a.writeheader(["groupid","date","C1"])
+            a.write(["None","None","None"])
+            return a.serialize()
+        a.writeheader(["groupid"]+["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
+
+
+        dt=None
+        dtpos=0
+        diff=0
+
         for el in self.vals:
+            
             if dtpos<self.counter-1:
                 dt = iso8601.parse_date(el[0])
                 dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
                 diff=dtnew-dt
+                a.write([str(self.groupIdCounter)]+el)
                 if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
-                    a.write(el)
+                    self.groupIdCounter+=1
+                
                 dtpos+=1
                 if dtpos==self.counter-1:
-                    a.write(self.vals[dtpos])
+                    a.write([str(self.groupIdCounter)]+self.vals[dtpos])
 
         return a.serialize()
 
