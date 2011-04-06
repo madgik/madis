@@ -310,14 +310,13 @@ def regexpr(*args):
     ---------------------------------------------------------
     nonwordtobereplacednonword
     """
-
     if len(args)<2:
         return
 
     if len(args)==2:
         a=re.search(args[0],args[1],re.UNICODE)
         if a!=None:
-            if len(a.groups())>0:
+            if len(a.groups())>0 and a.groups()[0]!=None:
                 return a.groups()[0]
             else:
                 return True
