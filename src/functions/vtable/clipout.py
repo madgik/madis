@@ -24,7 +24,7 @@ def Clipout(diter):
     import lib.pyperclip as clip
     a=[]
     for row,header in diter:
-        a.append('\t'.join([str(i).replace('\t','    ') for i in row]))
+        a.append(u'\t'.join([unicode(unicode(i).replace('\t','    ')).encode('utf-8', 'replace') for i in row]))
 
     clip.setcb('\n'.join(a))
 
