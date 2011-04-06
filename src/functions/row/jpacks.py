@@ -217,6 +217,9 @@ def jsplit(*args):
     fj=[]
     for j in args:
         fj+= jlist.fromj(j)
+
+    if fj==[]:
+        return emptyBuffer('C1')
             
     b.writeheader( ['C'+str(x+1) for x in xrange(len(fj))] )
     b.write(fj)
@@ -254,6 +257,30 @@ def jflatten(*args):
     return jlist.toj( jlist.flatten(fj) )
 
 jflatten.registered=True
+
+def jgroupregexp(*args):
+
+    """
+    .. function:: jflattten(jpacks) -> jpack
+
+    Flattens all nested sub-jpacks.
+
+    Examples:
+
+    >>> sql(''' select jgroupregexp('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jgroupregexp('["abc", "def"]')
+    ------------------------------
+    (?abc)|(?def)
+
+    """
+
+    fj=[]
+    for j in args:
+        fj+=jlist.fromj(j)
+        
+    return '|'.join('(?:'+x+')' for x in fj)
+
+jgroupregexp.registered=True
 
 
 if not ('.' in __name__):
