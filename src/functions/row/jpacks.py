@@ -24,7 +24,7 @@ def jpack(*args):
 
     """
 
-    return jlist.toj([jlist.fromj(x) for x in args])
+    return jlist.toj([jlist.elemfromj(x) for x in args])
 
 jpack.registered=True
 
