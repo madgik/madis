@@ -258,7 +258,7 @@ def jflatten(*args):
 
 jflatten.registered=True
 
-def jgroupregexp(*args):
+def jcombineregexp(*args):
 
     """
     .. function:: jflattten(jpacks) -> jpack
@@ -267,10 +267,10 @@ def jgroupregexp(*args):
 
     Examples:
 
-    >>> sql(''' select jgroupregexp('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
-    jgroupregexp('["abc", "def"]')
-    ------------------------------
-    (?abc)|(?def)
+    >>> sql(''' select jcombineregexp('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jcombineregexp('["abc", "def"]')
+    --------------------------------
+    (?:abc)|(?:def)
 
     """
 
@@ -280,7 +280,7 @@ def jgroupregexp(*args):
         
     return '|'.join('(?:'+x+')' for x in fj)
 
-jgroupregexp.registered=True
+jcombineregexp.registered=True
 
 
 if not ('.' in __name__):
