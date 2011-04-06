@@ -1,5 +1,7 @@
 import StringIO ,cPickle , tempfile ,gzip , os , struct
 from zlib import compress, decompress
+import jlist
+
 class BufferException(Exception):
     pass
 
@@ -46,6 +48,7 @@ class CompBuffer:
             self.__modeError()
         if not self.hasheader:
             raise BufferException("Buffer has no header element")
+        s=[x if type(x)!=list else jlist.toj(x) for x in s]
         cPickle.dump(s,self.stream)
         if self.stream.tell()>=self.maxsize and not self.name:
             fd , fname =tempfile.mkstemp(suffix="kill.gz")
