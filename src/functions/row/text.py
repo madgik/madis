@@ -5,6 +5,7 @@ import functions
 import unicodedata
 
 from lib import chardet
+from lib import jlist
 
 import re
 
@@ -316,8 +317,8 @@ def regexpr(*args):
     if len(args)==2:
         a=re.search(args[0], unicode(args[1]),re.UNICODE)
         if a!=None:
-            if len(a.groups())>0 and a.groups()[0]!=None:
-                return a.groups()[0]
+            if len(a.groups())>0:
+                return jlist.toj(a.groups())
             else:
                 return True
         else:
