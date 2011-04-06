@@ -319,7 +319,7 @@ while True:
                 lastschema=None
 
             for row in cexec:
-                print '|'.join(row)
+                print '|'.join(unicode(row))
             cursor.close()
 
             after=datetime.datetime.now()
