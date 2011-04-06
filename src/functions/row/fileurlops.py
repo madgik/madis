@@ -101,10 +101,12 @@ def fileextension(*args):
 
     >>> table1('''
     ... "http://www.test.com/lalala.gif"
+    ... "http://www.test.com/lalala.GIF"
     ... ''')
     >>> sql("select fileextension(a) from table1")
     fileextension(a)
     ----------------
+    .gif
     .gif
 
     """
@@ -114,7 +116,7 @@ def fileextension(*args):
     except ValueError:
         return None
 
-    return ret[1]
+    return ret[1].lower()
 
 fileextension.registered=True
 
