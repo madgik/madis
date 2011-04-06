@@ -116,18 +116,19 @@ def elemfromj(j):
                 return j
         return j
 
-#Flatten from BasicTypes for Python
+#Flatten based on BasicTypes for Python
 #	Copyright (c) 2002-2003, Michael C. Fletcher
 #	All rights reserved.
-import sys
-def flatten(inlist, type=type, ltype=(list,tuple), maxint= sys.maxint):
-	try:
-		for ind in xrange( maxint):
-			while isinstance( inlist[ind], ltype):
-				inlist[ind:ind+1] = list(inlist[ind])
-	except IndexError:
-		pass
-	return inlist
+def flatten(inlist, type=type, ltype=(list,tuple)):
+    try:
+        ind=0
+        while True:
+            while isinstance( inlist[ind], ltype):
+                inlist[ind:ind+1] = list(inlist[ind])
+            ind+=1
+    except IndexError:
+        pass
+    return inlist
 
 if __name__ == "__main__":
     import doctest
