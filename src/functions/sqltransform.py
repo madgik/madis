@@ -79,6 +79,8 @@ class Transclass:
         for t in fs:
             if t.ttype==Token.Keyword.DML:
                 break
+            if unicode(t).lower() in ('in', 'exists'):
+                break
             if type(t) is sqlparse.sql.Parenthesis:
                 subq=find_parenthesis.match(unicode(t))
                 if subq!=None:
@@ -375,7 +377,7 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"toggle tracing ;"]
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala'"]
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala' union select * from file('lala')"]
-    sql+=[r"select a from (select * from);"]
+    sql+=[r"select * from (select 5 as a) where a=4 or (a=5 and a not in (select 3));"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
