@@ -11,7 +11,7 @@ import re
 import apsw
 
 if sys.platform == "win32":
-    import lib.pyreadline as readline
+    import pyreadline as readline
 else:
     import readline
 
