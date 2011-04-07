@@ -10,10 +10,10 @@ import sys
 import re
 import apsw
 
-try:
-    import readline
-except:
+if sys.platform == "win32":
     import lib.pyreadline as readline
+else:
+    import readline
 
 import functions
 import datetime
