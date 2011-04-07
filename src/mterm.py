@@ -2,10 +2,10 @@
 
 import sys
 
-# Workaround for windows
-try: import lib.winunicode
-except ImportError: pass
-else: del lib.winunicode
+# Workaround for windows - DISABLED
+#try: import lib.winunicode
+#except ImportError: pass
+#else: del lib.winunicode
 
 import re
 import apsw
@@ -75,27 +75,55 @@ def update_tablelist():
             cursor1.close()
     cursor.close()
 
+def update_cols_for_table(t):
+    global alltables, lastschema, connection
+
+    if t!='':
+        if t[-1]=='.':
+            t=t[0:-1]
+
+    if t in alltables:
+        cursor = connection.cursor()
+        cexec=cursor.execute('select * from '+str(t))
+        if lastschema==None:
+            lastschema=[]
+        try:
+            desc=cursor.getdescription()
+            lastschema+= [('.'.join([ t, x ]), y) for x,y in desc]
+            lastschema+= [(x, y) for x,y in desc]
+            lastschema=list(set(lastschema))
+        except:
+            pass
+
 def normalizename(col):
-    if re.match(ur'[\w_$\d]+$', col,re.UNICODE):
+    if re.match(ur'[\w_$\d.]+$', col,re.UNICODE):
         return col
     else:
         return "`"+col+"`"
 
 def mcomplete(text,state):
+    postfix=''
+    if text!='':
+        if text[-1]=='.':
+            postfix='.'
+
     if lastschema==None:
         completitions=[]
     else:
         completitions=[x[0] for x in lastschema]
 
-    altset=set(alltables)
+    localltables=[x+postfix for x in alltables]
+
+    altset=set(localltables)
     sqlstatem=set(sqlandmtermstatements)
     
-    completitions+=sqlandmtermstatements+allfuncs+alltables
+    completitions+=sqlandmtermstatements+allfuncs+localltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
     if state<len(hits):
         if hits[state] in sqlstatem:
             return hits[state]+' '
         elif hits[state] in altset:
+            update_cols_for_table(text)
             return hits[state]
         else:
             return normalizename(hits[state])
@@ -321,7 +349,7 @@ while True:
             cexec=cursor.execute(statement)
 
             try:
-                lastschema=cursor.getdescription()
+                lastschema=list(cursor.getdescription())
             except apsw.ExecutionCompleteError, e:
                 lastschema=None
 
