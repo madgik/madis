@@ -89,8 +89,13 @@ class Transclass:
                         break
                     t.tokens=sqlparse.parse(subq)[0].tokens
                     out_vtables+=self.rectransform(t)[1]
-                    exts='SELECT * FROM ('+unicode(t)+')'
-                    t.tokens=sqlparse.parse(exts)[0].tokens
+                    if re.match(ur'(?i)\s*select\s', unicode(t), re.UNICODE):
+                        exts='SELECT * FROM ('+unicode(t)+')'
+                        t.tokens=sqlparse.parse(exts)[0].tokens
+                    else:
+                        exts='('+unicode(t)+')'
+                        t.tokens=sqlparse.parse(exts)[0].tokens
+
 
         # Process internal parenthesis
         for t in fs:
@@ -378,6 +383,7 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala'"]
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala' union select * from file('lala')"]
     sql+=[r"select * from (select 5 as a) where a=4 or (a=5 and a not in (select 3));"]
+    sql+=[r"select * from a where ((a.r in (select c1 from f)));"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
