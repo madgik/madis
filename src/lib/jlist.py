@@ -109,19 +109,26 @@ def fromj(*jargs):
             fj+= [j]
     return fj
 
-def elemfromj(j):
-    typej=type(j)
-    if typej==int or typej==float:
-        return j
-    if typej==str or typej==unicode:
-        if j=='':
-            return u''
-        if j[0]=='[' and j[-1]==']':
-            try:
-                return json.loads(j)
-            except:
-                return j
-        return j
+def elemfromj(*jargs):
+    fj=[]
+    for j in jargs:
+        typej=type(j)
+        if typej==int or typej==float:
+            fj+= [j]
+            continue
+        if typej==str or typej==unicode:
+            if j=='':
+                fj+= [u'']
+                continue
+            if j[0]=='[' and j[-1]==']':
+                try:
+                    fj+=[json.loads(j)]
+                    continue
+                except:
+                    fj+= [j]
+                    continue
+            fj+= [j]
+    return fj
 
 #Flatten based on BasicTypes for Python
 #	Copyright (c) 2002-2003, Michael C. Fletcher
