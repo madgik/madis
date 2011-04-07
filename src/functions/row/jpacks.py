@@ -55,11 +55,7 @@ def j2t(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=[ str(x).replace('\t', '    ') for x in jlist.fromj(j) ]
-        
-    return '\t'.join(fj)
+    return '\t'.join([ str(x).replace('\t', '    ') for x in jlist.fromj(*args) ])
 
 j2t.registered=True
 
@@ -103,11 +99,7 @@ def jmerge(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=jlist.fromj(j)
-
-    return jlist.toj(fj)
+    return jlist.toj( jlist.fromj(*args) )
 
 jmerge.registered=True
 
@@ -127,11 +119,7 @@ def jset(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=jlist.fromj(j)
-
-    return jlist.toj(sorted(set(fj)))
+    return jlist.toj(sorted(set( jlist.fromj(*args) )))
 
 jset.registered=True
 
@@ -151,11 +139,7 @@ def jsort(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=jlist.fromj(j)
-
-    return jlist.toj(sorted(fj))
+    return jlist.toj(sorted( jlist.fromj(*args) ))
 
 jsort.registered=True
 
@@ -186,10 +170,8 @@ def jsplitv(*args):
     b=CompBuffer()
     b.writeheader(['C1'])
 
-    fj=[]
-    for j in args:
-        for j1 in jlist.fromj(j):
-            b.write([j1])
+    for j1 in jlist.fromj(*args):
+        b.write([j1])
 
     return b.serialize()
 
@@ -214,9 +196,7 @@ def jsplit(*args):
 
     b=CompBuffer()
     
-    fj=[]
-    for j in args:
-        fj+= jlist.fromj(j)
+    fj=jlist.fromj(*args)
 
     if fj==[]:
         return emptyBuffer('C1')
@@ -250,11 +230,7 @@ def jflatten(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=jlist.fromj(j)
-
-    return jlist.toj( jlist.flatten(fj) )
+    return jlist.toj( jlist.flatten( jlist.fromj(*args) ))
 
 jflatten.registered=True
 
@@ -274,11 +250,7 @@ def jcombineregexp(*args):
 
     """
 
-    fj=[]
-    for j in args:
-        fj+=jlist.fromj(j)
-        
-    return '|'.join('(?:'+x+')' for x in fj)
+    return '|'.join('(?:'+x+')' for x in jlist.fromj(*args))
 
 jcombineregexp.registered=True
 

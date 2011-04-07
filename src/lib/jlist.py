@@ -88,19 +88,26 @@ def tojstrict(l):
         return json.dumps(l)
     return json.dumps([l])
 
-def fromj(j):
-    typej=type(j)
-    if typej==int or typej==float:
-        return [j]
-    if typej==str or typej==unicode:
-        if j=='':
-            return [u'']
-        if j[0]=='[' and j[-1]==']':
-            try:
-                return json.loads(j)
-            except:
-                return [j]
-        return [j]
+def fromj(*jargs):
+    fj=[]
+    for j in jargs:
+        typej=type(j)
+        if typej==int or typej==float:
+            fj+= [j]
+            continue
+        if typej==str or typej==unicode:
+            if j=='':
+                fj+= [u'']
+                continue
+            if j[0]=='[' and j[-1]==']':
+                try:
+                    fj+=json.loads(j)
+                    continue
+                except:
+                    fj+= [j]
+                    continue
+            fj+= [j]
+    return fj
 
 def elemfromj(j):
     typej=type(j)
