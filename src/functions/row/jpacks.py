@@ -22,9 +22,14 @@ def jpack(*args):
     ----------------
     ["a", "b", 3]
 
+    >>> sql("select jpack('a', jpack('b',3))")
+    jpack('a', jpack('b',3))
+    ------------------------
+    ["a", ["b", 3]]
+
     """
 
-    return jlist.toj([jlist.elemfromj(x) for x in args])
+    return jlist.toj(jlist.elemfromj(*args))
 
 jpack.registered=True
 

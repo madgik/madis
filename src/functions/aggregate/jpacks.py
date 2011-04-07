@@ -25,6 +25,23 @@ class jgroup:
     jgroup(a,b)
     --------------------------------------------------------
     [["word1", 1], ["word2", 1], ["word3", 2], ["word4", 2]]
+
+    >>> table2('''
+    ... [1,2]   1
+    ... [3,4]   1
+    ... [5,6]   2
+    ... [7,8]   2
+    ... ''')
+
+    >>> sql("select jgroup(a) from table2")
+    jgroup(a)
+    --------------------------------
+    [[1, 2], [3, 4], [5, 6], [7, 8]]
+
+    >>> sql("select jgroup(a,b) from table2")
+    jgroup(a,b)
+    ----------------------------------------------------
+    [[[1, 2], 1], [[3, 4], 1], [[5, 6], 2], [[7, 8], 2]]
     """
 
     registered=True #Value to define db operator
@@ -34,9 +51,9 @@ class jgroup:
 
     def step(self, *args):
         if len(args)==1:
-            self.outgroup.append(args[0])
+            self.outgroup+=( jlist.elemfromj(args[0]) )
         else:
-            self.outgroup.append(args)
+            self.outgroup.append( jlist.elemfromj(*args) )
 
     def final(self):
         return jlist.toj(self.outgroup)
