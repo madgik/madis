@@ -235,29 +235,29 @@ def jflatten(*args):
 
     """
 
-    return jlist.toj( jlist.flatten( jlist.fromj(*args) ))
+    return jlist.toj( jlist.flatten( jlist.elemfromj(*args) ))
 
 jflatten.registered=True
 
-def jcombineregexp(*args):
+def jmergeregexp(*args):
 
     """
-    .. function:: jflattten(jpacks) -> jpack
+    .. function:: jmergeregexp(jpacks) -> jpack
 
     Flattens all nested sub-jpacks.
 
     Examples:
 
-    >>> sql(''' select jcombineregexp('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
-    jcombineregexp('["abc", "def"]')
-    --------------------------------
+    >>> sql(''' select jmergeregexp('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jmergeregexp('["abc", "def"]')
+    ------------------------------
     (?:abc)|(?:def)
 
     """
 
     return '|'.join('(?:'+x+')' for x in jlist.fromj(*args))
 
-jcombineregexp.registered=True
+jmergeregexp.registered=True
 
 
 if not ('.' in __name__):
