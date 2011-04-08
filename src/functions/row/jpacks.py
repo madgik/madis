@@ -54,11 +54,11 @@ def jfilterempty(*args):
     >>> sql("select jfilterempty('[3]', jpack('b', ''))")
     jfilterempty('[3]', jpack('b', ''))
     -----------------------------------
-    [[3], ["b", ""]]
+    [3, "b"]
 
     """
 
-    return jlist.toj([x for x in jlist.elemfromj(*args) if x!='' and x!=[] and x!=[None]])
+    return jlist.toj([x for x in jlist.fromj(*args) if x!='' and x!=[] and x!=None])
 
 jfilterempty.registered=True
 
