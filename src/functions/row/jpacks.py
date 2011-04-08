@@ -33,6 +33,35 @@ def jpack(*args):
 
 jpack.registered=True
 
+def jfilterempty(*args):
+    """
+    .. function:: jfilterempty(jpacks.) -> jpack
+
+    Removes from input jpacks all empty elements.
+
+    Examples:
+
+    >>> sql("select jfilterempty('a', '', '[]')")
+    jfilterempty('a', '', '[]')
+    ---------------------------
+    a
+
+    >>> sql("select jfilterempty('a','[null]',3)")
+    jfilterempty('a','[null]',3)
+    ----------------------------
+    ["a", 3]
+
+    >>> sql("select jfilterempty('[3]', jpack('b', ''))")
+    jfilterempty('[3]', jpack('b', ''))
+    -----------------------------------
+    [[3], ["b", ""]]
+
+    """
+
+    return jlist.toj([x for x in jlist.elemfromj(*args) if x!='' and x!=[] and x!=[None]])
+
+jfilterempty.registered=True
+
 def j2t(*args):
 
     """
