@@ -9,13 +9,13 @@ import sys
 
 import re
 import apsw
+import functions
 
 if sys.platform == "win32":
     import pyreadline as readline
 else:
     import readline
 
-import functions
 import datetime
 import lib.reimport
 import locale
