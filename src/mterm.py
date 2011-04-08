@@ -133,7 +133,11 @@ def mcomplete(text,state):
 def schemaprint(schema):
     if schema!=None:
         print "--- Column names ---"
-        print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
+        colstoprint="| "+" | ".join([x[0] for x in schema])+" |"
+        if len(colstoprint)<=80:
+            print colstoprint
+        else:
+            print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
 
 
 mtermdetails="mTerm - version 0.8"
