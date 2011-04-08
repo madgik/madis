@@ -1,2 +1,4 @@
 import sys, os
-sys.path.append((os.path.join(sys.path[0],'..')))
+curmodulepath = os.path.dirname( os.path.abspath(__file__) )
+sys.path.append((os.path.join(curmodulepath,'..')))
+sys.path.append((os.path.join(curmodulepath,'../lib')))
