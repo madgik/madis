@@ -59,8 +59,9 @@ def raw_input_no_history(*args):
     return input
 
 def update_tablelist():
-    global alltables, connection
+    global alltables, alltablescompl, connection
     alltables=[]
+    alltablescompl=[]
     cursor = connection.cursor()
     cexec=cursor.execute('PRAGMA database_list;')
     for row in cexec:
@@ -68,21 +69,29 @@ def update_tablelist():
             cursor1 = connection.cursor()
             cexec1 = cursor1.execute("select name from "+row[1]+".sqlite_master where type='table';")
             for row1 in cexec1:
+                tname=row1[0].lower().encode('ascii')
                 if row[1]=='main':
-                    alltables.append(row1[0].lower().encode('ascii'))
+                    alltables.append(tname)
+                    alltablescompl.append(tname)
                 else:
-                    alltables.append((row[1]+'.'+row1[0]).lower().encode('ascii'))
+                    dbtname=(row[1]+'.'+tname).lower().encode('ascii')
+                    alltables.append(dbtname)
+                    alltablescompl.append(dbtname)
+                    if tname not in alltablescompl:
+                        alltablescompl.append(tname)
             cursor1.close()
     cursor.close()
 
 def update_cols_for_table(t):
-    global alltables, lastschema, connection
+    global alltablescompl, lastschema, connection
 
     if t!='':
         if t[-1]=='.':
             t=t[0:-1]
+        if t[-2:]=='.*':
+            t=t[0:-2]
 
-    if t in alltables:
+    if t in alltablescompl:
         cursor = connection.cursor()
         cexec=cursor.execute('select * from '+str(t))
         if lastschema==None:
@@ -104,26 +113,36 @@ def normalizename(col):
 def mcomplete(text,state):
     postfix=''
     if text!='':
-        if text[-1]=='.':
-            postfix='.'
+        if text[-1]=='.' or text[-2:]=='.*':
+            postfix='.*'
 
     if lastschema==None:
         completitions=[]
     else:
         completitions=[x[0] for x in lastschema]
 
-    localltables=[x+postfix for x in alltables]
+    localltables=[x+postfix for x in alltablescompl]
 
     altset=set(localltables)
     sqlstatem=set(sqlandmtermstatements)
     
     completitions+=sqlandmtermstatements+allfuncs+localltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
+
     if state<len(hits):
         if hits[state] in sqlstatem:
             return hits[state]+' '
         elif hits[state] in altset:
             update_cols_for_table(text)
+            if text[-2:]=='.*':
+
+                tname=text[:-2]
+                cursor = connection.cursor()
+                cexec=cursor.execute('select * from '+str(tname))
+                try:
+                    return ', '.join([tname+'.'+x for x,y in cursor.getdescription()])+' '
+                except:
+                    pass
             return hits[state]
         else:
             return normalizename(hits[state])
@@ -221,10 +240,12 @@ sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'o
                         '.help', '.colnames', '.schema', '.functions', '.tables']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
+alltablescompl=[]
 update_tablelist()
 
 readline.set_completer(mcomplete)
 readline.parse_and_bind("tab: complete")
+readline.set_completer_delims('''\t\n!@#$^&()=+[{]}\\|;:\'",<>?''')
 
 #Intro Message
 print mtermdetails
