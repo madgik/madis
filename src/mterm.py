@@ -106,7 +106,7 @@ def normalizename(col):
     if re.match(ur'[\w_$\d.]+$', col,re.UNICODE):
         return col
     else:
-        return "`"+lower(col)+"`"
+        return "`"+col.lower()+"`"
 
 def mcomplete(textin,state):
     text=textin
