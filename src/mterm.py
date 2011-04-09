@@ -83,7 +83,7 @@ def update_tablelist():
     cursor.close()
 
 def update_cols_for_table(t):
-    global alltablescompl, lastschema, connection
+    global alltablescompl, colscompl, lastcols, connection
 
     if t!='':
         if t[-1]=='.':
@@ -94,13 +94,11 @@ def update_cols_for_table(t):
     if t in alltablescompl:
         cursor = connection.cursor()
         cexec=cursor.execute('select * from '+str(t))
-        if lastschema==None:
-            lastschema=[]
         try:
             desc=cursor.getdescription()
-            lastschema+= [('.'.join([ t, x ]), y) for x,y in desc]
-            lastschema+= [(x, y) for x,y in desc]
-            lastschema=list(set(lastschema))
+            colscompl+= ['.'.join([ t, x ]) for x, y in desc]
+            colscompl+= [x for x,y in desc]
+            colscompl=list(set(colscompl)-set(lastcols))
         except:
             pass
 
@@ -116,26 +114,26 @@ def mcomplete(text,state):
         if text[-1]=='.':
             postfix='..'
 
-    if lastschema==None:
-        completitions=[]
-    else:
-        completitions=[x[0] for x in lastschema]
+    completitions=lastcols[:]+colscompl
 
     localltables=[x+postfix for x in alltablescompl]
-
-    altset=set(localltables)
-    sqlstatem=set(sqlandmtermstatements)
     
     completitions+=sqlandmtermstatements+allfuncs+localltables
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
 
     if state<len(hits):
+        sqlstatem=set(sqlandmtermstatements)
+        altset=set(localltables)
+        if hits[state]=='..':
+            if text=='..' and lastcols!=[]:
+                return ', '.join([normalizename(x) for x in lastcols])+' '
+            else:
+                return hits[state]
         if hits[state] in sqlstatem:
             return hits[state]+' '
-        elif hits[state] in altset:
+        if hits[state] in altset:
             update_cols_for_table(text)
             if text[-2:]=='..':
-
                 tname=text[:-2]
                 cursor = connection.cursor()
                 cexec=cursor.execute('select * from '+str(tname))
@@ -149,14 +147,14 @@ def mcomplete(text,state):
     else:
         return
 
-def schemaprint(schema):
-    if schema!=None:
+def schemaprint(cols):
+    if cols!=[]:
         print "--- Column names ---"
-        colstoprint="| "+" | ".join([x[0] for x in schema])+" |"
+        colstoprint="| "+" | ".join([x for x in cols])+" |"
         if len(colstoprint)<=80:
             print colstoprint
         else:
-            print "| "+" | ".join([x[0][0:10]+".." if len(x[0])>12 and len(schema)>1 else x[0] for x in schema])+" |"
+            print "| "+" | ".join([x[0:10]+".." if len(x)>12 and len(cols)>1 else x for x in cols])+" |"
 
 
 mtermdetails="mTerm - version 0.8"
@@ -172,8 +170,6 @@ helpmessage=""".functions             Lists all functions
 .schema ?TABLE?        Show the CREATE statements
 .separator STRING      Change separator used by output mode and .import   
 .tables                List names of tables """
-
-lastschema=None
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
@@ -237,11 +233,13 @@ if len(sys.argv)>2:
     sys.exit()
 
 sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter', 'limit', 'delete',
-                        '.help', '.colnames', '.schema', '.functions', '.tables']
+                        '.help', '.colnames', '.schema', '.functions', '.tables', '..']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
 update_tablelist()
+lastcols=[]
+colscompl=[]
 
 readline.set_completer(mcomplete)
 readline.parse_and_bind("tab: complete")
@@ -373,9 +371,9 @@ while True:
             cexec=cursor.execute(statement)
 
             try:
-                lastschema=list(cursor.getdescription())
+                lastcols=[x for x,y in cursor.getdescription()]
             except apsw.ExecutionCompleteError, e:
-                lastschema=None
+                lastcols=[]
 
             for row in cexec:
                 printer.writerow(row)
@@ -384,13 +382,14 @@ while True:
             after=datetime.datetime.now()
             tmdiff=after-before
 
-            schemaprint(lastschema)
+            schemaprint(lastcols)
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
             if functions.settings['beep']:
                 print '\a'
+            colscompl=[]
 
         except KeyboardInterrupt:
-            schemaprint(lastschema)
+            schemaprint(lastcols)
             print "KeyboardInterrupt exception: Query execution stopped"
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
