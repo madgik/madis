@@ -402,6 +402,10 @@ while True:
                 print '\a'
             colscompl=[]
 
+            #Autoupdate in case of schema change
+            if re.search(r'(?i)(create|attach)', statement):
+                update_tablelist()
+
         except KeyboardInterrupt:
             schemaprint(lastcols)
             print "KeyboardInterrupt exception: Query execution stopped"
