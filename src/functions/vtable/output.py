@@ -82,65 +82,65 @@ def getoutput(p,append,compress,comptype):
     return it
 
 
-def outputData(diter,*args,**formatAgrs):
+def outputData(diter,*args,**formatArgs):
     dialect=lib.inoutparsing.defaultcsv()
     ### Parameter handling ###
     where=None
     if len(args)>0:
         where=args[0]
-    elif 'file' in formatAgrs:
-        where=formatAgrs['file']
+    elif 'file' in formatArgs:
+        where=formatArgs['file']
     else:
         raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
-    if 'file' in formatAgrs:
-        del formatAgrs['file']
+    if 'file' in formatArgs:
+        del formatArgs['file']
 
-    if 'mode' not in formatAgrs:
-        formatAgrs['mode']='csv'
-    if 'header' not in formatAgrs:
+    if 'mode' not in formatArgs:
+        formatArgs['mode']='csv'
+    if 'header' not in formatArgs:
         header=False
     else:
-        header=formatAgrs['header']
-        del formatAgrs['header']
+        header=formatArgs['header']
+        del formatArgs['header']
 
-    if 'compression' not in formatAgrs:
-       formatAgrs['compression']=False
-    if 'compressiontype' not in formatAgrs:
-        formatAgrs['compressiontype']='zip'
+    if 'compression' not in formatArgs:
+       formatArgs['compression']=False
+    if 'compressiontype' not in formatArgs:
+        formatArgs['compressiontype']='zip'
 
-    if 'dialect' in formatAgrs:
-        dialect=formatAgrs['dialect']
-        del formatAgrs['dialect']
+    if 'dialect' in formatArgs:
+        dialect=formatArgs['dialect']
+        del formatArgs['dialect']
     append=False
-    if 'append' in formatAgrs:
-        append=formatAgrs['append']
-        del formatAgrs['append']
+    if 'append' in formatArgs:
+        append=formatArgs['append']
+        del formatArgs['append']
 
 
 
 
-    fileIter=getoutput(where,append,formatAgrs['compression'],formatAgrs['compressiontype'])
+    fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
-    del formatAgrs['compressiontype']
-    del formatAgrs['compression']
+    del formatArgs['compressiontype']
+    del formatArgs['compression']
     try:
-        if formatAgrs['mode']=='csv':
-            del formatAgrs['mode']
-            csvprinter=writer(fileIter,dialect,**formatAgrs)
+        if formatArgs['mode']=='csv':
+            del formatArgs['mode']
+            csvprinter=writer(fileIter,dialect,**formatArgs)
             for row,headers in diter:
                 if header:
                     csvprinter.writerow([h[0] for h in headers])
                     header=False
                 csvprinter.writerow(row)
-        elif formatAgrs['mode']=='gtable':
+        elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
-        elif formatAgrs['mode']=='gjson':
+        elif formatArgs['mode']=='gjson':
 
             vtoutpugtformat(fileIter,diter,simplejson=True)
 
-        elif formatAgrs['mode']=='html':
+        elif formatArgs['mode']=='html':
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
-        elif formatAgrs['mode']=='plain':
+        elif formatArgs['mode']=='plain':
             for row,headers in diter:
                 fileIter.write(((''.join(row))+'\n').encode('utf-8'))
         else:
