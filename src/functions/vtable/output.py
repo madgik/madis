@@ -12,10 +12,11 @@ Formatting options:
 .. toadd html        In html mode table is formatted as an html table TODO ????
 
 :mode:
-    - gtable      In gtable mode table is formatted as a google Data Table for visualisation
-    - gjson       In gjson mode table is formatted as true json in accepted google Data Table for visualisation json schema
-    - csv        Default value, in csv mode table is formatted in csv, many csv settings available
-    - plain      The columns are concatened and written, after each row a new line is added.
+    - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
+    - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
+    - tsv       Default. Writes data in a tab separated format.
+    - csv       Default. Writes data in a comma separated format.
+    - plain     The columns are concatened and written together.
 
     If *mode* is not *csv* any given csv formatting options are ignored
 
@@ -50,7 +51,6 @@ Examples:
 """
 
 import setpath
-import re
 from vtout import SourceNtoOne
 from lib.dsv import writer
 import gzip
@@ -60,8 +60,6 @@ from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 registered=True
 
-
-
 def fileit(p,append=False):
     if append:
         return open(p,"a")
@@ -70,7 +68,6 @@ def fileit(p,append=False):
 def getoutput(p,append,compress,comptype):
     source=p
     it=None
-    
 
     if compress and ( comptype=='zip'):
         it=ZipIter(source,"w")
@@ -83,7 +80,6 @@ def getoutput(p,append,compress,comptype):
 
 
 def outputData(diter,*args,**formatArgs):
-    dialect=lib.inoutparsing.defaultcsv()
     ### Parameter handling ###
     where=None
     if len(args)>0:
@@ -96,7 +92,7 @@ def outputData(diter,*args,**formatArgs):
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']='csv'
+        formatArgs['mode']='tsv'
     if 'header' not in formatArgs:
         header=False
     else:
@@ -108,16 +104,10 @@ def outputData(diter,*args,**formatArgs):
     if 'compressiontype' not in formatArgs:
         formatArgs['compressiontype']='zip'
 
-    if 'dialect' in formatArgs:
-        dialect=formatArgs['dialect']
-        del formatArgs['dialect']
     append=False
     if 'append' in formatArgs:
         append=formatArgs['append']
         del formatArgs['append']
-
-
-
 
     fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
@@ -126,7 +116,15 @@ def outputData(diter,*args,**formatArgs):
     try:
         if formatArgs['mode']=='csv':
             del formatArgs['mode']
-            csvprinter=writer(fileIter,dialect,**formatArgs)
+            csvprinter=writer(fileIter,'excel',**formatArgs)
+            for row,headers in diter:
+                if header:
+                    csvprinter.writerow([h[0] for h in headers])
+                    header=False
+                csvprinter.writerow(row)
+        if formatArgs['mode']=='tsv':
+            del formatArgs['mode']
+            csvprinter=writer(fileIter,'excel-tab',**formatArgs)
             for row,headers in diter:
                 if header:
                     csvprinter.writerow([h[0] for h in headers])
@@ -135,9 +133,7 @@ def outputData(diter,*args,**formatArgs):
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
         elif formatArgs['mode']=='gjson':
-
             vtoutpugtformat(fileIter,diter,simplejson=True)
-
         elif formatArgs['mode']=='html':
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
         elif formatArgs['mode']=='plain':
