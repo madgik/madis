@@ -106,31 +106,45 @@ def normalizename(col):
     if re.match(ur'[\w_$\d.]+$', col,re.UNICODE):
         return col
     else:
-        return "`"+col+"`"
+        return "`"+lower(col)+"`"
 
-def mcomplete(text,state):
+def mcomplete(textin,state):
+    text=textin
     postfix=''
+    prefix=''
+    tail=''
     if text!='':
         if text[-1]=='.':
-            postfix='..'
+            tail='..'
 
-    completitions=lastcols[:]+colscompl
+    localltables=[x+tail for x in alltablescompl]
 
-    localltables=[x+postfix for x in alltablescompl]
-    
-    completitions+=sqlandmtermstatements+allfuncs+localltables
+    #Detect if in simplified 'from'
+    if re.search(r'(?i)from\s(?:\s*[\w\d.]+(?:\s*,\s*)?)*$', readline.get_line_buffer()[0:readline.get_begidx()], re.DOTALL| re.UNICODE):
+        completitions=localltables[:]
+    else:
+        completitions=lastcols[:]+colscompl
+        completitions+=sqlandmtermstatements+allfuncs+localltables
+
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
+
+    #If completing something that looks like a table, complete only from cols
+    if hits==[] and text[-2:]!='..':
+        prepost=re.match(r'(.+\.)([^.]*)$', text)
+        if prepost:
+            prefix, text=prepost.groups()
+            hits= [x.lower() for x in lastcols+[y for y in colscompl if y.find('.')==-1] if x.lower()[:len(text)]==unicode(text.lower())]
 
     if state<len(hits):
         sqlstatem=set(sqlandmtermstatements)
         altset=set(localltables)
         if hits[state]=='..':
             if text=='..' and lastcols!=[]:
-                return ', '.join([normalizename(x) for x in lastcols])+' '
+                return prefix+', '.join([normalizename(x) for x in lastcols])+' '
             else:
-                return hits[state]
+                return prefix+hits[state]
         if hits[state] in sqlstatem:
-            return hits[state]+' '
+            return prefix+hits[state]+' '
         if hits[state] in altset:
             update_cols_for_table(text)
             if text[-2:]=='..':
@@ -138,12 +152,12 @@ def mcomplete(text,state):
                 cursor = connection.cursor()
                 cexec=cursor.execute('select * from '+str(tname))
                 try:
-                    return ', '.join([x for x,y in cursor.getdescription()])+' '
+                    return prefix+', '.join([x for x,y in cursor.getdescription()])+' '
                 except:
                     pass
-            return hits[state]
+            return prefix+hits[state]
         else:
-            return normalizename(hits[state])
+            return prefix+normalizename(hits[state])
     else:
         return
 
