@@ -88,7 +88,7 @@ def update_cols_for_table(t):
     if t!='':
         if t[-1]=='.':
             t=t[0:-1]
-        if t[-2:]=='.*':
+        if t[-2:]=='..':
             t=t[0:-2]
 
     if t in alltablescompl:
@@ -113,8 +113,8 @@ def normalizename(col):
 def mcomplete(text,state):
     postfix=''
     if text!='':
-        if text[-1]=='.' or text[-2:]=='.*':
-            postfix='.*'
+        if text[-1]=='.':
+            postfix='..'
 
     if lastschema==None:
         completitions=[]
@@ -134,13 +134,13 @@ def mcomplete(text,state):
             return hits[state]+' '
         elif hits[state] in altset:
             update_cols_for_table(text)
-            if text[-2:]=='.*':
+            if text[-2:]=='..':
 
                 tname=text[:-2]
                 cursor = connection.cursor()
                 cexec=cursor.execute('select * from '+str(tname))
                 try:
-                    return ', '.join([tname+'.'+x for x,y in cursor.getdescription()])+' '
+                    return ', '.join([x for x,y in cursor.getdescription()])+' '
                 except:
                     pass
             return hits[state]
@@ -245,7 +245,6 @@ update_tablelist()
 
 readline.set_completer(mcomplete)
 readline.parse_and_bind("tab: complete")
-readline.set_completer_delims('''\t\n!@#$^&()=+[{]}\\|;:\'",<>?''')
 
 #Intro Message
 print mtermdetails
