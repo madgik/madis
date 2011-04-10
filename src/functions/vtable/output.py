@@ -58,6 +58,7 @@ from lib.ziputils import ZipIter
 import functions
 from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
+import os
 registered=True
 
 def fileit(p,append=False):
@@ -78,6 +79,12 @@ def getoutput(p,append,compress,comptype):
         it=fileit(source,append)
     return it
 
+def autoext(f, ftype, extlist):
+    fname, ext=os.path.splitext(f)
+    if ext=='' and ftype in extlist:
+        ext=extlist[ftype]
+        return fname+'.'+ext
+    return f
 
 def outputData(diter,*args,**formatArgs):
     ### Parameter handling ###
@@ -109,6 +116,10 @@ def outputData(diter,*args,**formatArgs):
         append=formatArgs['append']
         del formatArgs['append']
 
+    elist={'csv':'csv', 'tsv':'xls', 'plain':'txt'}
+
+    where=autoext(where, formatArgs['mode'], elist)
+
     fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
     del formatArgs['compressiontype']
@@ -129,7 +140,7 @@ def outputData(diter,*args,**formatArgs):
                 if header:
                     csvprinter.writerow([h[0] for h in headers])
                     header=False
-                csvprinter.writerow(row)
+                csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
         elif formatArgs['mode']=='gjson':
