@@ -119,8 +119,13 @@ def mcomplete(textin,state):
 
     localltables=[x+tail for x in alltablescompl]
 
+    beforecompl= readline.get_line_buffer()[0:readline.get_begidx()]
+
+    #If completition starts at a string boundary, complete from local dir
+    if beforecompl!='' and beforecompl[-1] in ("'", '"'):
+        completitions=os.listdir(os.getcwdu())
     #Detect if in simplified 'from' or .schema
-    if re.search(r'(?i)(from\s(?:\s*[\w\d.]+(?:\s*,\s*)?)*$)|(^\s*\.schema)', readline.get_line_buffer()[0:readline.get_begidx()], re.DOTALL| re.UNICODE):
+    elif re.search(r'(?i)(from\s(?:\s*[\w\d.]+(?:\s*,\s*)?)*$)|(^\s*\.schema)', beforecompl, re.DOTALL| re.UNICODE):
         completitions=localltables[:]
     else:
         completitions=lastcols[:]+colscompl
