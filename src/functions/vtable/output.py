@@ -79,12 +79,20 @@ def getoutput(p,append,compress,comptype):
         it=fileit(source,append)
     return it
 
-def autoext(f, ftype, extlist):
+def autoext(f, ftype, typelist):
     fname, ext=os.path.splitext(f)
     if ext=='' and ftype in extlist:
         ext=extlist[ftype]
         return fname+'.'+ext
     return f
+
+def autotype(f, extlist):
+    fname, ext=os.path.splitext(f)
+    if ext!='':
+        ext=ext[1:]
+        if ext in extlist:
+            return extlist[ext]
+    return 'tsv'
 
 def outputData(diter,*args,**formatArgs):
     ### Parameter handling ###
@@ -99,7 +107,8 @@ def outputData(diter,*args,**formatArgs):
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']='tsv'
+        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'txt':'plain'})
+        
     if 'header' not in formatArgs:
         header=False
     else:
@@ -116,9 +125,9 @@ def outputData(diter,*args,**formatArgs):
         append=formatArgs['append']
         del formatArgs['append']
 
-    elist={'csv':'csv', 'tsv':'xls', 'plain':'txt'}
+    type2ext={'csv':'csv', 'tsv':'xls', 'plain':'txt'}
 
-    where=autoext(where, formatArgs['mode'], elist)
+    where=autoext(where, formatArgs['mode'], type2ext)
 
     fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
@@ -133,7 +142,7 @@ def outputData(diter,*args,**formatArgs):
                     csvprinter.writerow([h[0] for h in headers])
                     header=False
                 csvprinter.writerow(row)
-        if formatArgs['mode']=='tsv':
+        elif formatArgs['mode']=='tsv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel-tab',**formatArgs)
             for row,headers in diter:
