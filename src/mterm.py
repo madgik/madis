@@ -119,8 +119,8 @@ def mcomplete(textin,state):
 
     localltables=[x+tail for x in alltablescompl]
 
-    #Detect if in simplified 'from'
-    if re.search(r'(?i)from\s(?:\s*[\w\d.]+(?:\s*,\s*)?)*$', readline.get_line_buffer()[0:readline.get_begidx()], re.DOTALL| re.UNICODE):
+    #Detect if in simplified 'from' or .schema
+    if re.search(r'(?i)(from\s(?:\s*[\w\d.]+(?:\s*,\s*)?)*$)|(^\s*\.schema)', readline.get_line_buffer()[0:readline.get_begidx()], re.DOTALL| re.UNICODE):
         completitions=localltables[:]
     else:
         completitions=lastcols[:]+colscompl
