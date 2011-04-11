@@ -125,7 +125,7 @@ def mcomplete(textin,state):
         if text[-1]=='.':
             tail='..'
 
-    localltables=[x+tail for x in alltablescompl]
+    localtables=[]
 
     beforecompl= readline.get_line_buffer()[0:readline.get_begidx()]
 
@@ -134,10 +134,12 @@ def mcomplete(textin,state):
         completitions=os.listdir(os.getcwdu())
     #Detect if in simplified 'from' or .schema
     elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)', beforecompl, re.DOTALL| re.UNICODE):
-        completitions=localltables[:]
+        localtables=alltablescompl[:]
+        completitions=localtables
     else:
+        localtables=[x+tail for x in alltablescompl]
         completitions=lastcols[:]+colscompl
-        completitions+=sqlandmtermstatements+allfuncs+localltables
+        completitions+=sqlandmtermstatements+allfuncs+localtables
 
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
 
@@ -150,7 +152,7 @@ def mcomplete(textin,state):
 
     if state<len(hits):
         sqlstatem=set(sqlandmtermstatements)
-        altset=set(localltables)
+        altset=set(localtables)
         if hits[state]=='..':
             if text=='..' and lastcols!=[]:
                 return prefix+', '.join([normalizename(x) for x in lastcols])+' '
