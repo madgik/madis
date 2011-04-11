@@ -110,6 +110,14 @@ def normalizename(col):
 
 def mcomplete(textin,state):
     text=textin
+
+    #Complete \t to tabs
+    if text[-2:]=='\\t':
+        if state==0:
+            return text[:-2]+'\t'
+        else:
+            return
+        
     postfix=''
     prefix=''
     tail=''
@@ -262,6 +270,7 @@ colscompl=[]
 
 readline.set_completer(mcomplete)
 readline.parse_and_bind("tab: complete")
+readline.set_completer_delims(' \t\n`!@#$^&*()=+[{]}|;:\'",<>?')
 
 #Intro Message
 print mtermdetails
