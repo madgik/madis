@@ -1,5 +1,5 @@
 # MIT Licensed
-# Copyright (c) 2009 Peter Shinners <pete@shinners.org> 
+# Copyright (c) 2009-2010 Peter Shinners <pete@shinners.org> 
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -50,7 +50,7 @@ import time
 
 
 
-__version__ = "1.0"
+__version__ = "1.2"
 __author__ = "Peter Shinners <pete@shinners.org>"
 __license__ = "MIT"
 __url__ = "http://code.google.com/p/reimport"
@@ -130,7 +130,7 @@ def reimport(*modules):
     oldModules = {}
     for name in reloadNames:
         oldModules[name] = sys.modules.pop(name)
-    ignores = (id(oldModules),)
+    ignores = (id(oldModules), id(__builtins__))
     prevNames = set(sys.modules)
 
     # Reimport modules, trying to rollback on exceptions
@@ -157,6 +157,20 @@ def reimport(*modules):
     now = time.time() - 1.0
     for name in newNames:
         _module_timestamps[name] = (now, True)
+
+    # Push exported namespaces into parent packages
+    pushSymbols = {}
+    for name in newNames:
+        oldModule = oldModules.get(name)
+        if not oldModule:
+            continue
+        parents = _find_parent_importers(name, oldModule, newNames)
+        pushSymbols[name] = parents
+    for name, parents in pushSymbols.iteritems():
+        for parent in parents:
+            oldModule = oldModules[name]
+            newModule = sys.modules[name]
+            _push_imported_symbols(newModule, oldModule, parent)
 
     # Rejigger the universe
     for name in newNames:
@@ -287,6 +301,61 @@ def _package_depth_sort(names, reverse):
 
 
 
+def _find_module_exports(module):
+    all = getattr(module, "__all__", ())
+    if not all:
+        all = [n for n in dir(module) if n[0] != "_"]
+    return set(all)
+
+
+
+def _find_parent_importers(name, oldModule, newNames):
+    """Find parents of reimported module that have all exported symbols"""
+    parents = []
+
+    # Get exported symbols
+    exports = _find_module_exports(oldModule)
+    if not exports:
+        return parents
+
+    # Find non-reimported parents that have all old symbols
+    parent = name
+    while True:
+        names = parent.rsplit(".", 1)
+        if len(names) <= 1:
+            break
+        parent = names[0]
+        if parent in newNames:
+            continue
+        parentModule = sys.modules[parent]
+        if not exports - set(dir(parentModule)):
+            parents.append(parentModule)
+    
+    return parents
+
+
+def _push_imported_symbols(newModule, oldModule, parent):
+    """Transfer changes symbols from a child module to a parent package"""
+    # This assumes everything in oldModule is already found in parent
+    oldExports = _find_module_exports(oldModule)
+    newExports = _find_module_exports(newModule)
+
+    # Delete missing symbols
+    for name in oldExports - newExports:
+        delattr(parent, name)
+    
+    # Add new symbols
+    for name in newExports - oldExports:
+        setattr(parent, name, getattr(newModule, name))
+    
+    # Update existing symbols
+    for name in newExports & oldExports:
+        oldValue = getattr(oldModule, name)
+        if getattr(parent, name) is oldValue:
+            setattr(parent, name, getattr(newModule, name))
+    
+
+
 # To rejigger is to copy internal values from new to old
 # and then to swap external references from old to new
 
@@ -302,19 +371,14 @@ def _rejigger_module(old, new, ignores):
     # Get filename used by python code
     filename = new.__file__
     fileext = os.path.splitext(filename)
-    if fileext in (".pyo", ".pyc", ".pyw"):
-        filename = filename[:-1]
 
     for name, value in newVars.iteritems():
-        try: objfile = inspect.getsourcefile(value)
-        except TypeError: objfile = ""
-        
         if name in oldVars:
             oldValue = oldVars[name]
             if oldValue is value:
                 continue
 
-            if objfile == filename:
+            if _from_file(filename, value):
                 if inspect.isclass(value):
                     _rejigger_class(oldValue, value, ignores)
                     
@@ -327,9 +391,21 @@ def _rejigger_module(old, new, ignores):
         if name not in newVars:
             value = getattr(old, name)
             delattr(old, name)
-            _remove_refs(value, ignores)
+            if _from_file(filename, value):
+                if inspect.isclass(value) or inspect.isfunction(value):
+                    _remove_refs(value, ignores)
     
     _swap_refs(old, new, ignores)
+
+
+
+def _from_file(filename, value):
+    """Test if object came from a filename, works for pyc/py confusion"""
+    try:
+        objfile = inspect.getsourcefile(value)
+    except TypeError:
+        return False
+    return bool(objfile) and objfile.startswith(filename)
 
 
 
@@ -422,8 +498,6 @@ def _unimport_class(old, ignores):
             _remove_refs(value, ignores)
 
     _remove_refs(old, ignores)
-
-
 
 
 
