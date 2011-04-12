@@ -1,6 +1,7 @@
 import Queue
 import setpath
 import functions
+import datetime
 from lib import iso8601
 
 __docformat__ = 'reStructuredText en'
@@ -141,7 +142,63 @@ class avgdtdiff:
             return None
         return float(avgdiff)/cntdiff
 
-        
+class frecencyindex:
+    """
+    .. function:: frecencyindex(date)
+
+    Returns the frecency Index which is computed based on a set of *date* values, using predifend time-windows.
+    Input dates should be in :ref:`ISO 8601 format <iso8601>`.
+
+    Examples:
+
+    >>> table1('''
+    ... '2011-04-01 00:04:37'
+    ... '2011-01-01 00:04:39'
+    ... '2011-02-12 00:04:40'
+    ... '2011-02-14 00:04:49'
+    ... ''')
+    >>> sql("select frecencyindex(a) from table1")
+    frecencyindex(a)
+    ----------------
+    2.9
+
+    """
+    registered=True
+
+    def __init__(self):
+        self.monthCounter=0
+        self.trimesterCounter=0
+        self.semesterCounter=0
+        self.yearCounter=0
+        self.twoyearsCounter=0
+
+    def step(self, *args):
+        if not args:
+            raise functions.OperatorError("frecencyindex","No arguments")
+
+        now = datetime.datetime.now()
+        now = iso8601.parse_date(now.strftime("%Y-%m-%d %H:%M:%S"))
+        d = args[0].replace('T',' ')
+        dt = iso8601.parse_date(args[0].replace('Z',''))
+        diff=now-dt
+
+        if (diff.days)<30:
+                    self.monthCounter+=1
+        elif (diff.days)<3*30:
+                    self.trimesterCounter+=1
+        elif (diff.days)<6*30:
+                    self.semesterCounter+=1
+        elif (diff.days)<12*30:
+                    self.yearCounter+=1
+        elif (diff.days)<24*30:
+                    self.twoyearsCounter+=1
+
+
+
+    def final(self):
+
+        return self.monthCounter*1 + self.trimesterCounter*0.7 + self.semesterCounter*0.5 + self.yearCounter*0.3+ self.twoyearsCounter*0.2
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
