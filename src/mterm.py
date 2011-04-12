@@ -36,15 +36,22 @@ class mtermoutput(csv.Dialect):
 def reloadfunctions():
     global connection, automatic_reload
 
-    if automatic_reload and len(lib.reimport.modified())!=0:
-        tmp_settings=functions.settings
-        tmp_vars=functions.variables
-        connection.close()
-        lib.reimport.reimport(functions)
-        connection = functions.Connection(db)
-        functions.settings=tmp_settings
-        functions.variables=tmp_vars
-        functions.register(connection)
+    if not automatic_reload:
+        return
+
+    modified=lib.reimport.modified()
+
+    if len(modified)==0 or (modified==['__main__']):
+        return
+
+    tmp_settings=functions.settings
+    tmp_vars=functions.variables
+    connection.close()
+    lib.reimport.reimport(functions)
+    connection = functions.Connection(db)
+    functions.settings=tmp_settings
+    functions.variables=tmp_vars
+    functions.register(connection)
 
 def raw_input_no_history(*args):
     try:
