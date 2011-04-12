@@ -10,10 +10,11 @@ import logging
 import re
 import sys
 from lib import simplequeryparse
-
+import compiler.consts
 
 firstimport=True
 test_connection = None
+opencursors=[]
 
 settings={
 'tracing':False,
@@ -107,8 +108,33 @@ def checkhassetschema(vts,vt):
                 return False
     return True
 
+def isgenerator(func):
+    '''Check the bitmask of `func` for the magic generator flag.'''
+    return bool(func.func_code.co_flags & compiler.consts.CO_GENERATOR)
+
+def cursorinexec(c):
+    try:
+        c.getdescription()
+        return True
+    except apsw.CursorClosedError:
+        return False
+    except apsw.ExecutionCompleteError:
+        return False
+
+def cleanopencursors():
+    global opencursors
+
+    outoc=[]
+
+    for c in opencursors:
+        if cursorinexec(c):
+           outoc+=[c]
+    opencursors=outoc
+
 class Cursor(object):
     def __init__(self,w):
+        global opencursors
+        opencursors.append(self)
         self.__wrapped=w
         self.__vtables=[]
         self.__initialised=True
@@ -127,6 +153,8 @@ class Cursor(object):
     def executetrace(self,statements,bindings=None):
         return self.__wrapped.execute(statements,bindings)
     def execute(self,statements,bindings=None,parse=True): #overload execute statement
+        cleanopencursors()
+        
         if bindings==None:
             bindings=variables.__dict__
         else:
