@@ -140,6 +140,7 @@ class ExpCursor:
                             nnames += list(first)
                         else:
                             if len(first)==1:
+
                                 nnames +=[names[i]]
                             else:
                                 nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
@@ -176,7 +177,10 @@ class ExpCursor:
             for exp in exprown(nrow):
                 yield exp
             for i in iterdeletelist:
-                del(self.connection.openiters[i])
+                try:
+                    del(self.connection.openiters[i])
+                except:
+                    pass
     def next(self):        
         return self.it.next()
     def close(self):      
