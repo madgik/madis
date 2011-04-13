@@ -122,8 +122,6 @@ def iterwrapper(connection, func, *args):
 class Cursor(object):
     def __init__(self,w):
         self.__wrapped=w
-        self.__pconnection=self.getconnection()
-        self.__pconnection.opencursors.add(self)
         self.__vtables=[]
         self.__initialised=True
         
@@ -177,7 +175,6 @@ class Cursor(object):
             finally:
                 try:
                     self.cleanupvts()
-#                    self.__pconnection.cleanopeniters()
                 except:
                     pass
 
@@ -185,9 +182,7 @@ class Cursor(object):
         return self.__wrapped.getdescription()
 
     def close(self, force=False):
-        self.__pconnection.opencursors.remove(self)
         self.cleanupvts()
-
         return self.__wrapped.close(force)
 
     def cleanupvts(self):
@@ -195,45 +190,14 @@ class Cursor(object):
             self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
             self.__vtables=[]
 
-    def __del__(self):
-        c=self.__pconnection
-        try:
-            c.opencursors.remove(self)
-            self.__pconnection.cleanopeniters()
-        except:
-            pass
-
-
 class Connection(apsw.Connection):
     def cursor(self):
-        if 'openiter' not in self.__dict__:
-            self.openiters={}
-        if 'opencursors' not in self.__dict__:
-            self.opencursors=set()
-            
+        self.openiters={}
         return Cursor(apsw.Connection.cursor(self))
     
     @echofunctionmember
     def close(self):
-        self.cleanopeniters()
         apsw.Connection.close(self)
-
-    def cleanopeniters(self):
-
-        def cursorinexec(c):
-            try:
-                c.getdescription()
-                return True
-            except apsw.CursorClosedError:
-                return False
-            except apsw.ExecutionCompleteError:
-                return False
-
-        if self.opencursors!=None:
-            for c in self.opencursors:
-                if cursorinexec(c):
-                   return
-        self.openiters={}
 
 def register(connection=None):
     global firstimport, oldexecdb
