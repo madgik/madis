@@ -117,7 +117,7 @@ def rowiterwrapper(func, *args):
     global openiters
     i=func(*args)
     openiters[str(i)]=i
-    return 'iter:'+str(i)
+    return 'ITER'+chr(30)+str(i)
 
 def cursorinexec(c):
     try:
@@ -160,7 +160,7 @@ class Cursor(object):
     def execute(self,statements,bindings=None,parse=True): #overload execute statement
         cleanopencursors()
         global opencursors
-        opencursors.append(self)
+#        opencursors.append(self)
         
         if bindings==None:
             bindings=variables.__dict__
@@ -349,6 +349,7 @@ def register_ops(module, connection):
                 functions['row'][opname] = fobject
                 if isgenerator(fobject):
                     fobject=lambda *args: rowiterwrapper(functions['row'][opname], *args)
+                    fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
 
