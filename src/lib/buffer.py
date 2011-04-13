@@ -1,6 +1,7 @@
 import StringIO ,cPickle , tempfile ,gzip , os , struct
 from zlib import compress, decompress
 import jlist
+import types
 
 class BufferException(Exception):
     pass
@@ -110,7 +111,6 @@ class CompBuffer:
 
     @staticmethod
     def deserialize(obj):
-        import types
         if type(obj) not in types.StringTypes or not obj.startswith(CompBuffer.__header):
             return False
         obj=str(obj)
