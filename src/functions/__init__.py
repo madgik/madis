@@ -26,6 +26,7 @@ settings={
 
 functions = {'row':{},'aggregate':{}, 'vtable':{}}
 multiset_functions = {}
+openiters={}
 
 variables=lambda x:x
 variables.flowname=''
@@ -112,6 +113,12 @@ def isgenerator(func):
     '''Check the bitmask of `func` for the magic generator flag.'''
     return bool(func.func_code.co_flags & compiler.consts.CO_GENERATOR)
 
+def rowiterwrapper(func, *args):
+    global openiters
+    i=func(*args)
+    openiters[str(i)]=i
+    return 'iter:'+str(i)
+
 def cursorinexec(c):
     try:
         c.getdescription()
@@ -133,8 +140,6 @@ def cleanopencursors():
 
 class Cursor(object):
     def __init__(self,w):
-        global opencursors
-        opencursors.append(self)
         self.__wrapped=w
         self.__vtables=[]
         self.__initialised=True
@@ -154,6 +159,8 @@ class Cursor(object):
         return self.__wrapped.execute(statements,bindings)
     def execute(self,statements,bindings=None,parse=True): #overload execute statement
         cleanopencursors()
+        global opencursors
+        opencursors.append(self)
         
         if bindings==None:
             bindings=variables.__dict__
@@ -340,6 +347,8 @@ def register_ops(module, connection):
                 if opexists(opname):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
+                if isgenerator(fobject):
+                    fobject=lambda *args: rowiterwrapper(functions['row'][opname], *args)
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
 
