@@ -166,7 +166,7 @@ class rowobj():
                 fullp='/'+'/'.join(path)
                 if shortp!=fullp:
                     msg+=shortp+'\n'
-                msg+=fullp+'\nThe data to insert into path was:\n'+data
+                msg+=fullp+'\nThe data to insert into path was:\n'+functions.mstr(data)
                 raise etree.ParseError(msg)
         else:
             i=1
