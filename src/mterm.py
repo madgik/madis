@@ -437,7 +437,7 @@ while True:
             print e
             continue
         except Exception, e:
-            print "Unknown error:"+str(e)
+            print "Unknown error:"+functions.mstr(e)
             #raise
         finally:
             try:
