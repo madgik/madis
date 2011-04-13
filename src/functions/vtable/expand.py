@@ -87,9 +87,10 @@ from lib.buffer import CompBuffer
 
 from vtiterable import SourceVT
 from lib.iterutils import peekable
+import itertools
 from lib.sqlitetypes import getElementSqliteType
 import re
-import itertools
+import os
 
 registered=True
 
@@ -126,25 +127,27 @@ class ExpCursor:
             nnames = []
             ttypes=[]
             destroylist = []
-            iterdeletelist=[]
 
             for i in xrange(len(row)):
                 obj=row[i]
                 if type(obj) in (str, unicode) and obj.startswith(functions.iterheader):
                     oiter=self.connection.openiters[obj]
-                    iterdeletelist.append(obj)
                     first = oiter.next()
                     if self.nonames:
                         ttypes+=['GUESS']*len(first)
                         if noas.match(names[i]):
-                            nnames += list(first)
+                            if type(first)!=tuple:
+                                nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
+                                oiter=itertools.chain([first], oiter)
+                            else:
+                                nnames += list(first)
                         else:
                             if len(first)==1:
 
                                 nnames +=[names[i]]
                             else:
                                 nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
-                    nrow += [oiter]
+                    nrow += [(obj, oiter)]
                 else:
                     compressedobj = CompBuffer.deserialize(obj)
                     if compressedobj:
@@ -174,20 +177,34 @@ class ExpCursor:
                     self.names.append(i)
                 self.destroylist=destroylist
                 self.nonames=False            
-            for exp in exprown(nrow):
+            for exp in self.exprown(nrow):
                 yield exp
-            for i in iterdeletelist:
-                try:
-                    del(self.connection.openiters[i])
-                except:
-                    pass
+
     def next(self):        
         return self.it.next()
     def close(self):      
         destroy(self.destroylist)
         self.cursor.close()
-        
 
+    def exprown(self, row):
+        for i in xrange(len(row)):
+            iobj=row[i]
+            if type(iobj)==tuple:
+                for el in iobj[1]:
+                    for l in self.exprown(row[(i+1):]):
+                        yield list(row[:i])+list(el)+list(l)
+                try:
+                    del(self.connection.openiters[iobj[0]])
+                except:
+                    pass
+                return
+
+            if hasattr(iobj,'__iter__'):
+                for el in iobj:
+                    for l in self.exprown(row[(i+1):]):
+                        yield list(row[:i])+list(el)+list(l)
+                return
+        yield row
 
 class ExpandVT:
     def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
@@ -215,19 +232,9 @@ def Source():
     return SourceVT(ExpandVT)
 
 def destroy(files):
-    import os
     for f in files:
         os.remove(f)
 
-def exprown(row):
-    for i in xrange(len(row)):
-        compressedobj=row[i]
-        if hasattr(compressedobj,'__iter__'):
-            for el in compressedobj:
-                for l in exprown(row[(i+1):]):
-                    yield list(row[:i])+list(el)+list(l)
-            return
-    yield row
 
 """
 Example
