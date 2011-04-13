@@ -204,7 +204,9 @@ class Transclass:
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end))
             else:
                 from_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[query.token_index(from_start)+1], from_end, exclude_end=True))
-            for t in [x for x in expand_type(from_range, (sqlparse.sql.Identifier,sqlparse.sql.IdentifierList))]: #from_range.tokens[:]:
+            for t in [x for x in expand_type(from_range, (sqlparse.sql.Identifier,sqlparse.sql.IdentifierList))]:
+                if unicode(t).lower() in ('group', 'order'):
+                    break
                 if type(t) is sqlparse.sql.Function:
                     vname=vt_name(unicode(t))
                     fname=t.tokens[0].get_real_name().lower()
@@ -213,6 +215,8 @@ class Transclass:
                         t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)] or \
                ( isinstance(token, sqlparse.sql.Function) and re.match('\w+\s\(',unicode(token)), re.UNICODE )
                         t.__class__=sqlparse.sql.Identifier
+                    else:
+                        raise functions.MadisError("Virtual table '"+fname+"' does not exist")
 
         # Process EXPAND functions
         for t in flatten_with_type(select_range, sqlparse.sql.Function):
