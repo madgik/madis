@@ -213,8 +213,6 @@ class Transclass:
                         t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)] or \
                ( isinstance(token, sqlparse.sql.Function) and re.match('\w+\s\(',unicode(token)), re.UNICODE )
                         t.__class__=sqlparse.sql.Identifier
-                    else:
-                        raise functions.MadisError("Virtual table '"+fname+"' does not exist")
 
         # Process EXPAND functions
         for t in flatten_with_type(select_range, sqlparse.sql.Function):
