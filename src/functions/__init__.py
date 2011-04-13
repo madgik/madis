@@ -14,7 +14,6 @@ import compiler.consts
 
 firstimport=True
 test_connection = None
-opencursors=[]
 
 settings={
 'tracing':False,
@@ -26,7 +25,7 @@ settings={
 
 functions = {'row':{},'aggregate':{}, 'vtable':{}}
 multiset_functions = {}
-openiters={}
+iterheader='ITER'+chr(30)
 
 variables=lambda x:x
 variables.flowname=''
@@ -113,34 +112,18 @@ def isgenerator(func):
     '''Check the bitmask of `func` for the magic generator flag.'''
     return bool(func.func_code.co_flags & compiler.consts.CO_GENERATOR)
 
-def rowiterwrapper(func, *args):
-    global openiters
+def iterwrapper(connection, func, *args):
+    global iterheader
     i=func(*args)
-    openiters[str(i)]=i
-    return 'ITER'+chr(30)+str(i)
-
-def cursorinexec(c):
-    try:
-        c.getdescription()
-        return True
-    except apsw.CursorClosedError:
-        return False
-    except apsw.ExecutionCompleteError:
-        return False
-
-def cleanopencursors():
-    global opencursors
-
-    outoc=[]
-
-    for c in opencursors:
-        if cursorinexec(c):
-           outoc+=[c]
-    opencursors=outoc
+    si=iterheader+str(i)
+    connection.openiters[si]=i
+    return si
 
 class Cursor(object):
     def __init__(self,w):
         self.__wrapped=w
+        self.__pconnection=self.getconnection()
+        self.__pconnection.opencursors.add(self)
         self.__vtables=[]
         self.__initialised=True
         
@@ -148,20 +131,19 @@ class Cursor(object):
         if self.__dict__.has_key(attr):
             return self.__dict__[attr]
         return getattr(self.__wrapped, attr)
+    
     def __setattr__(self, attr, value):
         if self.__dict__.has_key(attr):
             return dict.__setattr__(self, attr, value)
         if not self.__dict__.has_key('_Cursor__initialised'):  # this test allows attributes to be set in the __init__ method
             return dict.__setattr__(self, attr, value)
         return setattr(self.__wrapped, attr, value)
+
     @echofunctionmember
     def executetrace(self,statements,bindings=None):
         return self.__wrapped.execute(statements,bindings)
+
     def execute(self,statements,bindings=None,parse=True): #overload execute statement
-        cleanopencursors()
-        global opencursors
-#        opencursors.append(self)
-        
         if bindings==None:
             bindings=variables.__dict__
         else:
@@ -194,26 +176,64 @@ class Cursor(object):
                 raise
             finally:
                 try:
-                    if self.__vtables!=[]:
-                        self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
-                        self.__vtables=[]
+                    self.cleanupvts()
+#                    self.__pconnection.cleanopeniters()
                 except:
                     pass
 
     def getdescription(self):
         return self.__wrapped.getdescription()
+
     def close(self, force=False):
+        self.__pconnection.opencursors.remove(self)
+        self.cleanupvts()
+
+        return self.__wrapped.close(force)
+
+    def cleanupvts(self):
         if self.__vtables!=[]:
             self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
             self.__vtables=[]
-        return self.__wrapped.close(force)
+
+    def __del__(self):
+        c=self.__pconnection
+        try:
+            c.opencursors.remove(self)
+            self.__pconnection.cleanopeniters()
+        except:
+            pass
+
 
 class Connection(apsw.Connection):
     def cursor(self):
+        if 'openiter' not in self.__dict__:
+            self.openiters={}
+        if 'opencursors' not in self.__dict__:
+            self.opencursors=set()
+            
         return Cursor(apsw.Connection.cursor(self))
+    
     @echofunctionmember
     def close(self):
+        self.cleanopeniters()
         apsw.Connection.close(self)
+
+    def cleanopeniters(self):
+
+        def cursorinexec(c):
+            try:
+                c.getdescription()
+                return True
+            except apsw.CursorClosedError:
+                return False
+            except apsw.ExecutionCompleteError:
+                return False
+
+        if self.opencursors!=None:
+            for c in self.opencursors:
+                if cursorinexec(c):
+                   return
+        self.openiters={}
 
 def register(connection=None):
     global firstimport, oldexecdb
@@ -348,7 +368,7 @@ def register_ops(module, connection):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
                 if isgenerator(fobject):
-                    fobject=lambda *args: rowiterwrapper(functions['row'][opname], *args)
+                    fobject=lambda *args: iterwrapper(connection, functions['row'][opname], *args)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
