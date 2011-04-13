@@ -89,6 +89,7 @@ from vtiterable import SourceVT
 from lib.iterutils import peekable
 from lib.sqlitetypes import getElementSqliteType
 import re
+import itertools
 
 registered=True
 
@@ -96,11 +97,12 @@ noas=re.compile('.*\(.*\).*')
 
 class ExpCursor:
     def __init__(self,connection,first,names,types,query):
+        self.connection=connection
         self.cursor=connection.cursor()        
         self.names=names
         self.types=types
         self.nonames=first
-        self.destroylist=[]     
+        self.destroylist=[]
         self.it=peekable(self._expanditern(self.cursor.execute(query,parse=False),self.cursor.getdescription))
         if self.nonames:
             try:
@@ -124,13 +126,14 @@ class ExpCursor:
             nnames = []
             ttypes=[]
             destroylist = []
+            iterdeletelist=[]
+
             for i in xrange(len(row)):
-                compressedobj = CompBuffer.deserialize(row[i])
-                if compressedobj:
-                    f = compressedobj.getfile()
-                    if f:
-                        destroylist += [f]
-                    first = compressedobj.next()
+                obj=row[i]
+                if type(obj) in (str, unicode) and obj.startswith(functions.iterheader):
+                    oiter=self.connection.openiters[obj]
+                    iterdeletelist.append(obj)
+                    first = oiter.next()
                     if self.nonames:
                         ttypes+=['GUESS']*len(first)
                         if noas.match(names[i]):
@@ -140,12 +143,29 @@ class ExpCursor:
                                 nnames +=[names[i]]
                             else:
                                 nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
-                    nrow += [compressedobj]
+                    nrow += [oiter]
                 else:
-                    if self.nonames:
-                        ttypes += [types[i]]
-                        nnames += [names[i]]
-                    nrow += [row[i]]
+                    compressedobj = CompBuffer.deserialize(obj)
+                    if compressedobj:
+                        f = compressedobj.getfile()
+                        if f:
+                            destroylist += [f]
+                        first = compressedobj.next()
+                        if self.nonames:
+                            ttypes+=['GUESS']*len(first)
+                            if noas.match(names[i]):
+                                nnames += list(first)
+                            else:
+                                if len(first)==1:
+                                    nnames +=[names[i]]
+                                else:
+                                    nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
+                        nrow += [compressedobj]
+                    else:
+                        if self.nonames:
+                            ttypes += [types[i]]
+                            nnames += [names[i]]
+                        nrow += [obj]
             if self.nonames:
                 for i in ttypes:
                     self.types.append(i)
@@ -155,6 +175,8 @@ class ExpCursor:
                 self.nonames=False            
             for exp in exprown(nrow):
                 yield exp
+            for i in iterdeletelist:
+                del(self.connection.openiters[i])
     def next(self):        
         return self.it.next()
     def close(self):      
