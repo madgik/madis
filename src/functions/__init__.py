@@ -341,11 +341,19 @@ def register_ops(module, connection):
                 if opexists(opname):
                     raise MadisError("Extended SQLERROR: Aggregate operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['aggregate'][opname] = fobject
+                if isgenerator(fobject.final):
+                    fobject.__iterated_final__=fobject.final
+                    fobject.final=lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
+                    fobject.multiset=True
+
                 setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
                 connection.createaggregatefunction(opname, fobject.factory)
 
-            if hasattr(fobject, 'multiset') and type(fobject.multiset).__name__ == 'bool' and fobject.multiset == True:
-                    multiset_functions[opname]=True
+            try:
+                if fobject.multiset == True:
+                        multiset_functions[opname]=True
+            except:
+                pass
 
 def testfunction():
     global test_connection, settings
