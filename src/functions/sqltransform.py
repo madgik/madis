@@ -224,7 +224,7 @@ class Transclass:
                 fname=t.tokens[0].get_real_name()
             else:
                 fname=unicode(t.tokens[0])
-            fname=fname.lower()
+            fname=fname.lower().strip()
             if fname in self.multiset_functions:
                 t=s_orig.group_tokens(sqlparse.sql.Parenthesis, s_orig.tokens_between(s_start,s_end))
                 vname=vt_name(unicode(t))
