@@ -201,16 +201,10 @@ def jsplitv(*args):
 
     """
 
-    b=CompBuffer()
-    b.writeheader(['C1'])
-
     for j1 in jlist.fromj(*args):
-        b.write([j1])
-
-    return b.serialize()
+        yield [j1]
 
 jsplitv.registered=True
-jsplitv.multiset=True
 
 def jsplit(*args):
 
@@ -228,20 +222,15 @@ def jsplit(*args):
 
     """
 
-    b=CompBuffer()
-    
     fj=jlist.fromj(*args)
 
     if fj==[]:
-        return emptyBuffer('C1')
+        yield ('C1',)
             
-    b.writeheader( ['C'+str(x+1) for x in xrange(len(fj))] )
-    b.write(fj)
-
-    return b.serialize()
+    yield tuple( ['C'+str(x+1) for x in xrange(len(fj))] )
+    yield fj
 
 jsplit.registered=True
-jsplit.multiset=True
 
 def jflatten(*args):
 
