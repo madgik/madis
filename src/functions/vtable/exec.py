@@ -206,6 +206,8 @@ def execflow(diter,connection,*args,**kargs):
                     continue
                 else:
                     c.close()
+                    c=con.cursor()
+                    c.execute('rollback')
                     raise
 
             if functions.settings['logging']:
