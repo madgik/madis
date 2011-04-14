@@ -198,13 +198,14 @@ def execflow(diter,connection,*args,**kargs):
             try:
                 for i in c.execute(query):
                     pass
-            except Exception,e: #Cathing IGNORE FAIL EXCEPTION                
+            except Exception,e: #Cathing IGNORE FAIL EXCEPTION          
                 if catchexception:
                     if functions.settings['logging']:
                         lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
                         lg.exception("Ignoring Exception: "+str(e))
                     continue
                 else:
+                    c.close()
                     raise
 
             if functions.settings['logging']:
