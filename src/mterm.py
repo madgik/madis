@@ -430,10 +430,12 @@ while True:
                 update_tablelist()
 
         except KeyboardInterrupt:
+            cursor.close()
             schemaprint(lastcols)
             print "KeyboardInterrupt exception: Query execution stopped"
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
+            cursor.close()
             print e
             continue
         except Exception, e:
