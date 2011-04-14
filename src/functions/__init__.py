@@ -309,6 +309,12 @@ def register_ops(module, connection):
         else:
             return False
 
+    def wraprowiter(connection, opname):
+        return lambda *args: iterwrapper(connection, functions['row'][opname], *args)
+
+    def wrapagriter(connection, opname):
+        return lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
+
     for f in module.__dict__:
         fobject = module.__dict__[f]
         if hasattr(fobject, 'registered') and type(fobject.registered).__name__ == 'bool' and fobject.registered == True:
@@ -332,7 +338,7 @@ def register_ops(module, connection):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
                 if isgenerator(fobject):
-                    fobject=lambda *args: iterwrapper(connection, functions['row'][opname], *args)
+                    fobject=wraprowiter(connection, opname)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
@@ -343,7 +349,7 @@ def register_ops(module, connection):
                 functions['aggregate'][opname] = fobject
                 if isgenerator(fobject.final):
                     fobject.__iterated_final__=fobject.final
-                    fobject.final=lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
+                    fobject.final=wrapagriter(connection, opname)
                     fobject.multiset=True
 
                 setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
