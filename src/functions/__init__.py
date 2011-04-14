@@ -339,7 +339,7 @@ def register_ops(module, connection):
                 functions['row'][opname] = fobject
                 if isgenerator(fobject):
                     fobject=wraprowiter(connection, opname)
-                    fobject.multiset=True
+                    multiset_functions[opname]=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
 
@@ -350,16 +350,13 @@ def register_ops(module, connection):
                 if isgenerator(fobject.final):
                     fobject.__iterated_final__=fobject.final
                     fobject.final=wrapagriter(connection, opname)
-                    fobject.multiset=True
+                    multiset_functions[opname]=True
 
                 setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
                 connection.createaggregatefunction(opname, fobject.factory)
 
-            try:
-                if fobject.multiset == True:
-                        multiset_functions[opname]=True
-            except:
-                pass
+            if hasattr(fobject, 'multiset') and type(fobject.multiset).__name__ == 'bool' and fobject.multiset == True:
+                    multiset_functions[opname]=True
 
 def testfunction():
     global test_connection, settings
