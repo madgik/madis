@@ -2,7 +2,6 @@
 import urlparse
 import os
 import mimetypes
-from lib.buffer import CompBuffer
 
 def urlsplit(*args):
 
@@ -34,9 +33,7 @@ def urlsplit(*args):
     http   | www.test.com | /             | search.csv | csv         |         | p=5    | q=test | hl=en
     """
 
-    c=CompBuffer()
-
-    c.writeheader(['scheme', 'netloc', 'path', 'filename', 'type', 'subtype', 'params', 'query', 'fragment'])
+    yield ('scheme', 'netloc', 'path', 'filename', 'type', 'subtype', 'params', 'query', 'fragment')
 
     url=''.join(args)
     u=urlparse.urlparse(''.join(args))
@@ -58,8 +55,7 @@ def urlsplit(*args):
         if len(m1)>0 and m1[0]=='.':
             m1=m1[1:]
 
-    c.write([u[0], u[1], path, filename, m1, m2, u[3], u[4], u[5]])
-    return c.serialize()
+    yield [u[0], u[1], path, filename, m1, m2, u[3], u[4], u[5]]
 
 urlsplit.registered=True
 urlsplit.multiset=True
