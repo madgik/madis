@@ -348,8 +348,17 @@ while True:
             if not argument:
                 statement="select sql from sqlite_master where sql is not null;"
             else:
-                argument=argument.rstrip(';')
-                statement="select sql from sqlite_master where tbl_name like '%s' and sql is not null;" %(argument)
+                argument=argument.rstrip('; ')
+                update_tablelist()
+                if argument not in alltables:
+                    print "No table found"
+                else:
+                    db='main'
+                    if '.' in argument:
+                        sa=argument.split('.')
+                        db=sa[0]
+                        argument=''.join(sa[1:])
+                    statement="select sql from "+db+".sqlite_master where tbl_name like '%s' and sql is not null;" %(argument)
         elif "quit".startswith(command):
             connection.close()
             exit(0)
