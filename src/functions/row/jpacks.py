@@ -20,12 +20,12 @@ def jpack(*args):
     >>> sql("select jpack('a','b',3)")
     jpack('a','b',3)
     ----------------
-    ["a", "b", 3]
+    ["a","b",3]
 
     >>> sql("select jpack('a', jpack('b',3))")
     jpack('a', jpack('b',3))
     ------------------------
-    ["a", ["b", 3]]
+    ["a",["b",3]]
 
     """
 
@@ -49,12 +49,12 @@ def jfilterempty(*args):
     >>> sql("select jfilterempty('a','[null]',3)")
     jfilterempty('a','[null]',3)
     ----------------------------
-    ["a", 3]
+    ["a",3]
 
     >>> sql("select jfilterempty('[3]', jpack('b', ''))")
     jfilterempty('[3]', jpack('b', ''))
     -----------------------------------
-    [3, "b"]
+    [3,"b"]
 
     """
 
@@ -105,7 +105,7 @@ def t2j(*args):
     >>> sql("select t2j(j2t('[1,2,3]'))") # doctest: +NORMALIZE_WHITESPACE
     t2j(j2t('[1,2,3]'))
     -------------------
-    ["1", "2", "3"]
+    ["1","2","3"]
 
     """
     
@@ -129,7 +129,7 @@ def jmerge(*args):
     >>> sql("select jmerge('[1,2,3]', '[1,2,3]', 'a', 3 )") # doctest: +NORMALIZE_WHITESPACE
     jmerge('[1,2,3]', '[1,2,3]', 'a', 3 )
     -------------------------------------
-    [1, 2, 3, 1, 2, 3, "a", 3]
+    [1,2,3,1,2,3,"a",3]
 
     """
 
@@ -149,7 +149,7 @@ def jset(*args):
     >>> sql("select jset('[1,2,3]', '[1,2,3]', 'b', 'a', 3 )") # doctest: +NORMALIZE_WHITESPACE
     jset('[1,2,3]', '[1,2,3]', 'b', 'a', 3 )
     ----------------------------------------
-    [1, 2, 3, "a", "b"]
+    [1,2,3,"a","b"]
 
     """
 
@@ -169,7 +169,7 @@ def jsort(*args):
     >>> sql("select jsort('[1,2,3]', '[1,2,3]', 'b', 'a', 3 )") # doctest: +NORMALIZE_WHITESPACE
     jsort('[1,2,3]', '[1,2,3]', 'b', 'a', 3 )
     -----------------------------------------
-    [1, 1, 2, 2, 3, 3, 3, "a", "b"]
+    [1,1,2,2,3,3,3,"a","b"]
 
     """
 
@@ -244,12 +244,12 @@ def jflatten(*args):
     >>> sql(''' select jflatten('1', '[2]') ''') # doctest: +NORMALIZE_WHITESPACE
     jflatten('1', '[2]')
     --------------------
-    ["1", 2]
+    ["1",2]
 
     >>> sql(''' select jflatten('[["word1", 1], ["word2", 1], [["word3", 2], ["word4", 2]], 3]') ''') # doctest: +NORMALIZE_WHITESPACE
     jflatten('[["word1", 1], ["word2", 1], [["word3", 2], ["word4", 2]], 3]')
     -------------------------------------------------------------------------
-    ["word1", 1, "word2", 1, "word3", 2, "word4", 2, 3]
+    ["word1",1,"word2",1,"word3",2,"word4",2,3]
 
     """
 
