@@ -89,7 +89,7 @@ def update_tablelist():
     cursor.close()
 
 def update_cols_for_table(t):
-    global alltablescompl, colscompl, lastcols, connection
+    global alltablescompl, colscompl, lastcols, connection, updated_tables
 
     if t!='':
         if t[-1]=='.':
@@ -97,13 +97,15 @@ def update_cols_for_table(t):
         if t[-2:]=='..':
             t=t[0:-2]
 
-    if t in alltablescompl:
+    if t in alltablescompl and t not in updated_tables:
         cursor = connection.cursor()
         cexec=cursor.execute('select * from '+str(t))
         try:
+            updated_tables.add(t)
             desc=cursor.getdescription()
             colscompl+= ['.'.join([ t, x ]) for x, y in desc]
             colscompl+= [x for x,y in desc]
+            colscompl+=[t+'..']
             colscompl=list(set(colscompl)-set(lastcols))
         except:
             pass
@@ -124,32 +126,37 @@ def mcomplete(textin,state):
         else:
             return
         
-    postfix=''
     prefix=''
-    tail=''
-    if text!='':
-        if text[-1]=='.':
-            tail='..'
 
     localtables=[]
+    completitions=[]
 
     beforecompl= readline.get_line_buffer()[0:readline.get_begidx()]
 
-    #If completition starts at a string boundary, complete from local dir
+    # Only complete '.xxx' completitions when nothing exists before completition
+    if re.match(r'\s*$', beforecompl):
+        completitions+=dotcompletitions
+
+    # If completition starts at a string boundary, complete from local dir
     if beforecompl!='' and beforecompl[-1] in ("'", '"'):
         completitions=os.listdir(os.getcwdu())
-    #Detect if in simplified 'from' or .schema
+    # Detect if in simplified 'from' or .schema
     elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)', beforecompl, re.DOTALL| re.UNICODE):
         localtables=alltablescompl[:]
         completitions=localtables
     else:
-        localtables=[x+tail for x in alltablescompl]
-        completitions=lastcols[:]+colscompl
+        localtables=[x for x in alltablescompl]
+        completitions+=lastcols+colscompl
         completitions+=sqlandmtermstatements+allfuncs+localtables
 
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
 
-    #If completing something that looks like a table, complete only from cols
+    if hits==[] and text.find('.')!=-1 and re.match(r'[\w\d._$]+', text):
+        tablename=re.match(r'(.+)\.', text).groups()[0].lower()
+        update_cols_for_table(tablename)
+        hits= [x.lower() for x in colscompl if x.lower()[:len(text)]==unicode(text.lower())]
+
+    # If completing something that looks like a table, complete only from cols
     if hits==[] and text[-2:]!='..':
         prepost=re.match(r'(.+\.)([^.]*)$', text)
         if prepost:
@@ -166,8 +173,7 @@ def mcomplete(textin,state):
                 return prefix+hits[state]
         if hits[state] in sqlstatem:
             return prefix+hits[state]+' '
-        if hits[state] in altset:
-            update_cols_for_table(text)
+        if hits[state] in colscompl:
             if text[-2:]=='..':
                 tname=text[:-2]
                 cursor = connection.cursor()
@@ -176,6 +182,7 @@ def mcomplete(textin,state):
                     return prefix+', '.join([x for x,y in cursor.getdescription()])+' '
                 except:
                     pass
+        if hits[state] in altset:
             return prefix+hits[state]
         else:
             return prefix+normalizename(hits[state])
@@ -261,11 +268,12 @@ if len(sys.argv)>2:
             pass
     sys.exit()
 
-sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter', 'limit', 'delete',
-                        '.help', '.colnames', '.schema', '.functions', '.tables', '..']
+sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter', 'limit', 'delete', '..']
+dotcompletitions=['.help', '.colnames', '.schema', '.functions', '.tables']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
+updated_tables=set()
 update_tablelist()
 lastcols=[]
 colscompl=[]
@@ -426,6 +434,7 @@ while True:
             if functions.settings['beep']:
                 print '\a'
             colscompl=[]
+            updated_tables=set()
 
             #Autoupdate in case of schema change
             if re.search(r'(?i)(create|attach)', statement):
