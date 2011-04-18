@@ -81,7 +81,7 @@ def toj(l):
                 return l[0]
         if lenl==0:
             return u'[]'
-        return json.dumps(l)
+        return json.dumps(l, separators=(',',':'))
 
 def tojstrict(l):
     if type(l)==list:
