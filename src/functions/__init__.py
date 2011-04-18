@@ -205,8 +205,6 @@ class Connection(apsw.Connection):
 def register(connection=None):
     global firstimport, oldexecdb
 
-    print "registering"
-
     if connection==None:
         connection=Connection(':memory:')
 
