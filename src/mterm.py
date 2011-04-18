@@ -51,7 +51,6 @@ def reloadfunctions():
     connection = functions.Connection(db)
     functions.settings=tmp_settings
     functions.variables=tmp_vars
-    functions.register(connection)
 
 def raw_input_no_history(*args):
     try:
@@ -240,12 +239,6 @@ if db=='' or db==':memory':
 else:
     functions.variables.execdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
     
-try:
-    functions.register(connection)
-except apsw.BusyError,e:
-    print e
-    exit(0)
-
 functions.variables.flowname='main'
 
 if len(sys.argv)>2:
