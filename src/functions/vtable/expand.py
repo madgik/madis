@@ -110,7 +110,10 @@ class ExpCursor:
                 exampleline=self.it.peek()
                 for i in xrange(len(self.types)):
                     if self.types[i]=="GUESS":
-                        self.types[i]=getElementSqliteType(exampleline[i])
+                        try:
+                            self.types[i]=getElementSqliteType(exampleline[i])
+                        except:
+                            self.types[i]='text'
             except StopIteration: #if StopIteration but names are discovered, meaning that Compbuffers where empty return schema                
                 if self.names==[]:                    
                     raise
@@ -132,7 +135,10 @@ class ExpCursor:
                 obj=row[i]
                 if type(obj) in (str, unicode) and obj.startswith(functions.iterheader):
                     oiter=self.connection.openiters[obj]
-                    first = oiter.next()
+                    try:
+                        first = oiter.next()
+                    except StopIteration:
+                        first = [None]
                     if self.nonames:
                         ttypes+=['GUESS']*len(first)
                         if noas.match(names[i]):
@@ -143,7 +149,6 @@ class ExpCursor:
                                 nnames += list(first)
                         else:
                             if len(first)==1:
-
                                 nnames +=[names[i]]
                             else:
                                 nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
