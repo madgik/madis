@@ -17,16 +17,22 @@ Examples:
 
 import setpath
 from vtout import SourceNtoOne
+import sys
+import functions
 
 registered=True
 
 def Clipout(diter):
     import lib.pyperclip as clip
     a=[]
+
     for row,header in diter:
         a.append(u'\t'.join([unicode(unicode(i).replace('\t','    ')).encode('utf-8', 'replace') for i in row]))
 
-    clip.setcb('\n'.join(a))
+    if sys.platform == "win32":
+        clip.setcb(functions.mstr('\n'.join(a)))
+    else:
+        clip.setcb('\n'.join(a))
 
 def Source():
     return SourceNtoOne(Clipout)
