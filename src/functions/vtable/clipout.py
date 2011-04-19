@@ -17,7 +17,7 @@ Examples:
 
 import setpath
 from vtout import SourceNtoOne
-import sys
+import os
 import functions
 
 registered=True
@@ -29,7 +29,7 @@ def Clipout(diter):
     for row,header in diter:
         a.append(u'\t'.join([unicode(unicode(i).replace('\t','    ')).encode('utf-8', 'replace') for i in row]))
 
-    if sys.platform == "win32":
+    if os.name == 'nt':
         clip.setcb(functions.mstr('\n'.join(a)))
     else:
         clip.setcb('\n'.join(a))

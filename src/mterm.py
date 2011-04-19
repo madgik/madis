@@ -10,8 +10,9 @@ import sys
 import re
 import apsw
 import functions
+import os
 
-if sys.platform == "win32":
+if os.name == 'nt':
     import pyreadline as readline
 else:
     import readline
