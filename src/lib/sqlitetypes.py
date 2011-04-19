@@ -1,12 +1,13 @@
 def getElementSqliteType(element):
-    if 'int' in str(type(element)):
+    elemtype=type(element)
+    if elemtype==int:
         return "integer"
-    if 'buffer' in str(type(element)):
-        return "blob"
-    if 'float' in str(type(element)):
+    if elemtype==float:
         return "real"
-    if ('str' in str(type(element))) or ('unicode' in str(type(element))) :
-        return "text"
+    if elemtype==str or elemtype==unicode:
+        return 'text'
+    if elemtype==buffer:
+        return "blob"
     return "none"
 
 def typestoSqliteTypes(type):
