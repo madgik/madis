@@ -59,6 +59,7 @@ def mstr(s):
     elif (o[0]=="'" and o[-1]=="'") or (o[0]=='"' and o[-1]=='"'):
         o=o[1:-1]
     o=o.replace('''\\n''','\n')
+    o=o.replace('''\\t''','\t')
     return o
 
 class MadisError(Exception):
