@@ -1,5 +1,7 @@
-
 # coding: utf-8
+
+import setpath
+import functions
 
 def ifthenelse(*args):
     """

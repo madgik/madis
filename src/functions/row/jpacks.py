@@ -201,6 +201,8 @@ def jsplitv(*args):
 
     """
 
+    yield ('C1', )
+
     for j1 in jlist.fromj(*args):
         yield [j1]
 
