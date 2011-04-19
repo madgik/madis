@@ -81,8 +81,8 @@ def getoutput(p,append,compress,comptype):
 
 def autoext(f, ftype, typelist):
     fname, ext=os.path.splitext(f)
-    if ext=='' and ftype in extlist:
-        ext=extlist[ftype]
+    if ext=='' and ftype in typelist:
+        ext=typelist[ftype]
         return fname+'.'+ext
     return f
 

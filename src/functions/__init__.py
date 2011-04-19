@@ -59,6 +59,7 @@ def mstr(s):
     elif (o[0]=="'" and o[-1]=="'") or (o[0]=='"' and o[-1]=='"'):
         o=o[1:-1]
     o=o.replace('''\\n''','\n')
+    o=o.replace('''\\t''','\t')
     return o
 
 class MadisError(Exception):
@@ -192,6 +193,9 @@ class Cursor(object):
 
 class Connection(apsw.Connection):
     def cursor(self):
+        if 'registered' not in self.__dict__:
+            self.registered=True
+            register(self)
         self.openiters={}
         return Cursor(apsw.Connection.cursor(self))
     
@@ -202,12 +206,14 @@ class Connection(apsw.Connection):
 def register(connection=None):
     global firstimport, oldexecdb
 
-    functionspath=os.path.abspath(__path__[0])
-
     if connection==None:
         connection=Connection(':memory:')
 
+    connection.registered=True
+
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
+
+    functionspath=os.path.abspath(__path__[0])
 
     def findmodules(abspath, relativepath):
         return [ os.path.splitext(file)[0] for file
