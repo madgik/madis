@@ -240,6 +240,7 @@ if len(sys.argv) >= 2:
         db=':memory:'
 
 connection = functions.Connection(db)
+functions.register(connection)
 
 if db=='' or db==':memory':
     functions.variables.execdb=None
