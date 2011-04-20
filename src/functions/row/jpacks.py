@@ -1,5 +1,4 @@
 import lib.jlist as jlist
-from lib.buffer import CompBuffer,emptyBuffer
 
 def jpack(*args):
 
