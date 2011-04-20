@@ -184,6 +184,7 @@ def mcomplete(textin,state):
                 except:
                     pass
         if hits[state] in altset:
+            update_cols_for_table(hits[state])
             return prefix+hits[state]
         else:
             return prefix+normalizename(hits[state])
