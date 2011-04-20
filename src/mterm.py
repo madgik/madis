@@ -173,7 +173,7 @@ def mcomplete(textin,state):
             else:
                 return prefix+hits[state]
         if hits[state] in sqlstatem:
-            return prefix+hits[state]+' '
+            return prefix+hits[state]
         if hits[state] in colscompl:
             if text[-2:]=='..':
                 tname=text[:-2]
@@ -271,8 +271,9 @@ if len(sys.argv)>2:
             pass
     sys.exit()
 
-sqlandmtermstatements=['select', 'create', 'where', 'table', 'group', 'drop', 'order', 'index', 'from', 'alter', 'limit', 'delete', '..']
-dotcompletitions=['.help', '.colnames', '.schema', '.functions', '.tables']
+sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
+    "attach database '", 'detach database ']
+dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
