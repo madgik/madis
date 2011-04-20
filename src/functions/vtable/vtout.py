@@ -127,6 +127,7 @@ class Table:
 
     def BestIndex(self, *args):
         return None
+
     def Rollback(self,*args):
         pass
 
