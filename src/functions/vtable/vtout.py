@@ -128,7 +128,7 @@ class Table:
     def BestIndex(self, *args):
         return None
     def Rollback(self,*args):
-        print "IN ROLLBACK call of vtout"
+        pass
 
     def Open(self):
         return Cursor(self)
