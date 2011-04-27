@@ -11,6 +11,13 @@ import re
 import sys
 from lib import simplequeryparse
 import compiler.consts
+try:
+    from inspect import isgeneratorfunction
+except ImportError:
+    # Python < 2.6
+    def isgeneratorfunction(obj):
+        return bool((inspect.isfunction(object) or inspect.ismethod(object)) and
+                    obj.func_code.co_flags & CO_GENERATOR)
 
 firstimport=True
 test_connection = None
@@ -108,10 +115,6 @@ def checkhassetschema(vts,vt):
             if not relatedtbs or len(relatedtbs)>1 or relatedtbs[0]!=vtname:
                 return False
     return True
-
-def isgenerator(func):
-    '''Check the bitmask of `func` for the magic generator flag.'''
-    return bool(func.func_code.co_flags & compiler.consts.CO_GENERATOR)
 
 def iterwrapper(connection, func, *args):
     global iterheader
@@ -343,7 +346,7 @@ def register_ops(module, connection):
                 if opexists(opname):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
-                if isgenerator(fobject):
+                if isgeneratorfunction(fobject):
                     fobject=wraprowiter(connection, opname)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
@@ -353,7 +356,7 @@ def register_ops(module, connection):
                 if opexists(opname):
                     raise MadisError("Extended SQLERROR: Aggregate operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['aggregate'][opname] = fobject
-                if isgenerator(fobject.final):
+                if isgeneratorfunction(fobject.final):
                     fobject.__iterated_final__=fobject.final
                     fobject.final=wrapagriter(connection, opname)
                     fobject.multiset=True
