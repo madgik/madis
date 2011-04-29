@@ -145,11 +145,14 @@ class Cursor(object):
     def executetrace(self,statements,bindings=None):
         return self.__wrapped.execute(statements,bindings)
 
-    def execute(self,statements,bindings=None,parse=True): #overload execute statement
-        if bindings==None:
-            bindings=variables.__dict__
+    def execute(self,statements,bindings=None,parse=True, localbindings=None): #overload execute statement
+        if localbindings!=None:
+            bindings=localbindings
         else:
-            bindings.update(variables.__dict__)
+            if bindings==None:
+                bindings=variables.__dict__
+            else:
+                bindings.update(variables.__dict__)
 
         if not parse:            
             return self.executetrace(statements,bindings)
