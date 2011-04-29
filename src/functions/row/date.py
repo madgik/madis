@@ -3,6 +3,46 @@ import functions
 import datetime
 from lib import iso8601
 
+def cleantimezone(*args):
+
+    """
+    .. function:: cleantimezone(date) -> date
+
+    Specialized function that removes timezone information from date string
+
+    Examples:
+
+    >>> table1('''
+    ... '2009-01-01T01:03:13+0100'
+    ... '2009-01-01T01:03:13-0100'
+    ... '2009-01-01T01:03:13+01:00'
+    ... '2009-01-01T01:03:13-01:00'
+    ... '2009-01-01T01:03:13+01'
+    ... '2009-01-01T01:03:13-01'
+    ... ''')
+    >>> sql("select cleantimezone(a) from table1")
+    cleantimezone(a)
+    -------------------
+    2009-01-01 01:03:13
+    2009-01-01 01:03:13
+    2009-01-01 01:03:13
+    2009-01-01 01:03:13
+    2009-01-01 01:03:13
+    2009-01-01 01:03:13
+    """
+
+    d = args[0].replace('T',' ')
+    tindex = d.find('+')
+    mindex = d.rfind('-')
+    if tindex<>-1:
+        return d[0:tindex]
+    elif mindex <>-1 and mindex>13:
+        return d[0:mindex]
+    else:
+        return d;
+
+cleantimezone.registered=True
+
 
 def activityindex(*args):
 
