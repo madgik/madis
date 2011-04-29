@@ -1,6 +1,32 @@
+import random
 # coding: utf-8
 import math
 
+
+def randomrange(*args):
+
+    """
+    .. function:: randomrange(start, end, step) -> int
+
+    Returns a random number in the defined range
+
+    Examples:
+
+    >>> sql("select randomrange(0, 68, 1)")
+    randomrange(0, 68, 1)
+    ---------------------
+    5
+
+    """
+
+    try:
+        ret=random.randrange(args[0],args[1],args[2])
+    except ValueError:
+        return None
+
+    return ret
+
+randomrange.registered=True
 
 def sqroot(*args):
 
