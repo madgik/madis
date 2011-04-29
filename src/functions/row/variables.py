@@ -32,6 +32,9 @@ def var(*args):
     5
     """
 
+    if len(args)==0:
+        return str(functions.variables.__dict__)
+
     var=args[0].lower()
 
     if len(args)==1:
