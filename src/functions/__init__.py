@@ -136,9 +136,9 @@ class Cursor(object):
     
     def __setattr__(self, attr, value):
         if self.__dict__.has_key(attr):
-            return dict.__setattr__(self, attr, value)
+            return object.__setattr__(self, attr, value)
         if not self.__dict__.has_key('_Cursor__initialised'):  # this test allows attributes to be set in the __init__ method
-            return dict.__setattr__(self, attr, value)
+            return object.__setattr__(self, attr, value)
         return setattr(self.__wrapped, attr, value)
 
     @echofunctionmember

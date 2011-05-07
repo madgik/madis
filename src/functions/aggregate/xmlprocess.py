@@ -1,5 +1,8 @@
 __docformat__ = 'reStructuredText en'
-import xml.etree.cElementTree as etree
+try:
+    import xml.etree.cElementTree as etree
+except:
+    import xml.etree.ElementTree as etree
 import Queue
 import threading
 import re
