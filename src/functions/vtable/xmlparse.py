@@ -94,7 +94,10 @@ Examples:
 """
 import vtiters
 import functions
-import xml.etree.cElementTree as etree
+try:
+    import xml.etree.cElementTree as etree
+except:
+    import xml.etree.ElementTree as etree
 import re
 
 cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
