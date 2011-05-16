@@ -188,15 +188,11 @@ class Transclass:
 
         # find from and select_parameters range
         from_range=None
-        select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], query.tokens[-1]) )
         from_start=query.token_next_match(0, Token.Keyword, r'(?i)from', True)
-
-        if from_start!=None:
-            select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], from_start, exclude_end=True) )
-            from_end=query.token_next_by_instance(query.token_index(from_start), sqlparse.sql.Where)
 
         # process virtual tables in from range
         if from_start!=None:
+            from_end=query.token_next_by_instance(query.token_index(from_start), sqlparse.sql.Where)
             if from_start==query.tokens[-1]:
                 raise functions.MadisError("Error in FROM range of: '"+str(query)+"'")
             if from_end is None:
@@ -212,11 +208,18 @@ class Transclass:
                     fname=t.tokens[0].get_real_name().lower()
                     if fname in self.vtables:
                         out_vtables+=[(vname, fname, unicode(t.tokens[1])[1:-1])]
-                        t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)] or \
-               ( isinstance(token, sqlparse.sql.Function) and re.match('\w+\s\(',unicode(token)), re.UNICODE )
-                        t.__class__=sqlparse.sql.Identifier
+                        t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)]
+                        tidx=s_orig.token_index(t)
+                        s_orig.tokens[tidx:tidx+1]=t.tokens
+                        tidx=query.token_index(t)
+                        query.tokens[tidx:tidx+1]=t.tokens
                     else:
                         raise functions.MadisError("Virtual table '"+fname+"' does not exist")
+
+        if from_start!=None:
+            select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], from_start, exclude_end=True) )
+        else:
+            select_range=sqlparse.sql.Statement( query.tokens_between( query.tokens[1], query.tokens[-1]) )
 
         # Process EXPAND functions
         for t in flatten_with_type(select_range, sqlparse.sql.Function):
@@ -235,9 +238,8 @@ class Transclass:
         return (unicode(s), vt_distinct(out_vtables), self.direct_exec)
 
 def vt_name(s):
-    tmp=re.sub(r'([^\w])','_' , 'vt_'+unicode(zlib.crc32(s.encode('utf-8'))), re.UNICODE) or \
-           ( isinstance(token, sqlparse.sql.Function) and re.match('\w+\s\(',unicode(token)), re.UNICODE )
-    return re.sub(r'_+','_' , tmp, re.UNICODE)
+    tmp=re.sub(r'([^\w])','_' , 'vt_'+unicode(zlib.crc32(s.encode('utf-8'))), re.UNICODE)
+    return re.sub(r'_+', '_' , tmp, re.UNICODE)
 
 def format_query(s):
     q="'query:"+unicode(s).replace("'","''")+"'"
