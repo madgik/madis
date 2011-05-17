@@ -223,12 +223,12 @@ def jsplit(*args):
 
     """
 
-    fj=jlist.fromj(*args)
+    fj=[jlist.toj(x) for x in jlist.fromj(*args)]
 
     if fj==[]:
         yield ('C1',)
             
-    yield tuple( ['C'+str(x+1) for x in xrange(len(fj))] )
+    yield tuple( ['C'+str(x) for x in xrange(1,len(fj)+1)] )
     yield fj
 
 jsplit.registered=True
