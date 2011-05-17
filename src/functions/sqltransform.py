@@ -209,10 +209,6 @@ class Transclass:
                     if fname in self.vtables:
                         out_vtables+=[(vname, fname, unicode(t.tokens[1])[1:-1])]
                         t.tokens=[sqlparse.sql.Token(Token.Keyword, vname)]
-                        tidx=s_orig.token_index(t)
-                        s_orig.tokens[tidx:tidx+1]=t.tokens
-                        tidx=query.token_index(t)
-                        query.tokens[tidx:tidx+1]=t.tokens
                     else:
                         raise functions.MadisError("Virtual table '"+fname+"' does not exist")
 
