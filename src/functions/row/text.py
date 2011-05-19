@@ -1,13 +1,9 @@
 # coding: utf-8
 import re
-import urllib
 import functions
 import unicodedata
 
-from lib import chardet
 from lib import jlist
-
-import re
 
 # Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
 # like below. If you want to embed the UNICODE directive inside the
@@ -357,56 +353,7 @@ def regexprmatches(*args):
 
 regexprmatches.registered=True
 
-def urldecode(*args):
-    """
-    .. function:: urldecode(str)
 
-    Returns the url decoded *str*.
-    
-    Examples:
-
-    >>> sql("select urldecode('where%2Ccollid%3Dcolid+and+u%3D%27val%27') as query")
-    query
-    ------------------------------
-    where,collid=colid and u='val'
-
-
-    >>> sql("select urldecode(null) as query")
-    query
-    -----
-    None
-    """
-    if len(args)>1:
-        raise functions.OperatorError("urldecode","operator takes only one argument")
-    if args[0]!=None:
-        return urllib.unquote_plus(args[0])
-    return None
-urldecode.registered=True
-
-def htmldecode(*args):
-    """
-    .. function:: htmldecode(str)
-
-    Returns the html decoded *str*.
-
-    Examples:
-    
-    >>> sql("select htmldecode('(&quot;die+wunderbaren+jahre&quot;)') as query")
-    query
-    -------------------------
-    ("die+wunderbaren+jahre")
-    >>> sql("select htmldecode(null) as query")
-    query
-    -----
-    None
-    """
-    if len(args)>1:
-        raise functions.OperatorError("htmldecode","operator takes only one argument")
-    if args[0]==None:
-        return None
-    import lib.Webutils.Funcs as webfuns
-    return webfuns.htmlDecode(args[0])
-htmldecode.registered=True
 
 def included(*args):
     """
