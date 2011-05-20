@@ -212,14 +212,14 @@ def htmladdbreaks(*args):
     if args[0]==None:
         return None
 
-    breakchars=['/','.','-']
+    breakchars=[u'/',u'.',u'-']
 
     out=u''.join(args)
 
     for i in breakchars:
         out=out.replace(i,i+u'\u200B')
 
-    return out
+    return unicode(out)
 
 htmladdbreaks.registered=True
 
