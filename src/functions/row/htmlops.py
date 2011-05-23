@@ -195,6 +195,8 @@ def urlencode(*args):
 
 urlencode.registered=True
 
+addwbr=re.compile(r'([./-])([^./\-\d\s])', re.DOTALL| re.UNICODE)
+
 def htmladdbreaks(*args):
     """
     .. function:: url(href, linktext)
@@ -212,14 +214,9 @@ def htmladdbreaks(*args):
     if args[0]==None:
         return None
 
-    breakchars=[u'/',u'.',u'-']
-
     out=u''.join(args)
 
-    for i in breakchars:
-        out=out.replace(i,i+u'\u200B')
-
-    return unicode(out)
+    return addwbr.sub(r'\1<wbr>\2', out)
 
 htmladdbreaks.registered=True
 
