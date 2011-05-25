@@ -29,8 +29,8 @@ def ifthenelse(*args):
     """
     if len(args)<2:
         raise functions.OperatorError("ifthenelse","operator needs at least two inputs")
-    #print "In if then else"
-    if args[0]:        
+
+    if args[0]:
         return args[1]
     else:
         if len(args)>2:
@@ -38,8 +38,50 @@ def ifthenelse(*args):
             return args[2]
         return None
 
-
 ifthenelse.registered=True
+
+def raiseif(*args):
+    """
+    .. function:: raiseif(condition [, messsage])
+    
+        If condition is true, raises an error. If message is provided, the message is included in
+        raised error.
+
+    Examples:
+
+    >>> sql("select raiseif(1=1,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator RAISEIF: exception
+    
+    >>> sql("select raiseif(1=0,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    answer
+    ------
+    0
+
+    >>> sql("select raiseif(1=1) as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator RAISEIF: an error was found
+
+    """
+
+    if len(args)>3:
+        raise functions.OperatorError('raiseif','operator needs one or two input')
+
+    if args[0]:
+        if len(args)==2:
+            raise functions.OperatorError('raiseif', args[1])
+        else:
+            raise functions.OperatorError('raiseif', 'an error was found')
+
+    return args[0]
+
+raiseif.registered=True
+
+
 
 if not ('.' in __name__):
     """
