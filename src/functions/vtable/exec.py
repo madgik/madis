@@ -211,7 +211,7 @@ def execflow(diter,connection,*args,**kargs):
                         c.execute('rollback')
                     except:
                         pass
-                    raise
+                    raise e
 
             if functions.settings['logging']:
                 lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
