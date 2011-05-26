@@ -40,46 +40,46 @@ def ifthenelse(*args):
 
 ifthenelse.registered=True
 
-def raiseif(*args):
+def failif(*args):
     """
-    .. function:: raiseif(condition [, messsage])
+    .. function:: failif(condition [, messsage])
     
         If condition is true, raises an error. If message is provided, the message is included in
         raised error.
 
     Examples:
 
-    >>> sql("select raiseif(1=1,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> sql("select failif(1=1,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator RAISEIF: exception
+    Operator FAILIF: exception
     
-    >>> sql("select raiseif(1=0,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> sql("select failif(1=0,'exception') as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     answer
     ------
     0
 
-    >>> sql("select raiseif(1=1) as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> sql("select failif(1=1) as answer") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator RAISEIF: an error was found
+    Operator FAILIF: an error was found
 
     """
 
     if len(args)>3:
-        raise functions.OperatorError('raiseif','operator needs one or two input')
+        raise functions.OperatorError('failif','operator needs one or two input')
 
     if args[0]:
         if len(args)==2:
-            raise functions.OperatorError('raiseif', args[1])
+            raise functions.OperatorError('failif', args[1])
         else:
-            raise functions.OperatorError('raiseif', 'an error was found')
+            raise functions.OperatorError('failif', 'an error was found')
 
     return args[0]
 
-raiseif.registered=True
+failif.registered=True
 
 
 
