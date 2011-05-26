@@ -205,9 +205,12 @@ def execflow(diter,connection,*args,**kargs):
                         lg.exception("Ignoring Exception: "+str(e))
                     continue
                 else:
-                    c.close()
-                    c=con.cursor()
-                    c.execute('rollback')
+                    try:
+                        c.close()
+                        c=con.cursor()
+                        c.execute('rollback')
+                    except:
+                        pass
                     raise
 
             if functions.settings['logging']:
