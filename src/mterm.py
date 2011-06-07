@@ -28,7 +28,6 @@ import csv
 class mtermoutput(csv.Dialect):
     def __init__(self):
         self.delimiter='|'
-#        self.doublequote=True
         if not allquote:
             self.quotechar='|'
             self.quoting=csv.QUOTE_MINIMAL
