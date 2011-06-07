@@ -215,7 +215,8 @@ helpmessage=""".functions             Lists all functions
 .output stdout         Send output to the screen
 .quit                  Exit this program
 .schema ?TABLE?        Show the CREATE statements
-.separator STRING      Change separator used by output mode and .import   
+.separator STRING      Change separator used by output mode and .import
+.quote                 Toggle between normal quoting mode and quoting all mode
 .tables                List names of tables """
 
 if 'HOME' not in os.environ: # Windows systems
