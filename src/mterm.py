@@ -29,8 +29,12 @@ class mtermoutput(csv.Dialect):
     def __init__(self):
         self.delimiter='|'
 #        self.doublequote=True
-        self.quotechar='|'
-        self.quoting=csv.QUOTE_MINIMAL
+        if not allquote:
+            self.quotechar='|'
+            self.quoting=csv.QUOTE_MINIMAL
+        else:
+            self.quotechar='"'
+            self.quoting=csv.QUOTE_NONNUMERIC
         self.escapechar="\\"
         self.lineterminator='\n'
 
@@ -232,6 +236,7 @@ atexit.register(readline.write_history_file, histfile)
 
 output = sys.stdout
 separator = "|"
+allquote = False
 db = ""
 automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
@@ -273,7 +278,7 @@ if len(sys.argv)>2:
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ']
-dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables']
+dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables', '.quote']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
@@ -325,7 +330,12 @@ while True:
                 separator = eval(argument)
             except Exception:
                 print "Cannot parse separator value"
-
+        elif command=='quote':
+            allquote^=True
+            if allquote:
+                print "Quoting output"
+            else:
+                print "Not quoting output"
         elif command=='output':
             if output!=sys.stdout:
                     output.close()
