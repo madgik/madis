@@ -217,6 +217,7 @@ helpmessage=""".functions             Lists all functions
 .schema ?TABLE?        Show the CREATE statements
 .separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
+.beep                  Make a sound when a query finishes executing
 .tables                List names of tables """
 
 if 'HOME' not in os.environ: # Windows systems
@@ -237,6 +238,7 @@ atexit.register(readline.write_history_file, histfile)
 output = sys.stdout
 separator = "|"
 allquote = False
+beeping = False
 db = ""
 automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
@@ -343,6 +345,12 @@ while True:
                     output=sys.stdout
             else:
                 output=open(argument,"w")
+        elif command=='beep':
+            beeping^=True
+            if beeping:
+                print "Beeping enabled"
+            else:
+                print "Beeping disabled"
 
         elif 'tables'.startswith(command):
             update_tablelist()
@@ -445,8 +453,8 @@ while True:
 
             schemaprint(lastcols)
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
-            if functions.settings['beep']:
-                print '\a'
+            if beeping:
+                print '\a\a'
             colscompl=[]
             updated_tables=set()
 
