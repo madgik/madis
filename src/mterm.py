@@ -295,7 +295,11 @@ readline.set_completer_delims(' \t\n`!@#$^&*()=+[{]}|;:\'",<>?')
 
 #Intro Message
 print mtermdetails
-print "running on Python: "+'.'.join([str(x) for x in sys.version_info[0:3]])+', APSW: '+apsw.apswversion()+', SQLite: '+apsw.sqlitelibversion()
+print "running on Python: "+'.'.join([str(x) for x in sys.version_info[0:3]])+', APSW: '+apsw.apswversion()+', SQLite: '+apsw.sqlitelibversion(),
+try:
+    sys.stdout.write(", madIS: "+functions.VERSION+'\n')
+except:
+    print
 print intromessage
 
 
