@@ -1,5 +1,7 @@
 """functions
 """
+VERSION="1.3"
+
 import os.path
 import os
 import apsw
