@@ -157,6 +157,7 @@ class Cursor(object):
 
         if not parse:            
             return self.executetrace(statements,bindings)
+        
         svts=sqltransform.transform(statements, multiset_functions.keys(), functions['vtable'], functions['row'].keys(), substitute=functions['row']['subst'])
         s=svts[0]
         try:
@@ -169,7 +170,11 @@ class Cursor(object):
                 else:
                     sep=''
                 try:
-                    self.executetrace('create virtual table ' + 'temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")")
+                    try:
+                        self.executetrace('create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")")
+                    except Exception, e:
+                        if not mstr(e).endswith("already exists"):
+                            raise(e)
                     self.__vtables.append(i[0])
                 except DynamicSchemaWithEmptyResultError:                    
                     if not checkhassetschema(svts[1],i) or i[0] in s:
