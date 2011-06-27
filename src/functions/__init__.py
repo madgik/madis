@@ -173,7 +173,7 @@ class Cursor(object):
                     try:
                         self.executetrace('create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")")
                     except Exception, e:
-                        if not mstr(e).endswith("already exists"):
+                        if settings['tracing'] or (not mstr(e).endswith("already exists")):
                             raise(e)
                     self.__vtables.append(i[0])
                 except DynamicSchemaWithEmptyResultError:                    
