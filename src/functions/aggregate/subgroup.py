@@ -2,6 +2,7 @@ import setpath
 import Queue
 import functions
 from lib import iso8601
+from operator import itemgetter
 
 from lib.unicodeops import unistr
 
@@ -317,7 +318,8 @@ class datedifffilter:
             yield ("date","C1")
             yield [None,None]
             return
-        yield tuple(["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
+
+        yield tuple(["date"]+["C"+str(i) for i in xrange(1,self.tablesize)])
         
         dt=None
         dtpos=0
@@ -325,16 +327,20 @@ class datedifffilter:
         if self.counter==1:
             yield(self.vals[dtpos])
         else:
+            tmpvalsdt=[x[0] for x in self.vals]
+            for el in self.vals:
+                el.insert(0,iso8601.parse_date(el[0]))
+            self.vals.sort(key=itemgetter(0))
             for el in self.vals:
                 if dtpos<self.counter-1:
-                    dt = iso8601.parse_date(el[0])
-                    dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
+                    dt = el[0]
+                    dtnew =self.vals[dtpos+1][0]
                     diff=dtnew-dt
-                    if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
-                        yield(el)
                     dtpos+=1
+                    if (diff.days*86400+diff.seconds)>self.maxdiff:
+                        yield(el[1:])
                     if dtpos==self.counter-1:
-                        yield(self.vals[dtpos])
+                        yield(self.vals[dtpos][1:])
 
 class datediffgroup:
     """
