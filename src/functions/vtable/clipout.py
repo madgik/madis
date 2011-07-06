@@ -30,8 +30,6 @@ def Clipout(diter, *args, **kargs):
     import lib.pyperclip as clip
     a=[]
 
-    print args, kargs
-
     exportheader=False
 
     for i in args:
@@ -41,7 +39,6 @@ def Clipout(diter, *args, **kargs):
     for i in kargs:
         if i.startswith('h'):
             exportheader=True
-
 
     for row,header in diter:
         if exportheader==True:
