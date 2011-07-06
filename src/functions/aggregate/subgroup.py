@@ -265,6 +265,23 @@ class datedifffilter:
     -----------------------------
     2010-01-01T01:32:03Z | value1
 
+    >>> table1('''
+    ... '2010-01-01 01:32:03' value1
+    ... '2010-01-01 01:32:04' value2
+    ... '2010-01-01 01:32:06' value3
+    ... '2010-01-01 01:32:08' value4
+    ... '2010-01-01 01:32:29' value5
+    ... '2010-01-01 02:35:03' value6
+    ... '2010-01-01 02:35:04' value7
+    ... '2010-01-01 03:55:04' value8
+    ... ''')
+    >>> sql("select datedifffilter(30, a,b) from table1")
+    date                | C1
+    ----------------------------
+    2010-01-01 01:32:29 | value5
+    2010-01-01 02:35:04 | value7
+    2010-01-01 03:55:04 | value8
+
     """
     registered=True
     multiset=True
@@ -286,8 +303,6 @@ class datedifffilter:
             raise functions.OperatorError("datedifffilter","Wrong number of arguments")
         self.tablesize=len(args)-1
         self.maxdiff=args[0]
-        
-
 
     def step(self, *args):
         if self.init==True:
@@ -298,20 +313,17 @@ class datedifffilter:
 
     def final(self):
         
-        from lib.buffer import CompBuffer
-        a=CompBuffer()
         if self.tablesize<=0:
-            a.writeheader(["date","C1"])
-            a.write(["None","None"])
-            return a.serialize()
-        a.writeheader(["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
-
+            yield ("date","C1")
+            yield [None,None]
+            return
+        yield tuple(["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
         
         dt=None
         dtpos=0
         diff=0
         if self.counter==1:
-            a.write(self.vals[dtpos])
+            yield(self.vals[dtpos])
         else:
             for el in self.vals:
                 if dtpos<self.counter-1:
@@ -319,13 +331,10 @@ class datedifffilter:
                     dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
                     diff=dtnew-dt
                     if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
-                        a.write(el)
+                        yield(el)
                     dtpos+=1
                     if dtpos==self.counter-1:
-                        a.write(self.vals[dtpos])
-
-        return a.serialize()
-
+                        yield(self.vals[dtpos])
 
 class datediffgroup:
     """
