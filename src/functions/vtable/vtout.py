@@ -34,8 +34,6 @@ from lib import argsparse
 import functions
 import logging
 
-
-
 class doall(object):
     def __init__(self,query,connection,func,returnalways,passconnection,*args,**kargs):
         self.connection=connection
@@ -77,7 +75,6 @@ def diter(iter,func):
     for i in iter:
         yield i,func()
 
-
 class SourceNtoOne:
     def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):
         self.func=func
@@ -118,7 +115,6 @@ def maincode(args,boolargs,nonstringargs,needsescape,notsplit,db,func,retalways,
     if autostring in kargs:
         del kargs[autostring]
     return doall(query,db,func,retalways,connectionhandler,*largs,**kargs)
-    
 
 # Represents a table
 class Table:
@@ -140,15 +136,11 @@ class Table:
     def Destroy(self):
         pass
 
-
-
 # Represents a cursor
 class Cursor:
     def __init__(self, table):
         self.table=table
         self.row=None
-
-
 
     def Filter(self, *args):        
         if self.table.dobj().run():
@@ -157,7 +149,6 @@ class Cursor:
             self.row=[0] 
         self.eof=False
         self.pos=0
-        
 
     def Eof(self):        
         return self.eof
@@ -171,8 +162,6 @@ class Cursor:
 
     def Next(self):  
         self.eof=True
-  
-
 
     def Close(self):
         pass
