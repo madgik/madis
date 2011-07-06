@@ -1,5 +1,5 @@
 """
-.. function:: xmlparse(root:None, xmlprototype, query:None)
+.. function:: xmlparse([root:None, strict:1], xmlprototype, query:None)
 
 Parses an input xml stream. It starts parsing when it finds a root tag. An provided xml prototype fragment is used to create an schema, mapping from xml to a relational table.
 If multiple values are found for the same tag in the input stream, then all values are returned separated with a tab (use tab-set operators to process them).
