@@ -313,6 +313,11 @@ while True:
             continue
         else:
             break
+
+    #Skip comments
+    if statement.startswith('--'):
+        continue
+
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
     iscommand=re.match("\s*\.(?P<command>\w+)\s*(?P<argument>([\w\.]*))\s*;?\s*$", statement)
