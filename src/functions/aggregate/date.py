@@ -142,6 +142,51 @@ class avgdtdiff:
             return None
         return float(avgdiff)/cntdiff
 
+class dategroupduration:
+    """
+    .. function:: dategroupduration(date)
+
+    Returns the duration of the group of dates in seconds. Input dates should be in :ref:`ISO 8601 format <iso8601>`.
+
+    Examples:
+
+    >>> table1('''
+    ... '2007-01-01 00:04:37'
+    ... '2007-01-01 00:04:39'
+    ... '2007-01-01 00:04:40'
+    ... '2007-01-01 00:04:49'
+    ... ''')
+    >>> sql("select dategroupduration(a) from table1")
+    dategroupduration(a)
+    --------------------
+    12
+
+    >>> sql("select dategroupduration(a) from (select '2005-01-01' as a) ")
+    dategroupduration(a)
+    --------------------
+    0
+
+    """
+    registered=True
+
+    def __init__(self):
+        self.dates=[]
+
+    def step(self, *args):
+        self.dates.append(iso8601.parse_date(args[0]))
+
+    def final(self):
+        lenofdates=len(self.dates)
+
+        if lenofdates==1:
+            return 0
+
+        self.dates.sort()
+        diff=self.dates[-1]-self.dates[0]
+
+        return diff.days*86400+diff.seconds
+
+
 class frecencyindex:
     """
     .. function:: frecencyindex(date)
