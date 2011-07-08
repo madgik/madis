@@ -261,6 +261,7 @@ class datediffnewsesid:
     def __init__(self):
         self.vals=[]
         self.init=True
+        self.maxdiff=0
 
     def initargs(self, args):
         self.init=False
