@@ -10,7 +10,7 @@ __docformat__ = 'reStructuredText en'
 
 
 def timedelta2millisec(tdelta):
-    return tdelta.days*24*60*60*1000+tdelta.seconds*1000+tdelta.microseconds/1000
+    return tdelta.days*24*60*60*1000+tdelta.seconds*1000+tdelta.microseconds
 
 class condbreak:
     """
@@ -136,6 +136,7 @@ class datediffbreak:
     session30 | 6
     session30 | 7
 
+
 .. doctest::
     :hide:
 
@@ -150,34 +151,33 @@ class datediffbreak:
     Operator DATEDIFFBREAK: Wrong date format: 1
     """
     registered=True
-    multiset=True
-
 
     def __init__(self):
         self.vals=[]
-        self.first=True
+        self.init=True
         self.position=None
         self.comparesize=0
         self.fullsize=0
 
-    def step(self, *args):
-
+    def initargs(self, args):
+        self.init=False
         if not args:
             raise functions.OperatorError("datediffbreak","No arguments")
         if len(args)<4:
             raise functions.OperatorError("datediffbreak","Wrong number of arguments")
-        if self.first:
-            self.first=False
-            self.maxdiff=args[-1]
-            for i in xrange(len(args)):
-                if args[i]=='order':
-                    self.position=i
-                    self.maxdiff=args[i-1]
-                    self.comparesize=len(args)-(i+1)
+        self.maxdiff=args[-1]
+        for i in xrange(len(args)):
+            if args[i]=='order':
+                self.position=i
+                self.maxdiff=args[i-1]
+                self.comparesize=len(args)-(i+1)
+                if len(args)<5:
+                    raise functions.OperatorError("datediffbreak","Wrong number of arguments")
+                break
 
-                    if len(args)<5:
-                        raise functions.OperatorError("datediffbreak","Wrong number of arguments")
-                    break
+    def step(self, *args):
+        if self.init:
+            self.initargs(args)
 
         if not self.position:
             self.vals.append(list(args[:-1]))
@@ -193,13 +193,12 @@ class datediffbreak:
         else:
             size=len(self.vals[0])-self.comparesize-1
 
-        from lib.buffer import CompBuffer
-        a=CompBuffer()
         if size<=0:
-            a.writeheader(["bgroupid","C1"])
-            a.write(["None","None"])
-            return a.serialize()
-        a.writeheader(["bgroupid"]+["C"+str(i+1) for i in xrange(size-1)])
+            yield ("bgroupid","C1")
+            yield [None, None]
+            return
+
+        yield tuple(["bgroupid"]+["C"+str(i) for i in xrange(1,size)])
 
         counter=0
         dt=None
@@ -213,11 +212,97 @@ class datediffbreak:
                 counter+=1
             dt=dtnew
             bid=unistr(el[0])+str(counter)
-            a.write([bid]+el[1:-dtpos])
+            yield [bid]+el[1:-dtpos]
 
-        return a.serialize()
+class datediffnewsesid:
+    """
 
+    .. function:: datediffnewsesid(maxdiff, date, groupid, C1, C2 ,....) -> [bgroupid, C1, C2, ...]
 
+    Returns only the C1, C2, ... that should be updated with bgroupid, so as for the input groups to be effectively broken on maxdiff times.
+    Input dates should be in :ref:`ISO 8601 format <iso8601>`.
+
+    :Returned multiset schema:
+        - *bgroupid*
+            *groupid* appended with an integer value indicating the subgroup of the row.
+        - *C1, C2 ..*
+            The input values of the row.
+
+    >>> table1('''
+    ... 1 session1 '2007-01-01 00:03:13'
+    ... 2 session1 '2007-01-01 00:03:27'
+    ... 3 session1 '2007-01-01 00:03:36'
+    ... 4 session2 '2007-01-01 00:04:39'
+    ... 5 session2 '2007-01-01 00:05:40'
+    ... 6 session3 '2007-01-01 00:04:49'
+    ... 7 session3 '2007-01-01 00:06:59'
+    ... 8 session3 '2007-01-01 00:06:59'
+    ... 9 session4 '2007-01-01 00:04:59'
+    ... ''')
+    >>> sql("select datediffnewsesid(10, c, b, a) from table1 group by b")
+    bgroupid  | C1
+    --------------
+    session11 | 2
+    session11 | 3
+    session21 | 5
+    session31 | 7
+    session31 | 8
+
+.. doctest::
+    :hide:
+
+    >>> sql("select datediffnewsesid(10, c, b, a) from (select 4 as a, 6 as b, 9 as c where c!=9)")
+    bgroupid | C1
+    ---------------
+    None     | None
+    """
+    registered=True
+
+    def __init__(self):
+        self.vals=[]
+        self.init=True
+
+    def initargs(self, args):
+        self.init=False
+        if not args:
+            raise functions.OperatorError("datediffnewsesid","No arguments")
+        if len(args)<4:
+            raise functions.OperatorError("datediffnewsesid","Wrong number of arguments")
+        self.maxdiff=args[0]
+
+    def step(self, *args):
+        if self.init:
+            self.initargs(args)
+
+        self.vals.append(list(args[1:]))
+
+    def final(self):
+        lenofvals=len(self.vals)
+        if lenofvals<=0:
+            yield ("bgroupid", "C1")
+            yield [None, None, None]
+            return
+
+        yield tuple(["bgroupid"]+["C"+str(i) for i in xrange(1,len(self.vals[0])-1)])
+
+        counter=0
+        if lenofvals!=1:
+            for el in self.vals:
+                try:
+                    el.insert(0,iso8601.parse_date(el[0]))
+                except Exception:
+                    raise functions.OperatorError("datediffnewsesid","Wrong date format: %s" %(el[0]))
+            self.vals.sort(key=itemgetter(0))
+            dt=self.vals[0][0]
+            for el in self.vals[1:]:
+                dtnew=el[0]
+                diff=dtnew-dt
+                dt=dtnew
+                if (diff.days*86400+diff.seconds)>self.maxdiff:
+                    counter+=1
+                if counter!=0:
+                    bid=unistr(el[2])+str(counter)
+                    yield [bid]+el[3:]
 
 class datedifffilter:
     """
@@ -285,16 +370,11 @@ class datedifffilter:
 
     """
     registered=True
-    multiset=True
-
 
     def __init__(self):
         self.init=True
         self.vals=[]
         self.maxdiff=0
-        self.counter=0
-        self.tablesize=0
-
 
     def initargs(self, args):
         self.init=False
@@ -302,7 +382,6 @@ class datedifffilter:
             raise functions.OperatorError("datedifffilter","No arguments")
         if len(args)<2:
             raise functions.OperatorError("datedifffilter","Wrong number of arguments")
-        self.tablesize=len(args)-1
         self.maxdiff=args[0]
 
     def step(self, *args):
@@ -310,36 +389,34 @@ class datedifffilter:
             self.initargs(args)
 
         self.vals.append(list(args[1:]))
-        self.counter+=1
 
     def final(self):
-        
-        if self.tablesize<=0:
+        lenofvals=len(self.vals)
+        if lenofvals==0:
             yield ("date","C1")
             yield [None,None]
             return
 
-        yield tuple(["date"]+["C"+str(i) for i in xrange(1,self.tablesize)])
+        yield tuple(["date"]+["C"+str(i) for i in xrange(1, len(self.vals[0]))])
         
         dt=None
         dtpos=0
         diff=0
-        if self.counter==1:
+        if lenofvals==1:
             yield(self.vals[dtpos])
         else:
-            tmpvalsdt=[x[0] for x in self.vals]
             for el in self.vals:
                 el.insert(0,iso8601.parse_date(el[0]))
             self.vals.sort(key=itemgetter(0))
             for el in self.vals:
-                if dtpos<self.counter-1:
+                if dtpos<lenofvals-1:
                     dt = el[0]
                     dtnew =self.vals[dtpos+1][0]
                     diff=dtnew-dt
                     dtpos+=1
                     if (diff.days*86400+diff.seconds)>self.maxdiff:
                         yield(el[1:])
-                    if dtpos==self.counter-1:
+                    if dtpos==lenofvals-1:
                         yield(self.vals[dtpos][1:])
 
 class datediffgroup:
