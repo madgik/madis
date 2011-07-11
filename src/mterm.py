@@ -121,6 +121,11 @@ def update_cols_for_table(t):
             colscompl+= ['.'.join([ t, x ]) for x, y in desc]
             colscompl+= [x for x,y in desc]
             colscompl+=[t+'..']
+        except:
+            pass
+        cexec=cursor.execute('pragma index_list('+str(t)+')')
+        try:
+            colscompl+= ['.'.join([ t, x[1] ]) for x in cexec]
             colscompl=list(set(colscompl)-set(lastcols))
         except:
             pass
