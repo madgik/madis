@@ -37,8 +37,18 @@ class mtermoutput(csv.Dialect):
         self.escapechar="\\"
         self.lineterminator='\n'
 
+def createConnection(db):
+    connection = functions.Connection(db)
+    if os.uname()[0].lower() == 'darwin' or os.name=='mac':
+        c=connection.cursor()
+        c.execute('pragma fullsync=1;')
+        c.close()
+
+    return connection
+
+
 def reloadfunctions():
-    global connection, automatic_reload
+    global connection, automatic_reload, db
 
     if not automatic_reload:
         return
@@ -52,7 +62,7 @@ def reloadfunctions():
     tmp_vars=functions.variables
     connection.close()
     lib.reimport.reimport(functions)
-    connection = functions.Connection(db)
+    connection = createConnection(db)
     functions.settings=tmp_settings
     functions.variables=tmp_vars
 
@@ -115,7 +125,7 @@ def update_cols_for_table(t):
             pass
 
 def normalizename(col):
-    if re.match(ur'[\w_$\d.]+$', col,re.UNICODE):
+    if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
         return col
     else:
         return "`"+col.lower()+"`"
@@ -170,6 +180,7 @@ def mcomplete(textin,state):
     if state<len(hits):
         sqlstatem=set(sqlandmtermstatements)
         altset=set(localtables)
+
         if hits[state]=='..':
             if text=='..' and lastcols!=[]:
                 return prefix+', '.join([normalizename(x) for x in lastcols])+' '
@@ -187,7 +198,8 @@ def mcomplete(textin,state):
                 except:
                     pass
         if hits[state] in altset:
-            update_cols_for_table(hits[state])
+            if text in altset:
+                update_cols_for_table(hits[state])
             return prefix+hits[state]
         else:
             return prefix+normalizename(hits[state])
@@ -248,7 +260,7 @@ if len(sys.argv) >= 2:
     if db=="-q":
         db=':memory:'
 
-connection = functions.Connection(db)
+connection = createConnection(db)
 functions.register(connection)
 
 if db=='' or db==':memory':
@@ -326,7 +338,7 @@ while True:
     if iscommand:
         validcommand=True
         command=iscommand.group('command')
-        argument=iscommand.group('argument')        
+        argument=iscommand.group('argument')
         statement=None
         if command=='mode' and argument=='csv':            
             separator = ","
