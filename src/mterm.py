@@ -42,7 +42,7 @@ def createConnection(db):
     functions.register(connection)
     if os.uname()[0].lower() == 'darwin' or os.name=='mac':
         c=connection.cursor()
-        c.execute('pragma fullsync=1;')
+        c.execute('pragma fullfsync=1;')
         c.close()
 
     return connection
