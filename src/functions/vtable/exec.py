@@ -228,6 +228,10 @@ def execflow(diter,connection,*args,**kargs):
         raise functions.OperatorError(__name__.rsplit('.')[-1],"Error in statement no. %s query '%s':\n%s" %(line,query,str(e)))
     finally:
         try:
+            c.close()
+        except:
+            pass
+        try:
             con.close()
         except:
             pass
