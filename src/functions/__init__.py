@@ -225,6 +225,10 @@ def register(connection=None):
 
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
 
+    # To avoid db corruption set connection to fullfsync mode when MacOS is detected
+    if os.uname()[0].lower() == 'darwin' or os.name=='mac':
+        c=connection.cursor().execute('pragma fullfsync=1;')
+
     functionspath=os.path.abspath(__path__[0])
 
     def findmodules(abspath, relativepath):
@@ -387,8 +391,6 @@ def testfunction():
     variables.execdb=':memory:'
 
 def settestdb(testdb):
-    import os
-
     global test_connection, settings
 
     abstestdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(testdb)))))
