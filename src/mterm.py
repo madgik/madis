@@ -39,6 +39,7 @@ class mtermoutput(csv.Dialect):
 
 def createConnection(db):
     connection = functions.Connection(db)
+    functions.register(connection)
     if os.uname()[0].lower() == 'darwin' or os.name=='mac':
         c=connection.cursor()
         c.execute('pragma fullsync=1;')
@@ -261,7 +262,6 @@ if len(sys.argv) >= 2:
         db=':memory:'
 
 connection = createConnection(db)
-functions.register(connection)
 
 if db=='' or db==':memory':
     functions.variables.execdb=None
