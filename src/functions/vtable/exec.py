@@ -227,6 +227,10 @@ def execflow(diter,connection,*args,**kargs):
             lg.exception(e)
         raise functions.OperatorError(__name__.rsplit('.')[-1],"Error in statement no. %s query '%s':\n%s" %(line,query,str(e)))
     finally:
+        try:
+            con.close()
+        except:
+            pass
         after=datetime.datetime.now()
         tmdiff=after-before
         fltm="Flow executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
