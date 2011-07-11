@@ -40,11 +40,6 @@ class mtermoutput(csv.Dialect):
 def createConnection(db):
     connection = functions.Connection(db)
     functions.register(connection)
-    if os.uname()[0].lower() == 'darwin' or os.name=='mac':
-        c=connection.cursor()
-        c.execute('pragma fullfsync=1;')
-        c.close()
-
     return connection
 
 
