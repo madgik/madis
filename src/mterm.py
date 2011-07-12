@@ -81,21 +81,24 @@ def update_tablelist():
     cursor = connection.cursor()
     cexec=cursor.execute('PRAGMA database_list;')
     for row in cexec:
-        if row[1]!='temp':
-            cursor1 = connection.cursor()
+        cursor1 = connection.cursor()
+        if row[1]=='temp':
+            cexec1 = cursor1.execute("select name from sqlite_temp_master where type='table';")
+        else:
             cexec1 = cursor1.execute("select name from "+row[1]+".sqlite_master where type='table';")
-            for row1 in cexec1:
-                tname=row1[0].lower().encode('ascii')
-                if row[1]=='main':
-                    alltables.append(tname)
+
+        for row1 in cexec1:
+            tname=row1[0].lower().encode('ascii')
+            if row[1] in ('main', 'temp'):
+                alltables.append(tname)
+                alltablescompl.append(tname)
+            else:
+                dbtname=(row[1]+'.'+tname).lower().encode('ascii')
+                alltables.append(dbtname)
+                alltablescompl.append(dbtname)
+                if tname not in alltablescompl:
                     alltablescompl.append(tname)
-                else:
-                    dbtname=(row[1]+'.'+tname).lower().encode('ascii')
-                    alltables.append(dbtname)
-                    alltablescompl.append(dbtname)
-                    if tname not in alltablescompl:
-                        alltablescompl.append(tname)
-            cursor1.close()
+        cursor1.close()
     cursor.close()
 
 def update_cols_for_table(t):
@@ -390,7 +393,7 @@ while True:
 
         elif command=='schema':
             if not argument:
-                statement="select sql from sqlite_master where sql is not null;"
+                statement="select sql from (select * from sqlite_master union all select * from sqlite_temp_master) where sql is not null;"
             else:
                 argument=argument.rstrip('; ')
                 update_tablelist()
@@ -402,7 +405,7 @@ while True:
                         sa=argument.split('.')
                         db=sa[0]
                         argument=''.join(sa[1:])
-                    statement="select sql from "+db+".sqlite_master where tbl_name like '%s' and sql is not null;" %(argument)
+                    statement="select sql from (select * from "+db+".sqlite_master union all select * from sqlite_temp_master) where tbl_name like '%s' and sql is not null;" %(argument)
         elif "quit".startswith(command):
             connection.close()
             exit(0)
