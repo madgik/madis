@@ -12,11 +12,11 @@ Formatting options:
 .. toadd html        In html mode table is formatted as an html table TODO ????
 
 :mode:
+    - tsv       Default. Writes data in a tab separated format.
+    - csv       Writes data in a comma separated format.
+    - plain     The columns are concatened and written together.
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
-    - tsv       Default. Writes data in a tab separated format.
-    - csv       Default. Writes data in a comma separated format.
-    - plain     The columns are concatened and written together.
 
     If *mode* is not *csv* any given csv formatting options are ignored
 
