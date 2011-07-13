@@ -296,7 +296,7 @@ if len(sys.argv)>2:
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ']
-dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables', '.quote']
+dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables', '.quote', '.explain ']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
