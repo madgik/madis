@@ -103,7 +103,6 @@ def update_tablelist():
 
 def update_cols_for_table(t):
     global alltablescompl, colscompl, lastcols, connection, updated_tables
-
     if t!='':
         if t[-1]=='.':
             t=t[0:-1]
@@ -121,9 +120,18 @@ def update_cols_for_table(t):
             colscompl+=[t+'..']
         except:
             pass
-        cexec=cursor.execute('pragma index_list('+str(t)+')')
+        if '.' in t:
+            ts=t.split('.')
+            dbname=ts[0]
+            tname='.'.join(ts[1:])
         try:
-            colscompl+= ['.'.join([ t, x[1] ]) for x in cexec]
+            cexec=cursor.execute('select * from '+dbname+".sqlite_master where type='index' and tbl_name='"+str(tname)+"'")
+            icompl= [x[1] for x in cexec]
+            colscompl+= ['.'.join([ t, x ]) for x in icompl]
+            colscompl+= icompl
+        except:
+            pass
+        try:
             colscompl=list(set(colscompl)-set(lastcols))
         except:
             pass
