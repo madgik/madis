@@ -234,7 +234,8 @@ helpmessage=""".functions             Lists all functions
 .separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
-.tables                List names of tables """
+.tables                List names of tables
+.explain               Explain query plan"""
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
@@ -335,6 +336,9 @@ while True:
 
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
+    #replace .explain with explain query plan
+    statement=re.sub("^\s*\.explain\s+", "explain query plan ", statement)
+    #scan for commands
     iscommand=re.match("\s*\.(?P<command>\w+)\s*(?P<argument>([\w\.]*))\s*;?\s*$", statement)
     validcommand=False
 
