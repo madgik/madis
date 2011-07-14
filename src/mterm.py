@@ -110,16 +110,6 @@ def update_cols_for_table(t):
             t=t[0:-2]
 
     if t in alltablescompl and t not in updated_tables:
-        cursor = connection.cursor()
-        cexec=cursor.execute('select * from '+str(t))
-        try:
-            updated_tables.add(t)
-            desc=cursor.getdescription()
-            colscompl+= ['.'.join([ t, x ]) for x, y in desc]
-            colscompl+= [x for x,y in desc]
-            colscompl+=[t+'..']
-        except:
-            pass
         if '.' in t:
             ts=t.split('.')
             dbname=ts[0]
@@ -127,6 +117,21 @@ def update_cols_for_table(t):
         else:
             dbname='main'
             tname=t
+
+        cursor = connection.cursor()
+        try:
+            if dbname=='main':
+                cexec=cursor.execute('pragma table_info('+str(t)+')')
+                desc=[x[1:3] for x in cexec]
+            else:
+                cexec=cursor.execute('select * from '+str(t))
+                desc=cursor.getdescription()
+            updated_tables.add(t)
+            colscompl+= ['.'.join([ t, x ]) for x, y in desc]
+            colscompl+= [x for x,y in desc]
+            colscompl+=[t+'..']
+        except:
+            pass
         try:
             cexec=cursor.execute('select * from '+dbname+".sqlite_master where type='index' and tbl_name='"+str(tname)+"'")
             icompl= [x[1] for x in cexec]
