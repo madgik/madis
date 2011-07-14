@@ -101,6 +101,25 @@ def update_tablelist():
         cursor1.close()
     cursor.close()
 
+def get_table_cols(t):
+    global connection
+
+    if '.' in t:
+        ts=t.split('.')
+        dbname=ts[0]
+        tname='.'.join(ts[1:])
+    else:
+        dbname='main'
+        tname=t
+    cursor = connection.cursor()
+    if dbname=='main':
+        cexec=cursor.execute('pragma table_info('+str(tname)+')')
+        cols=[x[1] for x in cexec]
+    else:
+        cexec=cursor.execute('select * from '+str(tname))
+        cols=[x[0] for x in cursor.getdescription()]
+    return cols
+
 def update_cols_for_table(t):
     global alltablescompl, colscompl, lastcols, connection, updated_tables
     if t!='':
@@ -110,29 +129,23 @@ def update_cols_for_table(t):
             t=t[0:-2]
 
     if t in alltablescompl and t not in updated_tables:
-        if '.' in t:
-            ts=t.split('.')
-            dbname=ts[0]
-            tname='.'.join(ts[1:])
-        else:
-            dbname='main'
-            tname=t
-
-        cursor = connection.cursor()
         try:
-            if dbname=='main':
-                cexec=cursor.execute('pragma table_info('+str(t)+')')
-                desc=[x[1:3] for x in cexec]
-            else:
-                cexec=cursor.execute('select * from '+str(t))
-                desc=cursor.getdescription()
+            cols=get_table_cols(t)
             updated_tables.add(t)
-            colscompl+= ['.'.join([ t, x ]) for x, y in desc]
-            colscompl+= [x for x,y in desc]
+            colscompl+= ['.'.join([ t, x ]) for x in cols]
+            colscompl+= [x for x in cols]
             colscompl+=[t+'..']
         except:
             pass
         try:
+            if '.' in t:
+                ts=t.split('.')
+                dbname=ts[0]
+                tname='.'.join(ts[1:])
+            else:
+                dbname='main'
+                tname=t
+            cursor = connection.cursor()
             cexec=cursor.execute('select * from '+dbname+".sqlite_master where type='index' and tbl_name='"+str(tname)+"'")
             icompl= [x[1] for x in cexec]
             colscompl+= ['.'.join([ t, x ]) for x in icompl]
@@ -211,10 +224,9 @@ def mcomplete(textin,state):
         if hits[state] in colscompl:
             if text[-2:]=='..':
                 tname=text[:-2]
-                cursor = connection.cursor()
-                cexec=cursor.execute('select * from '+str(tname))
                 try:
-                    return prefix+', '.join([x for x,y in cursor.getdescription()])+' '
+                    cols=get_table_cols(tname)
+                    return prefix+', '.join(cols)+' '
                 except:
                     pass
         if hits[state] in altset:
