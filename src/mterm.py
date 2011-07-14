@@ -124,6 +124,9 @@ def update_cols_for_table(t):
             ts=t.split('.')
             dbname=ts[0]
             tname='.'.join(ts[1:])
+        else:
+            dbname='main'
+            tname=t
         try:
             cexec=cursor.execute('select * from '+dbname+".sqlite_master where type='index' and tbl_name='"+str(tname)+"'")
             icompl= [x[1] for x in cexec]
