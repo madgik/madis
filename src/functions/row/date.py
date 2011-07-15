@@ -90,6 +90,60 @@ def activityindex(*args):
 
 activityindex.registered=True
 
+def sectohuman(*args):
+
+    """
+    .. function:: sectohuman(sec) -> human readable format
+
+    Converts a number of seconds to human readable format.
+
+    Examples:
+
+    >>> table1('''
+    ... 3
+    ... 63
+    ... 10000
+    ... 100000
+    ... 1000000
+    ... ''')
+    >>> sql("select sectohuman(a) from table1")
+    sectohuman(a)
+    ------------------------------
+    3 sec
+    1 min 3 sec
+    2 hours 46 min 40 sec
+    1 day 3 hours 46 min 40 sec
+    11 days 13 hours 46 min 40 sec
+    """
+
+    secs=int(args[0])
+    h=''
+    days=secs/86400
+    if days > 0:
+        h+=str(days)+' day'
+        if days > 1:
+            h+='s'
+        h+=' '
+        secs=secs % 86400
+    hours=secs/3600
+    if hours > 0:
+        h+=str(hours)+' hour'
+        if hours > 1:
+            h+='s'
+        h+=' '
+        secs=secs % 3600
+    mins=secs/60
+    if mins > 0:
+        h+=str(mins)+' min '
+        secs=secs % 60
+    if secs > 0:
+        h+=str(secs)+' sec'
+
+    return h
+
+sectohuman.registered=True
+
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
