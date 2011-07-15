@@ -214,7 +214,7 @@ def htmladdbreaks(*args):
     if args[0]==None:
         return None
 
-    out=u''.join(args)
+    out=u''.join(unicode(args))
 
     return addwbr.sub(r'\1<wbr>\2', out)
 
