@@ -44,7 +44,6 @@ class writer:
     def __init__(self,tsvfile,dialect=SQLITE_DIALECT,encoding="utf-8",**kwds):
         self.writer=UnicodeWriter(tsvfile,dialect,encoding,**kwds)
     def writerow(self,row):
-        unirow=[]
         self.writer.writerow(row)
     def writerows(self,rows):
         self.writer.writerows(rows)
@@ -158,7 +157,8 @@ class UnicodeDictReader:
         return self
 
 def anytouni(i):
-
+    if i is None:
+        return u'null'
     if isinstance(i,str):
         return unicode(i)
     elif not isinstance(i,basestring):
