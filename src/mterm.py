@@ -29,7 +29,9 @@ try:
     import lib.colorama as colorama
     from colorama import Fore, Back, Style
     colorama.init()
+    colnums = True
 except:
+    colnums = False
     pass
 
 class mtermoutput(csv.Dialect):
@@ -340,7 +342,6 @@ output = sys.stdout
 separator = "|"
 allquote = False
 beeping = False
-colnums = True
 db = ""
 automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
