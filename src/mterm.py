@@ -258,7 +258,6 @@ def mcomplete(textin,state):
 def schemaprint(cols):
     if cols!=[]:
         print "--- Column names ---"
-        colstoprint="| "+" | ".join([x for x in cols])+" |"
         colslen=0
         i1=1
         for i in cols:
