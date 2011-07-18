@@ -278,6 +278,11 @@ def schemaprint(cols):
             sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL+'\n')
 
 def printrow(row):
+    global rawprinter, colnums
+    if not colnums:
+        rawprinter.writerow(row)
+        return
+    
     i=2
     i1=1
     for d in row:
@@ -313,7 +318,8 @@ helpmessage=""".functions             Lists all functions
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
 .tables                List names of tables
-.explain               Explain query plan"""
+.explain               Explain query plan
+.colnums               Toggle showing column numbers"""
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
@@ -334,6 +340,7 @@ output = sys.stdout
 separator = "|"
 allquote = False
 beeping = False
+colnums = True
 db = ""
 automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
@@ -352,16 +359,17 @@ else:
     
 functions.variables.flowname='main'
 
+rawprinter=writer(output,dialect=mtermoutput(),delimiter=separator)
+
 if len(sys.argv)>2:
         
     statement=' '.join(sys.argv[2:])
     statement = statement.decode(output_encoding)
         
-    printer=writer(output,dialect=mtermoutput(),delimiter=separator)
     cursor = connection.cursor()
     try:
         for row in cursor.execute(statement):
-            printer.writerow(row)
+            rawprinter.writerow(row)
         cursor.close()
     except KeyboardInterrupt:
         sys.exit()
@@ -374,7 +382,7 @@ if len(sys.argv)>2:
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ']
-dotcompletitions=['.help ', '.colnames ', '.schema ', '.functions ', '.tables', '.quote', '.explain ']
+dotcompletitions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
@@ -425,10 +433,13 @@ while True:
         command=iscommand.group('command')
         argument=iscommand.group('argument')
         statement=None
-        if command=='mode' and argument=='csv':            
+
+        if command=='mode' and argument=='csv':
             separator = ","
+
         elif command=='mode' and argument=='tabs':
             separator = "\t"
+
         elif command=='separator' and argument:
             separator=argument
             if not argument.startswith("'") or not argument.endswith("'"):
@@ -438,12 +449,14 @@ while True:
                 separator = eval(argument)
             except Exception:
                 print "Cannot parse separator value"
+
         elif command=='quote':
             allquote^=True
             if allquote:
                 print "Quoting output"
             else:
                 print "Not quoting output"
+
         elif command=='output':
             if output!=sys.stdout:
                     output.close()
@@ -451,6 +464,7 @@ while True:
                     output=sys.stdout
             else:
                 output=open(argument,"w")
+
         elif command=='beep':
             beeping^=True
             if beeping:
@@ -458,21 +472,18 @@ while True:
             else:
                 print "Beeping disabled"
 
+        elif command=='colnums':
+            colnums^=True
+            if colnums:
+                print "Colnums enabled"
+            else:
+                print "Colnums disabled"                
+
         elif 'tables'.startswith(command):
             update_tablelist()
             for i in alltables:
                 print i
-           
-        elif command=='colnames':
-                if argument:
-                    names=[]
-                    cursor = connection.cursor()
-                    for cid,name,type,notnull,defaultv,pk in cursor.execute("pragma table_info(%s)" %(argument)):
-                        names+=[name]
-                    cursor.close()
-                    printer=writer(output,dialect=mtermoutput(),delimiter=separator)
-                    printer.writerow(names)
-
+          
         elif command=='schema':
             if not argument:
                 statement="select sql from (select * from sqlite_master union all select * from sqlite_temp_master) where sql is not null;"
@@ -488,13 +499,16 @@ while True:
                         db=sa[0]
                         argument=''.join(sa[1:])
                     statement="select sql from (select * from "+db+".sqlite_master union all select * from sqlite_temp_master) where tbl_name like '%s' and sql is not null;" %(argument)
+
         elif "quit".startswith(command):
             connection.close()
             exit(0)
+
         elif command=="functions":
             for type in functions.functions:
                 for f in functions.functions[type]:
                     print f+' :'+type
+
         elif "help".startswith(command):
             if not argument:
                 print helpmessage
@@ -503,9 +517,11 @@ while True:
                     if argument in functions.functions[type]:
                         print "Function "+ argument + ":"
                         print functions.functions[type][argument].__doc__
+
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
             print "Automatic reload is now: " + str(automatic_reload)
+
         else:
             validcommand=False
             print """unknown command. Enter ".help" for help"""
@@ -540,7 +556,6 @@ while True:
             pass
 
         before=datetime.datetime.now()
-        printer=writer(output,dialect=mtermoutput(),delimiter=separator)
         cursor = connection.cursor()
         try:
             cexec=cursor.execute(statement)
