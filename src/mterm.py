@@ -289,7 +289,12 @@ def printrow(row):
             sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
         if type(d) in (int,float):
             d=str(d)
-        sys.stdout.write(d)
+        if d is None:
+            d=Style.BRIGHT+'null'+Style.RESET_ALL
+        try:
+            sys.stdout.write(d)
+        except:
+            sys.stdout.write(repr(d))
         i1+=1
     sys.stdout.write('\n')
 
