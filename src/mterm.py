@@ -25,6 +25,13 @@ import os
 from lib.dsv import writer
 import csv
 
+try:
+    import lib.colorama as colorama
+    from colorama import Fore, Back, Style
+    colorama.init()
+except:
+    pass
+
 class mtermoutput(csv.Dialect):
     def __init__(self):
         self.delimiter='|'
@@ -210,10 +217,18 @@ def mcomplete(textin,state):
             prefix, text=prepost.groups()
             hits= [x.lower() for x in lastcols+[y for y in colscompl if y.find('.')==-1] if x.lower()[:len(text)]==unicode(text.lower())]
 
+    try:
+        if len(hits)==0:
+            icol=int(text)
+            if str(icol)==text and icol<len(lastcols)+1 and state<1:
+                return normalizename(lastcols[icol-1])
+    except:
+        pass
+
     if state<len(hits):
         sqlstatem=set(sqlandmtermstatements)
         altset=set(localtables)
-
+        
         if hits[state]=='..':
             if text=='..' and lastcols!=[]:
                 return prefix+', '.join([normalizename(x) for x in lastcols])+' '
@@ -242,11 +257,41 @@ def schemaprint(cols):
     if cols!=[]:
         print "--- Column names ---"
         colstoprint="| "+" | ".join([x for x in cols])+" |"
-        if len(colstoprint)<=80:
-            print colstoprint
+        colslen=0
+        i1=1
+        for i in cols:
+            colslen+=len(i)+len(str(i1))+1
+            i1+=1
+        if colslen<=80:
+            i1=1
+            for i in cols:
+                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i)
+                i1+=1
+            sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL+'\n')
         else:
-            print "| "+" | ".join([x[0:10]+".." if len(x)>12 and len(cols)>1 else x for x in cols])+" |"
+            i1=1
+            for i in cols:
+                if len(i)>12 and len(cols)>1:
+                    i=i[0:10]+'..'
+                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i)
+                i1+=1
+            sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL+'\n')
 
+def printrow(row):
+    i=2
+    i1=1
+    for d in row:
+        i-=1
+        if i==1:
+            i=3
+            sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL)
+        else:
+            sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
+        if type(d) in (int,float):
+            d=str(d)
+        sys.stdout.write(d)
+        i1+=1
+    sys.stdout.write('\n')
 
 mtermdetails="mTerm - version 0.8"
 intromessage="""Enter ".help" for instructions
@@ -501,7 +546,7 @@ while True:
                 lastcols=[]
 
             for row in cexec:
-                printer.writerow(row)
+                printrow(row)
             cursor.close()
 
             after=datetime.datetime.now()
