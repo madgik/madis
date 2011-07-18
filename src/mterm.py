@@ -218,7 +218,7 @@ def mcomplete(textin,state):
             hits= [x.lower() for x in lastcols+[y for y in colscompl if y.find('.')==-1] if x.lower()[:len(text)]==unicode(text.lower())]
 
     try:
-        if len(hits)==0:
+        if len(hits)==0 and prefix=='':
             icol=int(text)
             if str(icol)==text and icol<len(lastcols)+1 and state<1:
                 return normalizename(lastcols[icol-1])
