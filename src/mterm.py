@@ -28,7 +28,6 @@ import csv
 try:
     import lib.colorama as colorama
     from colorama import Fore, Back, Style
-    colorama.init()
     colnums = True
 except:
     colnums = False
@@ -569,6 +568,7 @@ while True:
             except apsw.ExecutionCompleteError, e:
                 lastcols=[]
 
+            colorama.init()
             for row in cexec:
                 printrow(row)
             cursor.close()
@@ -598,6 +598,7 @@ while True:
             print "Unknown error:"+functions.mstr(e)
             #raise
         finally:
+            colorama.deinit()
             try:
                 cursor.close()
             except:
