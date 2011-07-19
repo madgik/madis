@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import sys
+import os
 
 # Workaround for windows - DISABLED
 #try: import lib.winunicode
@@ -10,9 +11,8 @@ import sys
 import re
 import apsw
 import functions
-import os
 
-if os.name == 'nt':
+if sys.platform == 'win32':
     import pyreadline as readline
 else:
     import readline
