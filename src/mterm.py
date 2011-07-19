@@ -321,7 +321,8 @@ helpmessage=""".functions             Lists all functions
 .separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
-.tables                List names of tables
+.tables                List names of tables (you can also use ".t" )
+.t ?TABLE?             Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers"""
 
@@ -484,8 +485,12 @@ while True:
 
         elif 'tables'.startswith(command):
             update_tablelist()
-            for i in alltables:
-                print i
+            argument=argument.rstrip('; ')
+            if not argument:
+                for i in alltables:
+                    print i
+            else:
+                statement='select * from '+argument+' limit 2;'
           
         elif command=='schema':
             if not argument:
