@@ -253,7 +253,7 @@ of the inside query and as second column the column types of the inside query.
       We'll discuss madIS SQL extensions in the following section.
     - We won't present a simple virtual table implementation as they are too complex to be presented here.
       For more see the already existing tables in the "/src/functions/vtable" path of madIS, and the
-      `APSW documentation <http://apsw.googlecode.com/svn/publish/vtable.html>`_ concerning virtual tables.
+      `APSW documentation <http://apidoc.apsw.googlecode.com/hg/vtable.html>`_ concerning virtual tables.
 
 .. seealso::
 
