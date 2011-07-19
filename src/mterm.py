@@ -1,6 +1,12 @@
 #! /usr/bin/python
 
 import sys
+
+# Workaround for MAC utf-8 encoding
+if sys.platform == 'darwin':
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
+
 import os
 
 # Workaround for windows - DISABLED
@@ -12,6 +18,7 @@ import re
 import apsw
 import functions
 
+# Workaround for absence of a real readline module in win32
 if sys.platform == 'win32':
     import pyreadline as readline
 else:
