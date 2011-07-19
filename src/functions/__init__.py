@@ -226,8 +226,11 @@ def register(connection=None):
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
 
     # To avoid db corruption set connection to fullfsync mode when MacOS is detected
-    if os.uname()[0].lower() == 'darwin' or os.name=='mac':
-        c=connection.cursor().execute('pragma fullfsync=1;', parse=False)
+    try:
+        if os.uname()[0].lower() == 'darwin' or os.name=='mac':
+            c=connection.cursor().execute('pragma fullfsync=1;', parse=False)
+    except:
+        pass
 
     functionspath=os.path.abspath(__path__[0])
 
