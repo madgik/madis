@@ -274,30 +274,33 @@ def schemaprint(cols):
             for i in cols:
                 if len(i)>12 and len(cols)>1:
                     i=i[0:10]+'..'
-                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i+' ')
+                else:
+                    i=i+' '
+                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i)
                 i1+=1
             sys.stdout.write('\n')
 
 def printrow(row):
     global rawprinter, colnums
+
     if not colnums:
         rawprinter.writerow(row)
         return
     
-    i=2
+    s=True
     i1=1
     rowlen=len(row)
     for d in row:
-        i-=1
+        s^=True
+        if s and rowlen>3:
+            sys.stdout.write(Fore.RED+'['+str(i1)+Style.BRIGHT+'|'+Style.RESET_ALL)
+        else:
+            if i1!=1:
+                sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
         if type(d) in (int,float):
             d=str(d)
         elif d is None:
             d=Style.BRIGHT+'null'+Style.RESET_ALL
-        if i==1:
-            i=3
-            sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL)
-            if i1!=rowlen:
-                d+=Fore.RED+Style.BRIGHT+']'+Style.RESET_ALL
         try:
             sys.stdout.write(d)
         except:
