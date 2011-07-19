@@ -1,13 +1,14 @@
 #! /usr/bin/python
 
+import os
 import sys
 
 # Workaround for MAC utf-8 encoding
 if sys.platform == 'darwin':
+    os.environ['LC_ALL']='en_US.UTF-8'
     reload(sys)
     sys.setdefaultencoding("utf-8")
 
-import os
 
 # Workaround for windows - DISABLED
 #try: import lib.winunicode
