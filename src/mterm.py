@@ -266,7 +266,7 @@ def schemaprint(cols):
         if colslen<=80:
             i1=1
             for i in cols:
-                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i+' ')
+                sys.stdout.write(Fore.RED+'['+Style.BRIGHT+str(i1)+Style.NORMAL+'|'+Style.RESET_ALL+i+' ')
                 i1+=1
             sys.stdout.write('\n')
         else:
@@ -276,7 +276,7 @@ def schemaprint(cols):
                     i=i[0:10]+'..'
                 else:
                     i=i+' '
-                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+str(i1)+'|'+Style.RESET_ALL+i)
+                sys.stdout.write(Fore.RED+'['+Style.BRIGHT+str(i1)+Style.NORMAL+'|'+Style.RESET_ALL+i)
                 i1+=1
             sys.stdout.write('\n')
 
