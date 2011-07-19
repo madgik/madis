@@ -411,7 +411,7 @@ print intromessage
 
 number_of_kb_exceptions=0
 while True:
-    statement = raw_input_no_history(Style.BRIGHT+"mterm> "+Style.RESET_ALL)
+    statement = raw_input_no_history("mterm> ")
     if statement==None:
         number_of_kb_exceptions+=1
         print
@@ -544,7 +544,7 @@ while True:
     if statement:
         histstatement=statement
         while not apsw.complete(statement):
-            more = raw_input_no_history(Style.BRIGHT+'  ..> '+Style.RESET_ALL)
+            more = raw_input_no_history('  ..> ')
             if more==None:
                 statement=None
                 break
