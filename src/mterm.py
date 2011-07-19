@@ -285,10 +285,10 @@ def printrow(row):
     if not colnums:
         rawprinter.writerow(row)
         return
-    
-    s=True
-    i1=1
+
     rowlen=len(row)
+    s=False
+    i1=1
     for d in row:
         s^=True
         if s and rowlen>3:
