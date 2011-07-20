@@ -56,6 +56,7 @@ class mtermoutput(csv.Dialect):
 def createConnection(db):
     connection = functions.Connection(db)
     functions.register(connection)
+    connection.enableloadextension(True)
     return connection
 
 
