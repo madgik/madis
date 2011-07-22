@@ -530,10 +530,10 @@ while True:
             if not argument:
                 print helpmessage
             else:
-                for type in functions.functions:
-                    if argument in functions.functions[type]:
+                for i in functions.functions:
+                    if argument in functions.functions[i]:
                         print "Function "+ argument + ":"
-                        print functions.functions[type][argument].__doc__
+                        print functions.functions[i][argument].__doc__
 
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
