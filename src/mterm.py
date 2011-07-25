@@ -466,9 +466,11 @@ while True:
         elif command=='quote':
             allquote^=True
             if allquote:
-                print "Quoting output"
+                print "Quoting output, uncoloured columns"
+                colnums=False
             else:
-                print "Not quoting output"
+                print "Not quoting output, coloured columns"
+                colnums=True
             rawprinter=writer(output,dialect=mtermoutput(),delimiter=separator)
 
         elif command=='output':
