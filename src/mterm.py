@@ -469,6 +469,7 @@ while True:
                 print "Quoting output"
             else:
                 print "Not quoting output"
+            rawprinter=writer(output,dialect=mtermoutput(),delimiter=separator)
 
         elif command=='output':
             if output!=sys.stdout:
