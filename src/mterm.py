@@ -358,6 +358,9 @@ db = ""
 automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
 
+if output_encoding==None:
+    output_encoding='UTF8'
+
 if len(sys.argv) >= 2:
     db = sys.argv[1]
     if db=="-q":
