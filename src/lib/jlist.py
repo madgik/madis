@@ -65,7 +65,7 @@ def toj(l):
         elif l[0]!='[' or l[-1]!=']':
             return l
         else:
-            return json.dumps([l], separators=(',',':'))
+            return json.dumps([l], separators=(',',':'), ensure_ascii=False)
     if typel==int or typel==float:
         return l
     if typel==list or typel==tuple:
@@ -81,12 +81,12 @@ def toj(l):
                 return l[0]
         if lenl==0:
             return u'[]'
-        return json.dumps(l, separators=(',',':'))
+        return json.dumps(l, separators=(',',':'), ensure_ascii=False)
 
 def tojstrict(l):
     if type(l)==list:
-        return json.dumps(l, separators=(',',':'))
-    return json.dumps([l], separators=(',',':'))
+        return json.dumps(l, separators=(',',':'), ensure_ascii=False)
+    return json.dumps([l], separators=(',',':'), ensure_ascii=False)
 
 def fromj(*jargs):
     fj=[]
