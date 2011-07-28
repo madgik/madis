@@ -1,7 +1,7 @@
 # coding: utf-8
 import re
 
-apache_log_split=re.compile('^(\\S*) (\\S*) (\\S*) (\\[[^\\]]+\\]) \\"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)\\" (\\S*) (\\S*) \\"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)\\" \\"([^\\"]*)\\"$', re.UNICODE)
+apache_log_split=re.compile('^(\\S*) (\\S*) (\\S*) (\\[[^\\]]+\\]) \\"(\\w+) ([^"\\\\]*(?:\\\\.[^"\\\\]*)*) HTTP/([\\d.]+)\\" (\\S*) (\\S*) \\"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)\\" \\"([^\\"]*)\\"$', re.UNICODE)
 
 months = {
     'Jan':'01',
@@ -28,16 +28,16 @@ def apachelogsplit(*args):
     Examples:
 
     >>> table1('''
-    ... '1.1.1.1 - - [01/Feb/2001:01:02:03 +0001] "test" 200 - "-" "reftest"'
+    ... '1.1.1.1 - - [01/Feb/2001:01:02:03 +0001] "HEAD /test.com HTTP/1.1" 200 - "-" "reftest"'
     ... ''')
     >>> sql("select apachelogsplit(a) from table1")
-    ip      | ident | authuser | date                     | request | status | bytes | referrer | useragent
-    -------------------------------------------------------------------------------------------------------
-    1.1.1.1 | None  | None     | 2001-02-01T01:02:03+0001 | test    | 200    | None  | None     | reftest
+    ip      | ident | authuser | date                     | method | uri       | httpver | status | bytes | referrer | useragent
+    ----------------------------------------------------------------------------------------------------------------------------
+    1.1.1.1 | None  | None     | 2001-02-01T01:02:03+0001 | HEAD   | /test.com | 1.1     | 200    | None  | None     | reftest
 
     """
 
-    yield ('ip', 'ident', 'authuser', 'date', 'request', 'status', 'bytes', 'referrer', 'useragent')
+    yield ('ip', 'ident', 'authuser', 'date', 'method', 'uri', 'httpver', 'status', 'bytes', 'referrer', 'useragent')
 
     f=apache_log_split.match(''.join(args).strip()).groups()
 
@@ -50,10 +50,10 @@ def apachelogsplit(*args):
             date=f[3]
             f[3]=date[7:11]+'-'+months[date[3:6]]+'-'+date[0:2]+'T'+date[12:14]+':'+date[15:17]+':'+date[18:20]+date[21:]
 
-    if f[5]!=None:
-        f[5]=int(f[5])
-    if f[6]!=None:
-        f[6]=int(f[6])
+    if f[7]!=None:
+        f[7]=int(f[7])
+    if f[8]!=None:
+        f[8]=int(f[8])
 
     yield f
 
