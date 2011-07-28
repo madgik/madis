@@ -57,7 +57,42 @@ class jgroup:
 
     def final(self):
         return jlist.toj(self.outgroup)
+    
+class jgroupunion:
+    """
+    .. function:: jgroupunion(columns) -> jpack
 
+    Calculates the union of the jpacks (by treating them as sets) inside a group.
+
+    Example:
+
+    >>> table1('''
+    ... '[1,2]' 6
+    ... '[2,3]' 7
+    ... '[2,4]' '[8,11]'
+    ... 5 9
+    ... ''')
+    >>> sql("select jgroupunion(a,b) from table1")
+    jgroupunion(a,b)
+    ----------------------
+    [1,2,3,4,5,6,7,8,9,11]
+
+    >>> sql("select jgroupunion(1)")
+    jgroupunion(1)
+    --------------
+    1
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.outgroup=set()
+
+    def step(self, *args):
+        self.outgroup=self.outgroup.union( set(jlist.fromj(*args)) )
+
+    def final(self):
+        return jlist.toj(list(self.outgroup))
 
 if not ('.' in __name__):
     """
