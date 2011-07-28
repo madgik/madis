@@ -7,6 +7,7 @@ import urlparse
 import os
 import mimetypes
 import xml.sax.saxutils
+import operator
 
 def urlsplit(*args):
 
@@ -90,6 +91,64 @@ def urllocation(*args):
     return u[0]+u'://'+''.join(u[1:3])
 
 urllocation.registered=True
+
+def urlquerysplit(*args):
+
+    """
+    .. function:: urlquerysplit(str) -> [multiple fields]
+
+    Splits the query part of a URL into multiple fields.
+
+    Examples:
+
+    >>> table1('''
+    ... 'url_ver=ver1&url_tim=2011-01-01T00%3A02%3A40Z'
+    ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
+    ... ''')
+    >>> sql("select urlquerysplit(a) from table1")
+    url_tim              | url_ver
+    ------------------------------
+    2011-01-01T00:02:40Z | ver1
+    2011-01-01T00:02:40Z | ver1
+    """
+
+    u=urlparse.parse_qsl(args[0], True)
+
+    u.sort(key=operator.itemgetter(1,0))
+
+    yield tuple([x[0] for x in u])
+    yield [x[1] for x in u]
+    
+urlquerysplit.registered=True
+
+def urlquerytojdict(*args):
+    """
+    .. function:: urlquerytojdict(str) -> [multiple fields]
+
+    Converts the query part of a URL into a JSON associative array.
+
+    Examples:
+
+    >>> table1('''
+    ... 'url_ver=ver1&url_tim=2011-01-01T00%3A02%3A40Z'
+    ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
+    ... ''')
+    >>> sql("select urlquerytojdict(a) from table1")
+    url_tim              | url_ver
+    ------------------------------
+    2011-01-01T00:02:40Z | ver1
+    2011-01-01T00:02:40Z | ver1
+    """
+
+    u=urlparse.parse_qs(args[0], True)
+
+    for x,y in u.iteritems():
+        if len(y)==1:
+            u[x]=y[0]
+
+    return str(u)
+
+urlquerytojdict.registered=True
 
 def htmlunescape(s):
     return re.sub('&(%s);' % '|'.join(name2codepoint),
@@ -207,8 +266,8 @@ def htmladdbreaks(*args):
 
     >>> sql("select htmladdbreaks('very-long/string') as brokenhtml")
     brokenhtml
-    ----------------------
-    very-​long/​string
+    --------------------------
+    very-<wbr>long/<wbr>string
     """
 
     if args[0]==None:
@@ -230,13 +289,13 @@ def htmllink(*args):
 
     >>> sql("select htmllink('http://somewhere.org') as url") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     url
-    ----------------------------------------------------------------
-    <a href="http://somewhere.org">http:/​/​somewhere.​org</a>
+    -----------------------------------------------------------------
+    <a href="http://somewhere.org">http://<wbr>somewhere.<wbr>org</a>
 
     >>> sql("select htmllink('somewhere.org') as url")
     url
-    ---------------------------------------------------
-    <a href="http://somewhere.org">somewhere.​org</a>
+    -----------------------------------------------------
+    <a href="http://somewhere.org">somewhere.<wbr>org</a>
 
     >>> sql("select htmllink('somewhere.org', 'go somewhere') as url")
     url
