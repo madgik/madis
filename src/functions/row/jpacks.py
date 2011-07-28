@@ -1,4 +1,6 @@
 import lib.jlist as jlist
+import json
+import operator
 
 def jpack(*args):
 
@@ -277,6 +279,119 @@ def jmergeregexp(*args):
     return '|'.join('(?:'+x+')' for x in jlist.fromj(*args))
 
 jmergeregexp.registered=True
+
+def jdictkeys(*args):
+
+    """
+    .. function:: jdictkeys(jdict) -> jpack
+
+    Returns a jpack of the keys of input jdict
+
+    Examples:
+
+    >>> sql(''' select jdictkeys('{"k1":1,"k2":2}', '{"k1":1,"k3":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictkeys('{"k1":1,"k2":2}', '{"k1":1,"k3":2}')
+    -----------------------------------------------
+    ["k3","k2","k1"]
+
+    >>> sql(''' select jdictkeys('{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictkeys('{"k1":1,"k2":2}')
+    ----------------------------
+    ["k2","k1"]
+
+    """
+    
+    if len(args)==1:
+        keys=[x for x in json.loads(args[0]).iterkeys()]
+    else:
+        keys=[]
+        for i in args:
+            keys+=[x for x in json.loads(i).iterkeys()]
+        keys=list(set(keys))
+    return jlist.toj( keys )
+
+jdictkeys.registered=True
+
+def jdictvals(*args):
+
+    """
+    .. function:: jdictvals(jdict, [key1, key2,..]) -> jpack
+
+    If only the first argument (jdict) is provided, it returns a jpack of the values of input jdict (sorted by the jdict keys).
+
+    If key values are also provided, it returns only the keys that have been provided.
+
+    Examples:
+
+    >>> sql(''' select jdictvals('{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictvals('{"k1":1,"k2":2}')
+    ----------------------------
+    [1,2]
+
+    >>> sql(''' select jdictvals('{"k1":1,"k2":2, "k3":3}', 'k3', 'k1', 'k4') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictvals('{"k1":1,"k2":2, "k3":3}', 'k3', 'k1', 'k4')
+    ------------------------------------------------------
+    [3,1,null]
+
+    """
+
+    d=json.loads(args[0])
+    if len(args)==1:
+        d=d.items()
+        d.sort(key=operator.itemgetter(1,0))
+        vals=[x[1] for x in d]
+    else:
+        vals=[]
+        for i in args[1:]:
+            try:
+                vals.append(d[i])
+            except:
+                vals.append(None)
+        
+    return jlist.toj( vals )
+
+jdictvals.registered=True
+
+def jdictsplit(*args):
+
+    """
+    .. function:: jdictvals(jdict, [key1, key2,..]) -> columns
+
+    If only the first argument (jdict) is provided, it returns a row containing the values of input jdict (sorted by the jdict keys).
+
+    If key values are also provided, it returns only the columns of which the keys have been provided.
+
+    Examples:
+
+    >>> sql(''' select jdictsplit('{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    k1 | k2
+    -------
+    1  | 2
+
+    >>> sql(''' select jdictsplit('{"k1":1,"k2":2, "k3":3}', 'k3', 'k1', 'k4') ''') # doctest: +NORMALIZE_WHITESPACE
+    k3 | k1 | k4
+    --------------
+    3  | 1  | None
+
+    """
+
+    d=json.loads(args[0])
+    if len(args)==1:
+        d=d.items()
+        d.sort(key=operator.itemgetter(1,0))
+        yield tuple([x[0] for x in d])
+        yield [x[1] for x in d]
+    else:
+        vals=[]
+        yield tuple(args[1:])
+        for i in args[1:]:
+            try:
+                vals.append(d[i])
+            except:
+                vals.append(None)
+        yield vals
+
+jdictsplit.registered=True
 
 
 if not ('.' in __name__):
