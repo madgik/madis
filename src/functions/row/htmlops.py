@@ -129,7 +129,7 @@ urlquerysplit.registered=True
 
 def urlquerytojdict(*args):
     """
-    .. function:: urlquerytojdict(str) -> [multiple fields]
+    .. function:: urlquerytojdict(URL or URL_query_part) -> JDICT
 
     Converts the query part of a URL into a JSON associative array.
 
