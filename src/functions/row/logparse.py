@@ -45,8 +45,8 @@ def apachelogsplit(*args):
 
     #parse date
     if f[3]!=None:
-        f[3]=f[3][1:-1]
-        if f[3][3:6] in months:
+        if f[3][4:7] in months:
+            f[3]=f[3][1:-1]
             date=f[3]
             f[3]=date[7:11]+'-'+months[date[3:6]]+'-'+date[0:2]+'T'+date[12:14]+':'+date[15:17]+':'+date[18:20]+date[21:]
 
