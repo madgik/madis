@@ -128,6 +128,8 @@ elif os.name == 'posix':
     else:
         try:
             import gtk
+            import signal
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
             getcb = gtkGetClipboard
             setcb = gtkSetClipboard
         except:
