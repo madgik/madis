@@ -8,6 +8,7 @@ import os
 import mimetypes
 import xml.sax.saxutils
 import operator
+import json
 
 def urlsplit(*args):
 
@@ -95,7 +96,7 @@ urllocation.registered=True
 def urlquerysplit(*args):
 
     """
-    .. function:: urlquerysplit(str) -> [multiple fields]
+    .. function:: urlquerysplit(URL or URL_query_part) -> [multiple fields]
 
     Splits the query part of a URL into multiple fields.
 
@@ -104,15 +105,20 @@ def urlquerysplit(*args):
     >>> table1('''
     ... 'url_ver=ver1&url_tim=2011-01-01T00%3A02%3A40Z'
     ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
+    ... http://www.test.com/search.csv;p=5?url_tim=test&url_ver=en
     ... ''')
     >>> sql("select urlquerysplit(a) from table1")
     url_tim              | url_ver
     ------------------------------
     2011-01-01T00:02:40Z | ver1
     2011-01-01T00:02:40Z | ver1
+    en                   | test
     """
 
-    u=urlparse.parse_qsl(args[0], True)
+    url=args[0]
+    if url.startswith('http://'):
+        url=urlparse.urlparse(url)[4]
+    u=urlparse.parse_qsl(url, True)
 
     u.sort(key=operator.itemgetter(1,0))
 
@@ -132,21 +138,26 @@ def urlquerytojdict(*args):
     >>> table1('''
     ... 'url_ver=ver1&url_tim=2011-01-01T00%3A02%3A40Z'
     ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
+    ... http://www.test.com/search.csv;p=5?lang=test&ver=en
     ... ''')
     >>> sql("select urlquerytojdict(a) from table1")
-    url_tim              | url_ver
-    ------------------------------
-    2011-01-01T00:02:40Z | ver1
-    2011-01-01T00:02:40Z | ver1
+    urlquerytojdict(a)
+    ---------------------------------------------------
+    {"url_tim":"2011-01-01T00:02:40Z","url_ver":"ver1"}
+    {"url_tim":"2011-01-01T00:02:40Z","url_ver":"ver1"}
+    {"lang":"test","ver":"en"}
     """
 
-    u=urlparse.parse_qs(args[0], True)
+    url=args[0]
+    if url.startswith('http://'):
+        url=urlparse.urlparse(url)[4]
+    u=urlparse.parse_qs(url, True)
 
     for x,y in u.iteritems():
         if len(y)==1:
             u[x]=y[0]
 
-    return str(u)
+    return json.dumps(u, separators=(',',':'), ensure_ascii=False)
 
 urlquerytojdict.registered=True
 
