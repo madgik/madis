@@ -93,43 +93,9 @@ def urllocation(*args):
 
 urllocation.registered=True
 
-def urlquerysplit(*args):
-
+def urlquery2jdict(*args):
     """
-    .. function:: urlquerysplit(URL or URL_query_part) -> [multiple fields]
-
-    Splits the query part of a URL into multiple fields.
-
-    Examples:
-
-    >>> table1('''
-    ... 'url_ver=ver1&url_tim=2011-01-01T00%3A02%3A40Z'
-    ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
-    ... http://www.test.com/search.csv;p=5?url_tim=test&url_ver=en
-    ... ''')
-    >>> sql("select urlquerysplit(a) from table1")
-    url_tim              | url_ver
-    ------------------------------
-    2011-01-01T00:02:40Z | ver1
-    2011-01-01T00:02:40Z | ver1
-    en                   | test
-    """
-
-    url=args[0]
-    if url.startswith('http://'):
-        url=urlparse.urlparse(url)[4]
-    u=urlparse.parse_qsl(url, True)
-
-    u.sort(key=operator.itemgetter(1,0))
-
-    yield tuple([x[0] for x in u])
-    yield [x[1] for x in u]
-    
-urlquerysplit.registered=True
-
-def urlquerytojdict(*args):
-    """
-    .. function:: urlquerytojdict(URL or URL_query_part) -> JDICT
+    .. function:: urlquery2jdict(URL or URL_query_part) -> JDICT
 
     Converts the query part of a URL into a JSON associative array.
 
@@ -140,8 +106,8 @@ def urlquerytojdict(*args):
     ... 'url_tim=2011-01-01T00%3A02%3A40Z&url_ver=ver1'
     ... http://www.test.com/search.csv;p=5?lang=test&ver=en
     ... ''')
-    >>> sql("select urlquerytojdict(a) from table1")
-    urlquerytojdict(a)
+    >>> sql("select urlquery2jdict(a) from table1")
+    urlquery2jdict(a)
     ---------------------------------------------------
     {"url_tim":"2011-01-01T00:02:40Z","url_ver":"ver1"}
     {"url_tim":"2011-01-01T00:02:40Z","url_ver":"ver1"}
@@ -149,7 +115,7 @@ def urlquerytojdict(*args):
     """
 
     url=args[0]
-    if url.startswith('http://'):
+    if url.startswith('http://') or url[0:1]=='/':
         url=urlparse.urlparse(url)[4]
     u=urlparse.parse_qs(url, True)
 
@@ -159,7 +125,7 @@ def urlquerytojdict(*args):
 
     return json.dumps(u, separators=(',',':'), ensure_ascii=False)
 
-urlquerytojdict.registered=True
+urlquery2jdict.registered=True
 
 def htmlunescape(s):
     return re.sub('&(%s);' % '|'.join(name2codepoint),
