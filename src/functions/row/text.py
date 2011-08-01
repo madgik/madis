@@ -570,13 +570,13 @@ def hashmd5(*args):
     >>> sql("select hashmd5('5')")
     hashmd5('5')
     --------------------------------
-    e4da3b7fbbce2345d7772b0674a318d5
+    7000aaf68ca7a93da0af3d03850571c2
     """
 
     if len(args)==1:
-        return hashlib.md5(str(args[0])).hexdigest()
+        return hashlib.md5(repr(args[0])).hexdigest()
     else:
-        return hashlib.md5(chr(30).join([str(x) for x in args])).hexdigest()
+        return hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest()
 
 hashmd5.registered=True
 
