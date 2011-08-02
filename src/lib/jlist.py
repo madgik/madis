@@ -20,9 +20,9 @@ u'test'
 >>> toj(['test'])
 'test'
 >>> toj(['test',3])
-'["test", 3]'
+'["test",3]'
 >>> toj([3,'test'])
-'[3, "test"]'
+'[3,"test"]'
 >>> toj(['[test'])
 '[test'
 >>> toj(None)
@@ -51,6 +51,10 @@ u'[]'
 [u'']
 >>> fromj('[]')
 []
+>>> elemfromj(1,2,3)
+[1, 2, 3]
+>>> elemfromj(1,None,3)
+[1, None, 3]
 """
 
 import json
@@ -112,6 +116,9 @@ def fromj(*jargs):
 def elemfromj(*jargs):
     fj=[]
     for j in jargs:
+        if j is None:
+            fj+=[None]
+            continue
         typej=type(j)
         if typej==int or typej==float:
             fj+= [j]
