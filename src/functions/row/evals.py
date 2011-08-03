@@ -97,7 +97,12 @@ def pyfun(*args):
     for i in fsplit[1:]:
         f=f.__dict__[i]
         
-    return str(f(*args[1:]))
+    res=f(*args[1:])
+
+    if res is None or type(res) in (int,float, str, unicode):
+        return res
+    else:    
+        return repr(f(*args[1:]))
 
 pyfun.registered=True
 
