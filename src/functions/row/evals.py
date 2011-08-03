@@ -75,7 +75,8 @@ def pyfun(*args):
     """
     .. function:: pyfun(pyfunction, parameters)
 
-    Calls a python function and returns the result
+    Calls a python function and returns the result. If an error occurs, it throws an
+    exception.
 
     >>> sql("select pyfun('math.sqrt', 25)")
     pyfun('math.sqrt', 25)
@@ -85,6 +86,11 @@ def pyfun(*args):
     pyfun('math.log10', 100)
     ------------------------
     2.0
+    >>> sql("select pyfun('math.log10', -1)") # doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator PYFUN: math.log10: math domain error
     """
 
     if len(args)==0:
@@ -101,9 +107,12 @@ def pyfun(*args):
             for i in fsplit:
                 f=f.__dict__[i]
         except:
-            raise functions.OperatorError("pyfun","didn't found function: "+args[0])
-        
-    res=f(*args[1:])
+            raise functions.OperatorError("pyfun","didn't find function: "+args[0])
+
+    try:
+        res=f(*args[1:])
+    except Exception, e:
+        raise functions.OperatorError("pyfun",args[0]+": "+functions.mstr(e))
 
     if res is None or type(res) in (int,float, str, unicode):
         return res
@@ -111,6 +120,51 @@ def pyfun(*args):
         return repr(f(*args[1:]))
 
 pyfun.registered=True
+
+def pyfunerrtonul(*args):
+    """
+    .. function:: pyfunerrtonul(pyfunction, parameters)
+
+    Calls a python function and returns the result. If an error occurs it returns
+    *null*.
+
+    >>> sql("select pyfunerrtonul('math.sqrt', -1)")
+    pyfunerrtonul('math.sqrt', -1)
+    ------------------------------
+    None
+    >>> sql("select pyfunerrtonul('math.log10', -1)")
+    pyfunerrtonul('math.log10', -1)
+    -------------------------------
+    None
+    """
+
+    if len(args)==0:
+        return
+
+    fsplit=args[0].split('.')
+    try:
+        f=__import__(fsplit[0])
+        for i in fsplit[1:]:
+            f=f.__dict__[i]
+    except:
+        try:
+            f=__import__('libexternal'+'.'+fsplit[0])
+            for i in fsplit:
+                f=f.__dict__[i]
+        except:
+            raise functions.OperatorError("pyfunerrtonul","didn't find function: "+args[0])
+
+    try:
+        res=f(*args[1:])
+    except Exception, e:
+        return None
+
+    if res is None or type(res) in (int,float, str, unicode):
+        return res
+    else:
+        return repr(f(*args[1:]))
+
+pyfunerrtonul.registered=True
 
 def subst(*args):
     """
