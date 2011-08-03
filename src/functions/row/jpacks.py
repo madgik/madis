@@ -298,15 +298,27 @@ def jdictkeys(*args):
     jdictkeys('{"k1":1,"k2":2}')
     ----------------------------
     ["k2","k1"]
+    >>> sql(''' select jdictkeys('test') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictkeys('test')
+    -----------------
+    []
+    >>> sql(''' select jdictkeys(1) ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictkeys(1)
+    ------------
+    []
 
     """
     
     if len(args)==1:
-        keys=[x for x in json.loads(args[0]).iterkeys()]
+        if type(args[0]) in (int,float) or args[0][0]!='{' or args[0][-1]!='}':
+            keys=[]
+        else:
+            keys=[x for x in json.loads(args[0]).iterkeys()]
     else:
         keys=[]
         for i in args:
-            keys+=[x for x in json.loads(i).iterkeys()]
+            if i[0]=='{' and i[-1]=='}':
+                keys+=[x for x in json.loads(i).iterkeys()]
         keys=list(set(keys))
     return jlist.toj( keys )
 
@@ -332,9 +344,23 @@ def jdictvals(*args):
     jdictvals('{"k1":1,"k2":2, "k3":3}', 'k3', 'k1', 'k4')
     ------------------------------------------------------
     [3,1,null]
+    >>> sql(''' select jdictvals('{"k1":1}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictvals('{"k1":1}')
+    ---------------------
+    1
+    >>> sql(''' select jdictvals('{"k1":1}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictvals('{"k1":1}')
+    ---------------------
+    1
+    >>> sql(''' select jdictvals(1) ''') # doctest: +NORMALIZE_WHITESPACE
+    jdictvals(1)
+    ------------
+    1
 
     """
 
+    if type(args[0]) in (int,float) or args[0][0]!='{' or args[0][-1]!='}':
+        return args[0]
     d=json.loads(args[0])
     if len(args)==1:
         d=d.items()
