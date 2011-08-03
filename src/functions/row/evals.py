@@ -91,11 +91,17 @@ def pyfun(*args):
         return
 
     fsplit=args[0].split('.')
-    m=__import__(fsplit[0])
-    
-    f=m
-    for i in fsplit[1:]:
-        f=f.__dict__[i]
+    try:
+        f=__import__(fsplit[0])
+        for i in fsplit[1:]:
+            f=f.__dict__[i]
+    except:
+        try:
+            f=__import__('libexternal')
+            for i in fsplit[0:]:
+                f=f.__dict__[i]
+        except:
+            raise functions.OperatorError("pyfun","didn't found function: "+args[0])
         
     res=f(*args[1:])
 
