@@ -11,6 +11,7 @@
 ^/src/docs/build/_sources/.*$
 ^src/docs/html/(?!readme.txt$).*$
 ^/src/docs/html/(?!readme.txt$).*$
+^src/libexternal/(?!__init__.py$).*$
 ^src/functionslocal/row/(?!__init__.py$).*$
 ^/src/functionslocal/row/(?!__init__.py$).*$
 ^src/functionslocal/aggregate/(?!__init__.py$).*$
