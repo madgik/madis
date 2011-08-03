@@ -97,8 +97,8 @@ def pyfun(*args):
             f=f.__dict__[i]
     except:
         try:
-            f=__import__('libexternal')
-            for i in fsplit[0:]:
+            f=__import__('libexternal'+'.'+fsplit[0])
+            for i in fsplit:
                 f=f.__dict__[i]
         except:
             raise functions.OperatorError("pyfun","didn't found function: "+args[0])
