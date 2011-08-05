@@ -402,7 +402,6 @@ def jdictsplit(*args):
     """
 
     d=json.loads(args[0])
-    print d
     if len(args)==1:
         d=d.items()
         d.sort(key=operator.itemgetter(1,0))
