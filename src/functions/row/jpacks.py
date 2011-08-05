@@ -402,17 +402,18 @@ def jdictsplit(*args):
     """
 
     d=json.loads(args[0])
+    print d
     if len(args)==1:
         d=d.items()
         d.sort(key=operator.itemgetter(1,0))
         yield tuple([x[0] for x in d])
-        yield [x[1] for x in d]
+        yield [jlist.toj(x[1]) for x in d]
     else:
         vals=[]
         yield tuple(args[1:])
         for i in args[1:]:
             try:
-                vals.append(d[i])
+                vals.append(jlist.toj(d[i]))
             except:
                 vals.append(None)
         yield vals
