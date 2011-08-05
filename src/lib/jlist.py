@@ -26,7 +26,7 @@ u'test'
 >>> toj(['[test'])
 '[test'
 >>> toj(None)
-'[null]'
+
 >>> toj('')
 u''
 >>> toj([])
