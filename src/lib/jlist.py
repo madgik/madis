@@ -61,7 +61,7 @@ import json
 
 def toj(l):
     if l==None:
-        return '[null]'
+        return l
     typel=type(l)
     if typel==str or typel==unicode:
         if l=='':
