@@ -205,7 +205,7 @@ def mcomplete(textin,state):
     if beforecompl!='' and beforecompl[-1] in ("'", '"'):
         completitions=os.listdir(os.getcwdu())
     # Detect if in simplified 'from' or .schema
-    elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)', beforecompl, re.DOTALL| re.UNICODE):
+    elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)|(^\s*\.t)|(^\s*\.tables)', beforecompl, re.DOTALL| re.UNICODE):
         localtables=alltablescompl[:]
         completitions=localtables
     else:
