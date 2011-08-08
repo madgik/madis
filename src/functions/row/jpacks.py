@@ -419,6 +419,71 @@ def jdictsplit(*args):
 
 jdictsplit.registered=True
 
+def jsplice(*args):
+
+    """
+    .. function:: jsplice(jpack, range1_start, range1_end, ...) -> jpack
+
+    Splices input jpack. If only a single range argument is provided, it returns input jpack's element in provided position. If defined position
+    index is positive, then it starts counting from the beginning of input jpack. If defined position is negative it starts counting from the
+    end of input jpack.
+
+    If more than one range arguments are provided, then the arguments are assumed to be provided in pairs (start, end) that define ranges inside
+    the input jpack that should be joined together in output jpack.
+
+    Examples:
+
+    >>> sql(''' select jsplice('[1,2,3,4,5]',0) ''') # doctest: +NORMALIZE_WHITESPACE
+    jsplice('[1,2,3,4,5]',0)
+    ------------------------
+    1
+
+    >>> sql(''' select jsplice('[1,2,3,4,5]',-1) ''') # doctest: +NORMALIZE_WHITESPACE
+    jsplice('[1,2,3,4,5]',-1)
+    -------------------------
+    5
+
+    >>> sql(''' select jsplice('[1,2,3,4,5]',10) ''') # doctest: +NORMALIZE_WHITESPACE
+    jsplice('[1,2,3,4,5]',10)
+    -------------------------
+    None
+
+    >>> sql(''' select jsplice('[1,2,3,4,5]', 0, 3, 0, 2) ''') # doctest: +NORMALIZE_WHITESPACE
+    jsplice('[1,2,3,4,5]', 0, 3, 0, 2)
+    ----------------------------------
+    [1,2,3,1,2]
+
+    >>> sql(''' select jsplice('[1,2,3,4,5]', 2, -1) ''') # doctest: +NORMALIZE_WHITESPACE
+    jsplice('[1,2,3,4,5]', 2, -1)
+    -----------------------------
+    [3,4]
+
+    """
+
+    largs=len(args)
+    if largs==1:
+        return args[0]
+
+    fj=jlist.fromj(args[0])
+
+    if largs==2:
+        try:
+            return jlist.toj(fj[args[1]])
+        except:
+            return None
+
+    outj=[]
+    for i in xrange(1,largs,2):
+        try:
+            outj+=fj[args[i]:args[i+1]]
+        except:
+            pass
+
+    return jlist.toj(outj)
+        
+
+jsplice.registered=True
+
 
 if not ('.' in __name__):
     """
