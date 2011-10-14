@@ -153,7 +153,8 @@ class Cursor(object):
             if bindings==None:
                 bindings=variables.__dict__
             else:
-                bindings.update(variables.__dict__)
+                if type(bindings) is dict:
+                    bindings.update(variables.__dict__)
 
         if not parse:            
             return self.executetrace(statements,bindings)
