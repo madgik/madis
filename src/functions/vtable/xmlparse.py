@@ -47,6 +47,13 @@ Examples:
     attrval1 | row1val1 |
              | row2val1 | row2val
 
+
+    >>> sql("select * from (xmlparse root:a select * from table2)")
+    C1
+    ------------------------------------
+    {"@/b": "attrval1", "b": "row1val1"}
+    {"b": "row2val1", "c/d": "row2val"}
+
     >>> table2('''
     ... '<a b="attrval1"><b>row1val1</b></a>'
     ... '<a>'
@@ -94,19 +101,22 @@ Examples:
 """
 import vtiters
 import functions
+import collections
+import json
+
 try:
     import xml.etree.cElementTree as etree
 except:
     import xml.etree.ElementTree as etree
 import re
 
+registered=True
 cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
+attribguard='<at:r>'
 
 # Workaround for older versions of elementtree
 if not hasattr(etree, 'ParseError'):
     etree.ParseError=etree.XMLParserError
-
-registered=True
 
 def shorttag(t):
     if t[0] == '{':
@@ -160,7 +170,7 @@ class rowobj():
             if self.strict==2:
                 path=[]
                 for i in xpath:
-                    if i==self.sobj.attribguard:
+                    if i==attribguard:
                         i='@'
                     path.append(i)
                 self.resetrow()
@@ -172,13 +182,13 @@ class rowobj():
                 msg+=fullp+'\nThe data to insert into path was:\n'+functions.mstr(data)
                 raise etree.ParseError(msg)
         else:
-            i=1
-            attribnum=path+'1'
-
             if self.row[self.schema[path][0]]=='':
                 self.row[self.schema[path][0]]=data.replace('\t', self.tabreplace)
                 return
-            
+
+            i=1
+            attribnum=path+'1'
+
             oldattribnum=path
             while attribnum in self.schema:
                 if self.row[self.schema[attribnum][0]]=='':
@@ -194,11 +204,38 @@ class rowobj():
     def resetrow(self):
         self.row=['']*len(self.schema)
 
+class jdictrowobj():
+    def __init__(self):
+        self.rowdata=collections.OrderedDict()
+
+    def addtorow(self, xpath, data):
+        if data[0]=='\n' or (len(data)>0 and data[-1]=='\n'):
+            data=cleandata.match(data).groups()[0]
+        if data=='':
+            return
+
+        path='/'.join(['@' if x==attribguard else x for x  in xpath])
+
+        if path not in self.rowdata:
+            self.rowdata[path]=data
+        else:
+            if type(self.rowdata[path]) is list:
+                self.rowdata[path].append(data)
+            else:
+                self.rowdata[path]=[self.rowdata[path],data]
+            return
+    
+    @property
+    def row(self):
+        return [json.dumps(self.rowdata)]
+
+    def resetrow(self):
+        self.rowdata=collections.OrderedDict()
+
 class schemaobj():
     def __init__(self):
         self.schema={}
         self.colnames={}
-        self.attribguard='<at:r>'
 
     def addtoschema(self, path):
         fpath=cleandata.match("/".join(path)).groups()[0]
@@ -229,7 +266,7 @@ class schemaobj():
     def shortifypath(self, path):
         outpath=[]
         for i in path:
-            if i==self.attribguard:
+            if i==attribguard:
                 continue
             if i[0]=="{":
                 i=i.split('}')[1]
@@ -267,7 +304,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             try:
                 xp=opts[0][0]
             except:
-                raise functions.OperatorError(__name__.rsplit('.')[-1],"An XML prototype should be provided")
+                if self.subtreeroot==None:
+                    raise functions.OperatorError(__name__.rsplit('.')[-1],"If no XML prototype is provided then at least a root should be provided")
+                self.rowobj=jdictrowobj()
+                self.schema=None
+                return [('C1', 'text')]
 
             xpath=[]
             capture=False
@@ -284,7 +325,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         capture=True
                     if capture and el.attrib!={}:
                         for k in el.attrib:
-                            s.addtoschema(xpath+[s.attribguard, k])
+                            s.addtoschema(xpath+[attribguard, k])
                     continue
 
                 if capture:
@@ -313,8 +354,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return [('C1', 'text')]
 
     def open(self, *parsedArgs, **envars):
-        class inputio():
 
+        class inputio():
             def __init__(self, connection, query):
                 self.lastline=''
                 self.start=True
@@ -366,7 +407,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             capture=True
                         if capture and el.attrib!={}:
                             for k,v in el.attrib.iteritems():
-                                self.rowobj.addtorow(xpath+[self.schema.attribguard, k], v)
+                                self.rowobj.addtorow(xpath+[attribguard, k], v)
                         continue
 
                     if capture:
