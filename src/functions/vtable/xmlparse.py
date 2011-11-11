@@ -50,9 +50,9 @@ Examples:
 
     >>> sql("select * from (xmlparse root:a select * from table2)")
     C1
-    ------------------------------------
-    {"@/b": "attrval1", "b": "row1val1"}
-    {"b": "row2val1", "c/d": "row2val"}
+    ---------------------------------
+    {"@/b":"attrval1","b":"row1val1"}
+    {"b":"row2val1","c/d":"row2val"}
 
     >>> table2('''
     ... '<a b="attrval1"><b>row1val1</b></a>'
@@ -168,11 +168,7 @@ class rowobj():
         
         if path==None:
             if self.strict==2:
-                path=[]
-                for i in xpath:
-                    if i==attribguard:
-                        i='@'
-                    path.append(i)
+                path=['@' if x==attribguard else x for x  in xpath]
                 self.resetrow()
                 msg='Undeclared path in xml-prototype was found in the input data. The path is:\n'
                 shortp='/'+pathwithoutns(path)
@@ -209,12 +205,11 @@ class jdictrowobj():
         self.rowdata=collections.OrderedDict()
 
     def addtorow(self, xpath, data):
-        if data[0]=='\n' or (len(data)>0 and data[-1]=='\n'):
-            data=cleandata.match(data).groups()[0]
-        if data=='':
+        data=data.strip()
+        if len(data)==0:
             return
 
-        path='/'.join(['@' if x==attribguard else x for x  in xpath])
+        path=pathwithoutns(['@' if x==attribguard else x for x  in xpath])
 
         if path not in self.rowdata:
             self.rowdata[path]=data
@@ -227,7 +222,7 @@ class jdictrowobj():
     
     @property
     def row(self):
-        return [json.dumps(self.rowdata)]
+        return [json.dumps(self.rowdata, separators=(',',':'), ensure_ascii=False)]
 
     def resetrow(self):
         self.rowdata=collections.OrderedDict()
