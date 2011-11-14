@@ -1,8 +1,11 @@
 """
-.. function:: xmlparse([root:None, strict:1], xmlprototype, query:None)
+.. function:: xmlparse([root:None, strict:1, namespace:False, xmlprototype], query:None)
 
-Parses an input xml stream. It starts parsing when it finds a root tag. An provided xml prototype fragment is used to create an schema, mapping from xml to a relational table.
+Parses an input xml stream. It starts parsing when it finds a root tag. A provided XML prototype fragment is used to create an schema, mapping from xml to a relational table.
 If multiple values are found for the same tag in the input stream, then all values are returned separated with a tab (use tab-set operators to process them).
+
+If no XML prototype is provided, then a jdict of the data is returned. In this case the *root* tag has to be provided. By default no namespace information is included in this mode.
+To include the namespace information, the *namespace:1* or *ns:1* switch should also be provided.
 
 :'strict' option:
 
@@ -112,7 +115,7 @@ import re
 
 registered=True
 cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
-attribguard='<at:r>'
+attribguard='@'
 
 # Workaround for older versions of elementtree
 if not hasattr(etree, 'ParseError'):
@@ -168,7 +171,7 @@ class rowobj():
         
         if path==None:
             if self.strict==2:
-                path=['@' if x==attribguard else x for x  in xpath]
+                path=xpath
                 self.resetrow()
                 msg='Undeclared path in xml-prototype was found in the input data. The path is:\n'
                 shortp='/'+pathwithoutns(path)
@@ -201,15 +204,19 @@ class rowobj():
         self.row=['']*len(self.schema)
 
 class jdictrowobj():
-    def __init__(self):
+    def __init__(self, ns):
         self.rowdata=collections.OrderedDict()
+        self.namespace=ns
 
     def addtorow(self, xpath, data):
         data=data.strip()
         if len(data)==0:
             return
 
-        path=pathwithoutns(['@' if x==attribguard else x for x  in xpath])
+        if self.namespace:
+            path='/'.join(xpath)
+        else:
+            path=pathwithoutns(xpath)
 
         if path not in self.rowdata:
             self.rowdata[path]=data
@@ -279,6 +286,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
         self.rowobj=None
         self.query=None
         self.strict=1
+        self.namespace=False
 
     def getschema(self, *parsedArgs,**envars):
             s=schemaobj()
@@ -291,6 +299,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             if 'strict' in opts[1]:
                 self.strict=int(opts[1]['strict'])
 
+            if 'namespace' or 'ns' in opts[1]:
+                self.namespace=True
+
             try:
                 self.query=opts[1]['query']
             except:
@@ -301,7 +312,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             except:
                 if self.subtreeroot==None:
                     raise functions.OperatorError(__name__.rsplit('.')[-1],"If no XML prototype is provided then at least a root should be provided")
-                self.rowobj=jdictrowobj()
+                self.rowobj=jdictrowobj(self.namespace)
                 self.schema=None
                 return [('C1', 'text')]
 
