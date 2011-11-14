@@ -1,4 +1,4 @@
-import lib.jlist as jlist
+import lib.jopts as jopts
 import json
 import operator
 import collections
@@ -31,7 +31,7 @@ def jpack(*args):
 
     """
 
-    return jlist.toj(jlist.elemfromj(*args))
+    return jopts.toj(jopts.elemfromj(*args))
 
 jpack.registered=True
 
@@ -60,7 +60,7 @@ def jfilterempty(*args):
 
     """
 
-    return jlist.toj([x for x in jlist.fromj(*args) if x!='' and x!=[] and x!=None])
+    return jopts.toj([x for x in jopts.fromj(*args) if x!='' and x!=[] and x!=None])
 
 jfilterempty.registered=True
 
@@ -91,7 +91,7 @@ def j2t(*args):
 
     """
 
-    return '\t'.join([ str(x).replace('\t', '    ') for x in jlist.fromj(*args) ])
+    return '\t'.join([ str(x).replace('\t', '    ') for x in jopts.fromj(*args) ])
 
 j2t.registered=True
 
@@ -115,7 +115,7 @@ def t2j(*args):
     for t in args:
         fj+=t.split('\t')
 
-    return jlist.toj(fj)
+    return jopts.toj(fj)
 
 t2j.registered=True
 
@@ -135,7 +135,7 @@ def jmerge(*args):
 
     """
 
-    return jlist.toj( jlist.fromj(*args) )
+    return jopts.toj( jopts.fromj(*args) )
 
 jmerge.registered=True
 
@@ -155,7 +155,7 @@ def jset(*args):
 
     """
 
-    return jlist.toj(sorted(set( jlist.fromj(*args) )))
+    return jopts.toj(sorted(set( jopts.fromj(*args) )))
 
 jset.registered=True
 
@@ -175,7 +175,7 @@ def jsort(*args):
 
     """
 
-    return jlist.toj(sorted( jlist.fromj(*args) ))
+    return jopts.toj(sorted( jopts.fromj(*args) ))
 
 jsort.registered=True
 
@@ -205,8 +205,8 @@ def jsplitv(*args):
 
     yield ('C1', )
 
-    for j1 in jlist.fromj(*args):
-        yield [jlist.toj(j1)]
+    for j1 in jopts.fromj(*args):
+        yield [jopts.toj(j1)]
 
 jsplitv.registered=True
 
@@ -226,7 +226,7 @@ def jsplit(*args):
 
     """
 
-    fj=[jlist.toj(x) for x in jlist.fromj(*args)]
+    fj=[jopts.toj(x) for x in jopts.fromj(*args)]
 
     if fj==[]:
         yield ('C1',)
@@ -257,7 +257,7 @@ def jflatten(*args):
 
     """
 
-    return jlist.toj( jlist.flatten( jlist.elemfromj(*args) ))
+    return jopts.toj( jopts.flatten( jopts.elemfromj(*args) ))
 
 jflatten.registered=True
 
@@ -277,7 +277,7 @@ def jmergeregexp(*args):
 
     """
 
-    return '|'.join('(?:'+x+')' for x in jlist.fromj(*args))
+    return '|'.join('(?:'+x+')' for x in jopts.fromj(*args))
 
 jmergeregexp.registered=True
 
@@ -327,7 +327,7 @@ def jdictkeys(*args):
             except TypeError,e:
                 pass
         keys=list(keys)
-    return jlist.toj( keys )
+    return jopts.toj( keys )
 
 jdictkeys.registered=True
 
@@ -381,7 +381,7 @@ def jdictvals(*args):
             except:
                 vals.append(None)
         
-    return jlist.toj( vals )
+    return jopts.toj( vals )
 
 jdictvals.registered=True
 
@@ -413,13 +413,13 @@ def jdictsplit(*args):
         d=d.items()
         d.sort(key=operator.itemgetter(1,0))
         yield tuple([x[0] for x in d])
-        yield [jlist.toj(x[1]) for x in d]
+        yield [jopts.toj(x[1]) for x in d]
     else:
         vals=[]
         yield tuple(args[1:])
         for i in args[1:]:
             try:
-                vals.append(jlist.toj(d[i]))
+                vals.append(jopts.toj(d[i]))
             except:
                 vals.append(None)
         yield vals
@@ -471,11 +471,11 @@ def jsplice(*args):
     if largs==1:
         return args[0]
 
-    fj=jlist.fromj(args[0])
+    fj=jopts.fromj(args[0])
 
     if largs==2:
         try:
-            return jlist.toj(fj[args[1]])
+            return jopts.toj(fj[args[1]])
         except:
             return None
 
@@ -486,7 +486,7 @@ def jsplice(*args):
         except:
             pass
 
-    return jlist.toj(outj)
+    return jopts.toj(outj)
         
 
 jsplice.registered=True
