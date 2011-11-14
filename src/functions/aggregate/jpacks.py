@@ -83,6 +83,16 @@ class jgroupunion:
     jgroupunion(1)
     --------------
     1
+
+    >>> table1('''
+    ... '{"b":1, "a":1}' 6
+    ... '{"c":1}' 7
+    ... ''')
+    >>> sql("select jgroupunion(a,b) from table1")
+    jgroupunion(a,b)
+    ----------------------
+    [1,2,3,4,5,6,7,8,9,11]
+
     """
 
     registered=True #Value to define db operator
@@ -91,7 +101,7 @@ class jgroupunion:
         self.outgroup=collections.OrderedDict()
 
     def step(self, *args):
-        self.outgroup=self.outgroup.union( set(jopts.fromj(*args)) )
+        self.outgroup.update( [(x,None) for x in jopts.fromj(*args)] )
 
     def final(self):
         return jopts.toj(list(self.outgroup))
