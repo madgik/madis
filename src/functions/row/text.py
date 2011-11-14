@@ -4,7 +4,7 @@ import functions
 import unicodedata
 import hashlib
 
-from lib import jlist
+from lib import jopts
 
 # Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
 # like below. If you want to embed the UNICODE directive inside the
@@ -315,7 +315,7 @@ def regexpr(*args):
         a=re.search(args[0], unicode(args[1]),re.UNICODE)
         if a!=None:
             if len(a.groups())>0:
-                return jlist.toj(a.groups())
+                return jopts.toj(a.groups())
             else:
                 return True
         else:
