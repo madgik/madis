@@ -1,6 +1,7 @@
 import lib.jlist as jlist
 import json
 import operator
+import collections
 
 def jpack(*args):
 
@@ -292,12 +293,12 @@ def jdictkeys(*args):
     >>> sql(''' select jdictkeys('{"k1":1,"k2":2}', '{"k1":1,"k3":2}') ''') # doctest: +NORMALIZE_WHITESPACE
     jdictkeys('{"k1":1,"k2":2}', '{"k1":1,"k3":2}')
     -----------------------------------------------
-    ["k3","k2","k1"]
+    ["k1","k2","k3"]
 
     >>> sql(''' select jdictkeys('{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
     jdictkeys('{"k1":1,"k2":2}')
     ----------------------------
-    ["k2","k1"]
+    ["k1","k2"]
     >>> sql(''' select jdictkeys('test') ''') # doctest: +NORMALIZE_WHITESPACE
     jdictkeys('test')
     -----------------
@@ -310,16 +311,22 @@ def jdictkeys(*args):
     """
     
     if len(args)==1:
-        if type(args[0]) in (int,float) or args[0][0]!='{' or args[0][-1]!='}':
-            keys=[]
-        else:
-            keys=[x for x in json.loads(args[0]).iterkeys()]
-    else:
         keys=[]
-        for i in args:
+        i=args[0]
+        try:
             if i[0]=='{' and i[-1]=='}':
-                keys+=[x for x in json.loads(i).iterkeys()]
-        keys=list(set(keys))
+                keys=[x for x in json.loads(i, object_pairs_hook=collections.OrderedDict).iterkeys()]
+        except TypeError,e:
+            pass
+    else:
+        keys=collections.OrderedDict()
+        for i in args:
+            try:
+                if i[0]=='{' and i[-1]=='}':
+                    keys.update([(x,None) for x in json.loads(i, object_pairs_hook=collections.OrderedDict).iterkeys()])
+            except TypeError,e:
+                pass
+        keys=list(keys)
     return jlist.toj( keys )
 
 jdictkeys.registered=True
