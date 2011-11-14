@@ -1,6 +1,8 @@
 __docformat__ = 'reStructuredText en'
 
-import lib.jlist as jlist
+import lib.jopts as jopts
+import collections
+import json
 
 class jgroup:
     """
@@ -51,12 +53,12 @@ class jgroup:
 
     def step(self, *args):
         if len(args)==1:
-            self.outgroup+=( jlist.elemfromj(args[0]) )
+            self.outgroup+=( jopts.elemfromj(args[0]) )
         else:
-            self.outgroup.append( jlist.elemfromj(*args) )
+            self.outgroup.append( jopts.elemfromj(*args) )
 
     def final(self):
-        return jlist.toj(self.outgroup)
+        return jopts.toj(self.outgroup)
     
 class jgroupunion:
     """
@@ -86,13 +88,13 @@ class jgroupunion:
     registered=True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=set()
+        self.outgroup=collections.OrderedDict()
 
     def step(self, *args):
-        self.outgroup=self.outgroup.union( set(jlist.fromj(*args)) )
+        self.outgroup=self.outgroup.union( set(jopts.fromj(*args)) )
 
     def final(self):
-        return jlist.toj(list(self.outgroup))
+        return jopts.toj(list(self.outgroup))
 
 if not ('.' in __name__):
     """
