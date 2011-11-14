@@ -153,11 +153,6 @@ class rowobj():
         self.tabreplace='    '
 
     def addtorow(self, xpath, data):
-        if data[0]=='\n' or (len(data)>0 and data[-1]=='\n'):
-            data=cleandata.match(data).groups()[0]
-        if data=='':
-            return
-
         fullp='/'.join(xpath)
 
         path=None
@@ -209,10 +204,6 @@ class jdictrowobj():
         self.namespace=ns
 
     def addtorow(self, xpath, data):
-        data=data.strip()
-        if len(data)==0:
-            return
-
         if self.namespace:
             path='/'.join(xpath)
         else:
@@ -406,22 +397,23 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 for ev, el in etreeparse:
                     if ev=="start":
-                        root.clear()
                         if capture:
                             xpath.append(el.tag)
-                        if matchtag(el.tag, self.subtreeroot) and not capture:
+                        elif matchtag(el.tag, self.subtreeroot) :
                             capture=True
-                        if capture and el.attrib!={}:
+                        if el.attrib!={} and capture:
                             for k,v in el.attrib.iteritems():
                                 self.rowobj.addtorow(xpath+[attribguard, k], v)
                         continue
 
                     if capture:
-                        if el.text!=None:
-                                self.rowobj.addtorow(xpath, el.text)
-
                         if ev=="end":
+                            if el.text!=None:
+                                eltext=el.text.strip()
+                                if eltext!='':
+                                    self.rowobj.addtorow(xpath, eltext)
                             if matchtag(el.tag,self.subtreeroot):
+                                root.clear()
                                 capture=False
                                 if self.strict>=0:
                                     yield self.rowobj.row
