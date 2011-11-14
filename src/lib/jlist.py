@@ -58,6 +58,7 @@ u'[]'
 """
 
 import json
+import collections
 
 def toj(l):
     if l==None:
@@ -105,7 +106,7 @@ def fromj(*jargs):
                 continue
             if j[0]=='[' and j[-1]==']':
                 try:
-                    fj+=json.loads(j)
+                    fj+=json.loads(j, object_pairs_hook=collections.OrderedDict)
                     continue
                 except:
                     fj+= [j]
