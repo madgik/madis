@@ -104,9 +104,16 @@ def fromj(*jargs):
             if j=='':
                 fj+= [u'']
                 continue
-            if j[0]=='[' and j[-1]==']':
+            if (j[0]=='[' and j[-1]==']'):
                 try:
-                    fj+=json.loads(j, object_pairs_hook=collections.OrderedDict)
+                    fj+=json.loads(j)
+                    continue
+                except:
+                    fj+= [j]
+                    continue
+            if (j[0]=='{' and j[-1]=='}'):
+                try:
+                    fj+=list(json.loads(j, object_pairs_hook=collections.OrderedDict))
                     continue
                 except:
                     fj+= [j]
