@@ -121,18 +121,13 @@ attribguard='@'
 if not hasattr(etree, 'ParseError'):
     etree.ParseError=etree.XMLParserError
 
-def shorttag(t):
-    if t[0] == '{':
-        tag = t[1:].split("}")[1]
-        return tag
-    else:
-        return t
-
 def matchtag(a, b):
     if b[0] == '{':
-        return a==b
+        return a == b
     else:
-        return shorttag(a)==b
+        if a[0] == '{':
+            return a.split('}')[1] == b
+        return a == b
 
 def pathwithoutns(path):
     outpath=[]
@@ -392,6 +387,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             etreeparse=iter(etree.iterparse(rio, ("start", "end")))
             capture=False
             xpath=[]
+            addtorow=self.rowobj.addtorow
+            resetrow=self.rowobj.resetrow
+            lmatchtag=matchtag
             try:
                 root=etreeparse.next()[1]
 
@@ -399,11 +397,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if ev=="start":
                         if capture:
                             xpath.append(el.tag)
-                        elif matchtag(el.tag, self.subtreeroot) :
+                        elif lmatchtag(el.tag, self.subtreeroot) :
                             capture=True
                         if el.attrib!={} and capture:
                             for k,v in el.attrib.iteritems():
-                                self.rowobj.addtorow(xpath+[attribguard, k], v)
+                                addtorow(xpath+[attribguard, k], v)
                         continue
 
                     if capture:
@@ -411,13 +409,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             if el.text!=None:
                                 eltext=el.text.strip()
                                 if eltext!='':
-                                    self.rowobj.addtorow(xpath, eltext)
-                            if matchtag(el.tag,self.subtreeroot):
+                                    addtorow(xpath, eltext)
+                            if lmatchtag(el.tag, self.subtreeroot):
                                 root.clear()
                                 capture=False
                                 if self.strict>=0:
                                     yield self.rowobj.row
-                                self.rowobj.resetrow()
+                                resetrow()
                   
                             if len(xpath)>0:
                                 xpath.pop()
@@ -428,7 +426,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 etreeended=True
             except etree.ParseError, e:
                 rio.start=True
-                self.rowobj.resetrow()
+                resetrow()
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
                 if self.strict==-1:
