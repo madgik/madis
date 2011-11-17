@@ -397,15 +397,15 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if ev=="start":
                         if capture:
                             xpath.append(el.tag)
-                        elif lmatchtag(el.tag, self.subtreeroot) :
-                            capture=True
+                        else:
+                            capture=lmatchtag(el.tag, self.subtreeroot)
                         if el.attrib!={} and capture:
                             for k,v in el.attrib.iteritems():
                                 addtorow(xpath+[attribguard, k], v)
                         continue
 
-                    if capture:
-                        if ev=="end":
+                    if ev=='end':
+                        if capture:
                             if el.text!=None:
                                 eltext=el.text.strip()
                                 if eltext!='':
@@ -416,12 +416,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                 if self.strict>=0:
                                     yield self.rowobj.row
                                 resetrow()
-                  
+
                             if len(xpath)>0:
                                 xpath.pop()
 
-                    if ev=="end":
-                        el.clear()
+                    el.clear()
 
                 etreeended=True
             except etree.ParseError, e:
