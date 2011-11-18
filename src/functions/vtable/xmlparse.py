@@ -210,7 +210,7 @@ class jdictrowobj():
             if type(self.rowdata[path]) is list:
                 self.rowdata[path].append(data)
             else:
-                self.rowdata[path]=[self.rowdata[path],data]
+                self.rowdata[path]=[self.rowdata[path], data]
             return
     
     @property
@@ -354,30 +354,28 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.qiter=connection.cursor().execute(query)
 
             def read(self, n):
+                
+                def readline():
+                    i=unicode(self.qiter.next()[0]).encode('utf-8')
+                    return i
+
                 if self.start:
                     self.start=False
-                    self.lastline=self.normalizeinput(self.qiter.next())
+                    self.lastline= readline()
 
                     if self.lastline.startswith('<?xml version='):
                         ll=self.lastline
                         while ll.find('?>')==-1:
-                            ll+=self.normalizeinput(self.qiter.next())
+                            ll+= readline()
                         self.lastline=ll
                         return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
                     else:
                         return "<xmlparce-forced-root-element>\n"+self.lastline
 
-                self.lastline=self.normalizeinput(self.qiter.next())
+                self.lastline= readline()
                 if self.lastline.startswith('<?xml version='):
-                    self.lastline=self.normalizeinput(self.qiter.next())
+                    self.lastline= readline()
                 return self.lastline
-
-            def normalizeinput(self, i):
-                i=unicode(''.join(i)).encode('utf-8')
-                if len(i)>0 and i[-1]=='\n':
-                    return i
-                else:
-                    return i+'\n'
 
 
         rio=inputio(envars['db'], self.query)
@@ -394,7 +392,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 root=etreeparse.next()[1]
 
                 for ev, el in etreeparse:
-                    if ev=="start":
+                    if ev=='start':
                         if capture:
                             xpath.append(el.tag)
                         else:
@@ -402,9 +400,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         if el.attrib!={} and capture:
                             for k,v in el.attrib.iteritems():
                                 addtorow(xpath+[attribguard, k], v)
-                        continue
-
-                    if ev=='end':
+                    else: #if ev=='end':
                         if capture:
                             if el.text!=None:
                                 eltext=el.text.strip()
@@ -420,7 +416,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             if len(xpath)>0:
                                 xpath.pop()
 
-                    el.clear()
+                        el.clear()
 
                 etreeended=True
             except etree.ParseError, e:
