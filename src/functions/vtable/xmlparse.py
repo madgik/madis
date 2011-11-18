@@ -53,9 +53,9 @@ Examples:
 
     >>> sql("select * from (xmlparse root:a select * from table2)")
     C1
-    ---------------------------------
-    {"@/b":"attrval1","b":"row1val1"}
-    {"b":"row2val1","c/d":"row2val"}
+    -------------------------------------
+    {"a/@/b":"attrval1","a/b":"row1val1"}
+    {"a/b":"row2val1","a/c/d":"row2val"}
 
     >>> table2('''
     ... '<a b="attrval1"><b>row1val1</b></a>'
@@ -97,7 +97,7 @@ Examples:
     ... ''')
     >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
     C1
-    ----------------------
+    ---------------------
     <a><b>row1val1</b</a>
     <a><b>row1val1</b</a>
 
@@ -194,15 +194,19 @@ class rowobj():
         self.row=['']*len(self.schema)
 
 class jdictrowobj():
-    def __init__(self, ns):
+    def __init__(self, ns, subtreeroot=None):
         self.rowdata=collections.OrderedDict()
         self.namespace=ns
-
+        if subtreeroot!=None:
+            self.root=[subtreeroot]
+        else:
+            self.root=[]
+            
     def addtorow(self, xpath, data):
         if self.namespace:
-            path='/'.join(xpath)
+            path='/'.join(self.root+xpath)
         else:
-            path=pathwithoutns(xpath)
+            path=pathwithoutns(self.root+xpath)
 
         if path not in self.rowdata:
             self.rowdata[path]=data
@@ -285,7 +289,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             if 'strict' in opts[1]:
                 self.strict=int(opts[1]['strict'])
 
-            if 'namespace' or 'ns' in opts[1]:
+            if 'namespace' in opts[1] or 'ns' in opts[1]:
                 self.namespace=True
 
             try:
@@ -298,39 +302,61 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             except:
                 if self.subtreeroot==None:
                     raise functions.OperatorError(__name__.rsplit('.')[-1],"If no XML prototype is provided then at least a root should be provided")
-                self.rowobj=jdictrowobj(self.namespace)
+                self.rowobj=jdictrowobj(self.namespace, self.subtreeroot)
                 self.schema=None
                 return [('C1', 'text')]
 
-            xpath=[]
-            capture=False
+            try:
+                jxp=json.loads(xp, object_pairs_hook=collections.OrderedDict)
+            except ValueError:
+                jxp=None
 
-            import StringIO
-
-            for ev, el in etree.iterparse(StringIO.StringIO(xp), ("start", "end")):
-                if ev=="start":
+            if type(jxp) is list:
+                for i in jxp:
+                    path=i.split('/')
                     if self.subtreeroot==None:
-                        self.subtreeroot=el.tag
+                        self.subtreeroot=path[0]
+                    if path[0]==self.subtreeroot:
+                        path=path[1:]
+                    s.addtoschema(path)
+            elif type(jxp) is collections.OrderedDict:
+                for k,v in jxp.iteritems():
+                    path=k.split('/')
+                    if self.subtreeroot==None:
+                        self.subtreeroot=path[0]
+                    if path[0]==self.subtreeroot:
+                        path=path[1:]
+                    s.addtoschema(path)
+            else:
+                xpath=[]
+                capture=False
+
+                import StringIO
+
+                for ev, el in etree.iterparse(StringIO.StringIO(xp), ("start", "end")):
+                    if ev=="start":
+                        if self.subtreeroot==None:
+                            self.subtreeroot=el.tag
+                        if capture:
+                            xpath.append(el.tag)
+                        if matchtag(el.tag, self.subtreeroot) and not capture:
+                            capture=True
+                        if capture and el.attrib!={}:
+                            for k in el.attrib:
+                                s.addtoschema(xpath+[attribguard, k])
+                        continue
+
                     if capture:
-                        xpath.append(el.tag)
-                    if matchtag(el.tag, self.subtreeroot) and not capture:
-                        capture=True
-                    if capture and el.attrib!={}:
-                        for k in el.attrib:
-                            s.addtoschema(xpath+[attribguard, k])
-                    continue
+                        if el.text!=None and cleandata.match(el.text).groups()[0]!='':
+                            s.addtoschema(xpath)
+                        if ev=="end":
+                            if el.tag==self.subtreeroot:
+                                capture=False
+                            if len(xpath)>0:
+                                xpath.pop()
 
-                if capture:
-                    if el.text!=None and cleandata.match(el.text).groups()[0]!='':
-                        s.addtoschema(xpath)
                     if ev=="end":
-                        if el.tag==self.subtreeroot:
-                            capture=False
-                        if len(xpath)>0:
-                            xpath.pop()
-
-                if ev=="end":
-                    el.clear()
+                        el.clear()
 
             self.schema=s
 
