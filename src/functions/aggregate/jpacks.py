@@ -123,8 +123,8 @@ class jdictgroupunion:
     ... ''')
     >>> sql("select jdictgroupunion(a) from table1")
     jdictgroupunion(a)
-    --------------------------------
-    {"b": 2, "a": 1, "c": 1, "d": 3}
+    -------------------------
+    {"b":2,"a":1,"c":1,"d":3}
 
     """
 
