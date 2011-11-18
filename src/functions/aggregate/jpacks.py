@@ -77,7 +77,7 @@ class jgroupunion:
     >>> sql("select jgroupunion(a,b) from table1")
     jgroupunion(a,b)
     ----------------------
-    [1,2,3,4,5,6,7,8,9,11]
+    [1,2,6,3,7,4,8,11,5,9]
 
     >>> sql("select jgroupunion(1)")
     jgroupunion(1)
@@ -90,8 +90,8 @@ class jgroupunion:
     ... ''')
     >>> sql("select jgroupunion(a,b) from table1")
     jgroupunion(a,b)
-    ----------------------
-    [1,2,3,4,5,6,7,8,9,11]
+    -----------------
+    ["b","a",6,"c",7]
 
     """
 
@@ -105,6 +105,48 @@ class jgroupunion:
 
     def final(self):
         return jopts.toj(list(self.outgroup))
+
+class jdictgroupunion:
+    """
+    .. function:: jgroupunion(jdicts) -> jdict
+
+    Calculates the union of all jdicts inside a group. The returned jdict's key values, are
+    calculated as the max length of the lists (or dictionaries) that have been found inside
+    the individual jdicts of the group.
+
+    Example:
+
+    >>> table1('''
+    ... '{"b":1, "a":1}'
+    ... '{"c":1, "d":[1,2,3]}'
+    ... '{"b":{"1":2,"3":4}, "d":1}'
+    ... ''')
+    >>> sql("select jdictgroupunion(a) from table1")
+    jdictgroupunion(a)
+    --------------------------------
+    {"b": 2, "a": 1, "c": 1, "d": 3}
+
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.outgroup=collections.OrderedDict()
+
+    def step(self, *args):
+        for d in args:
+            for x,v in json.loads(d, object_pairs_hook=collections.OrderedDict).iteritems():
+                vlen=1
+                if type(v) in (list, collections.OrderedDict):
+                    vlen=len(v)
+                try:
+                    if vlen > self.outgroup[x]:
+                        self.outgroup[x]=vlen
+                except KeyError:
+                    self.outgroup[x]=vlen
+
+    def final(self):
+        return json.dumps(self.outgroup)
 
 if not ('.' in __name__):
     """
