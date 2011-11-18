@@ -146,7 +146,7 @@ class jdictgroupunion:
                     self.outgroup[x]=vlen
 
     def final(self):
-        return json.dumps(self.outgroup)
+        return json.dumps(self.outgroup, separators=(',',':'), ensure_ascii=False)
 
 if not ('.' in __name__):
     """
