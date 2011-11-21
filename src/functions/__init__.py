@@ -21,6 +21,8 @@ except ImportError:
         return bool((inspect.isfunction(object) or inspect.ismethod(object)) and
                     obj.func_code.co_flags & CO_GENERATOR)
 
+sys.setcheckinterval(1000)
+
 firstimport=True
 test_connection = None
 
