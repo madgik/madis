@@ -50,6 +50,18 @@ Examples:
     attrval1 | row1val1 |
              | row2val1 | row2val
 
+    >>> sql('''select * from (xmlparse  '["a/@/b","a/b","a/c/d"]' select * from table2)''')
+    b        | b1       | c_d
+    -----------------------------
+    attrval1 | row1val1 |
+             | row2val1 | row2val
+
+    >>> sql('''select * from (xmlparse  '{"a/b":[1,2] ,"a/c/d":1}' select * from table2)''')
+    b        | b1 | c_d
+    -----------------------
+    row1val1 |    |
+    row2val1 |    | row2val
+
 
     >>> sql("select * from (xmlparse root:a select * from table2)")
     C1
@@ -326,7 +338,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
                         path=path[1:]
-                    s.addtoschema(path)
+                    if type(v) in (list, collections.OrderedDict):
+                        for i in xrange(len(v)):
+                            s.addtoschema(path)
+                    else:
+                        s.addtoschema(path)
             else:
                 xpath=[]
                 capture=False
