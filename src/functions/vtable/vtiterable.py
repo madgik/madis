@@ -15,17 +15,14 @@ from lib import schemaUtils
 
 def echocall(func):
     def wrapper(*args, **kw):
-        obj=args[0]
-        Extra=""
-        if 'tablename' in obj.__dict__:
-            Extra=obj.tablename
         if functions.settings['vtdebug']:
+            obj=args[0]
+            Extra=""
+            if 'tablename' in obj.__dict__:
+                Extra=obj.tablename
             print "Table %s:Before Calling %s.%s(%s)" %(Extra+str(obj),obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
             aftermsg="Table %s:After Calling %s.%s(%s)" %(Extra,obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
-        a=func(*args, **kw)
-        if functions.settings['vtdebug']:
-            pass
-        return a
+        return func(*args, **kw)
     return wrapper
 
 
@@ -56,6 +53,7 @@ class SourceVT:
         dictargs={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
         self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,self.staticschema,*args,**dictargs)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
+
     @echocall
     def Connect(self, db, modulename, dbname, tablename,*args):
         if tablename not in self.tableObjs:
@@ -63,7 +61,6 @@ class SourceVT:
             self.tableObjs[tablename]=LTable(self.tableCl,self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,self.notsplit,self.staticschema,*args,**dictargs)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
 
-import sys
 
 class emptyiter:
     def init(self):
@@ -74,6 +71,7 @@ class emptyiter:
         raise StopIteration
     def close(self):
         pass
+
 
 class LTable: ####Init means setschema and execstatus
     autostring='automatic_vtable'
@@ -118,14 +116,17 @@ class LTable: ####Init means setschema and execstatus
     def _setschema(self):
         descr=self.vtable.getdescription() ### get list of tuples columnname, type
         self.schema=schemaUtils.CreateStatement(descr, self.tablename)
+
     @echocall
     def getschema(self):
         if functions.settings['tracing']:
             print 'VT_Schema: %s' %(self.schema)
         return self.schema
+
     @echocall
     def BestIndex(self, *args):
         return None
+
     @echocall
     def Open(self):
         if self.delayedexception:
@@ -172,7 +173,6 @@ class LTable: ####Init means setschema and execstatus
 
 # Represents a cursor
 class Cursor:
-
     @echocall
     def __init__(self, table,iter):
         self.table=table
@@ -181,9 +181,6 @@ class Cursor:
         self.tablename=table.tablename
         self.firsttime=True
         
-
-
-
     @echocall
     def Filter(self, *args):
         self.eof=False
@@ -194,19 +191,22 @@ class Cursor:
         self.firsttime=False
         self.Next()
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Eof(self):
         return self.eof
+
     @echocall
     def Rowid(self):
         return self.pos+1
-    @echocall
+
+#    @echocall #-- Commented out for speed reasons
     def Column(self, col):
         try:
             return self.row[col]
         except IndexError:
             raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in rowid: %s" %(self.pos+1))
-    @echocall
+
+#    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
             self.row=self.iter.next()
@@ -214,12 +214,10 @@ class Cursor:
         except StopIteration:
             self.row=None
             self.eof=True
+
     @echocall
     def Close(self):         
         self.iter.close()
-
-
-
 
 def unify(slist):
     if len(set(slist))==len(slist):
