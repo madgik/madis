@@ -85,17 +85,14 @@ def getTypeOfInstance(cls):
 # Decorator to extended a function by calling first another function with no arguments
 def echocall(func):
     def wrapper(*args, **kw):
-        obj=args[0]
-        Extra=""
-        if 'tablename' in obj.__dict__:
-            Extra=obj.tablename
         if functions.settings['vtdebug']:
+            obj=args[0]
+            Extra=""
+            if 'tablename' in obj.__dict__:
+                Extra=obj.tablename
             print "Table %s:Before Calling %s.%s(%s)" %(Extra+str(obj),obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
-            aftermsg="Table %s:After Calling %s.%s(%s)" %(Extra,obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
-        a=func(*args, **kw)
-        if functions.settings['vtdebug']:
-            pass
-        return a
+#            aftermsg="Table %s:After Calling %s.%s(%s)" %(Extra,obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
+        return func(*args, **kw)
     return wrapper
 
 
@@ -234,8 +231,6 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.row=None
         self.firsttime=True
 
-
-
     @echocall
     def Filter(self, *args):
         self.eof=False
@@ -248,18 +243,21 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.firsttime=False
         self.Next()
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Eof(self):
         return self.eof
+
     @echocall
     def Rowid(self):
         return self.pos+1
-    @echocall
+
+#    @echocall #-- Commented out for speed reasons
     def Column(self, col):
         try:
             return self.row[col]
         except IndexError:
             raise functions.OperatorError(self.envars['modulename'] ,"Not enough data in rowid: %s" %(self.pos+1))
+
     @echocall
     def NextNonTuple(self):
         while True:
@@ -272,6 +270,8 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
                 self.row=None
                 self.eof=True
                 break
+
+#    @echocall #-- Commented out for speed reasons
     def NextAny(self):
         try:
             self.row=self.iter.next()
@@ -279,6 +279,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         except StopIteration:
             self.row=None
             self.eof=True
+
     @echocall
     def Close(self):
         if hasattr(self.iter,'close'):
