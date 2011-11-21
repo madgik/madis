@@ -128,9 +128,6 @@ import urllib2
 import functions
 from lib.iterutils import peekable
 from lib.ziputils import ZipIter
-import os
-import base64
-import codecs
 
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
