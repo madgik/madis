@@ -130,10 +130,12 @@ from lib.iterutils import peekable
 from lib.ziputils import ZipIter
 import os
 import base64
+import codecs
 
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
 
+csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect'])
 
 def nullify(iterlist):
     for lst in iterlist:
@@ -144,10 +146,18 @@ def nullify(iterlist):
             else:
                 nlst+=[el]
         yield nlst
-csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect'])
+
+def directfile(f, encoding='utf-8'):
+    for line in f:
+        if len(line)==4 and line.upper()=='NULL':
+            yield [None]
+        else:
+            yield [unicode(line, encoding).rstrip("\n")]
+
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
         self.encoding='utf-8'
+        
         if 'encoding' in rest:
             self.encoding=rest['encoding']
             del rest['encoding']
@@ -184,7 +194,7 @@ class FileCursor:
                 self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                 sample=self.iter.peek()
             else: ###not first or header
-                self.iter=nullify(reader(self.fileiter,encoding=self.encoding,**rest))
+                self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                 if hasheader:
                     sample=self.iter.next()
             if first:
@@ -195,7 +205,7 @@ class FileCursor:
                     for i in xrange(1,len(sample)+1):
                         namelist.append("C"+str(i))
         else: #### Default read lines
-            self.iter=nullify(linetorow(self.fileiter,encoding=self.encoding))
+            self.iter=directfile(self.fileiter, encoding=self.encoding)
             namelist.append("C1")
             
     def __iter__(self):
@@ -208,11 +218,6 @@ class FileCursor:
     def close(self):
         self.fileiter.close()
         
-def linetorow(f,encoding='utf-8'):
-    for line in f:
-        yield [unicode(line,encoding).rstrip("\n")]
-
-
 class FileVT:
     def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
         self.largs=largs
@@ -259,7 +264,7 @@ class FileVT:
 
 def Source():
     global boolargs, nonstringargs
-    return SourceVT(FileVT,lib.inoutparsing.boolargs+['header','compression'], lib.inoutparsing.nonstringargs,lib.inoutparsing.needsescape)
+    return SourceVT(FileVT, lib.inoutparsing.boolargs+['header','compression'], lib.inoutparsing.nonstringargs, lib.inoutparsing.needsescape)
 
 
 if not ('.' in __name__):
