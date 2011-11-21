@@ -146,7 +146,7 @@ def nullify(iterlist):
 
 def directfile(f, encoding='utf-8'):
     for line in f:
-        yield [unicode(line.rstrip("\n"), encoding)]
+        yield (unicode(line.rstrip("\n"), encoding), )
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
