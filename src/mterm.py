@@ -512,7 +512,7 @@ while True:
             update_tablelist()
             argument=argument.rstrip('; ')
             if not argument:
-                for i in alltables:
+                for i in sorted(alltables):
                     print i
             else:
                 statement='select * from '+argument+' limit 2;'
