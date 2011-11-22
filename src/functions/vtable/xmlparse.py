@@ -109,7 +109,7 @@ Examples:
     ... ''')
     >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
     C1
-    ---------------------
+    ----------------------
     <a><b>row1val1</b</a>
     <a><b>row1val1</b</a>
 
@@ -118,6 +118,7 @@ import vtiters
 import functions
 import collections
 import json
+import StringIO
 
 try:
     import xml.etree.cElementTree as etree
@@ -392,37 +393,46 @@ class XMLparse(vtiters.SchemaFromArgsVT):
         class inputio():
             def __init__(self, connection, query):
                 self.lastline=''
-                self.start=True
+                self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
 
-            def read(self, n):
+            def restart(self):
+                self.read=self.readstart
+
+            def readstart(self, n):
                 
                 def readline():
                     i=self.qiter.next()[0].encode('utf-8')
                     try:
-                        if i[-1]=='\n':
+                        if i.endswith('\n'):
                             return i
                         else:
                             return i+'\n'
                     except IndexError:
                         return '\n'
 
-                if self.start:
-                    self.start=False
-                    self.lastline= readline()
-                    if self.lastline.startswith('<?xml version='):
-                        ll=self.lastline
-                        while ll.find('?>')==-1:
-                            ll+= readline()
-                        self.lastline=ll
-                        return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
-                    else:
-                        return "<xmlparce-forced-root-element>\n"+self.lastline
-
+                self.read=self.readtail
                 self.lastline= readline()
                 if self.lastline.startswith('<?xml version='):
-                    self.lastline= readline()
-                return self.lastline
+                    ll=self.lastline
+                    while ll.find('?>')==-1:
+                        ll+= readline()
+                    self.lastline=ll
+                    return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
+                else:
+                    return "<xmlparce-forced-root-element>\n"+self.lastline
+
+            def readtail(self, n):
+                line= self.qiter.next()[0].encode('utf-8')
+                if line.startswith('<?xml version='):
+                    line= self.qiter.next()[0].encode('utf-8')
+                try:
+                    if not line.endswith('\n'):
+                        line+='\n'
+                except IndexError:
+                    line='\n'
+                self.lastline=line
+                return line
 
 
         rio=inputio(envars['db'], self.query)
@@ -467,7 +477,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 etreeended=True
             except etree.ParseError, e:
-                rio.start=True
+                rio.restart()
                 resetrow()
                 if self.strict>=1:
                     raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
