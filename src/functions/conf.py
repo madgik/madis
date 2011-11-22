@@ -4,4 +4,4 @@
 # add  values at domainExtraHeaders dictionary
 # e.g. domainExtraHeaders={'www.domain.gr':{'header':'value'}}
 
-domainExtraHeaders={}
+domainExtraHeaders={"Accept-Encoding": "gzip"}
