@@ -7,6 +7,13 @@ If multiple values are found for the same tag in the input stream, then all valu
 If no XML prototype is provided, then a jdict of the data is returned. In this case the *root* tag has to be provided. By default no namespace information is included in this mode.
 To include the namespace information, the *namespace:1* or *ns:1* switch should also be provided.
 
+: 'namespace' or 'ns' option:
+    Include namespace information in the returned jdicts
+
+: 'fast' option:
+    Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
+    occurs no last line information is returned, so use this option only when you are sure that the XML input is well formed.
+
 :'strict' option:
 
     - strict:2  ,if a failure occurs, the current transaction will be cancelled. Additionally if a tag isn't found in the xml prototype it will be regarded as failure.
