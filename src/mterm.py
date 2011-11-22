@@ -204,8 +204,12 @@ def mcomplete(textin,state):
     if re.match(r'\s*$', beforecompl):
         completitions+=dotcompletitions
 
+    # If at the start of the line, show only tables
+    if beforecompl=='' and text=='':
+        localtables=alltablescompl[:]
+        completitions=localtables
     # If completition starts at a string boundary, complete from local dir
-    if beforecompl!='' and beforecompl[-1] in ("'", '"'):
+    elif beforecompl!='' and beforecompl[-1] in ("'", '"'):
         completitions=os.listdir(os.getcwdu())
         hits=[x for x in completitions if x[:len(text)]==unicode(text)]
         if state<len(hits):
@@ -217,7 +221,7 @@ def mcomplete(textin,state):
         localtables=alltablescompl[:]
         completitions=localtables
     else:
-        localtables=[x for x in alltablescompl]
+        localtables=alltablescompl[:]
         completitions+=lastcols+colscompl
         completitions+=sqlandmtermstatements+allfuncs+localtables
 
