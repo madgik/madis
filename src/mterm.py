@@ -174,13 +174,16 @@ def update_cols_for_table(t):
         except:
             pass
 
-def normalizename(col):
-    if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
-        return col
-    else:
-        return "`"+col.lower()+"`"
 
 def mcomplete(textin,state):
+    
+    def normalizename(col):
+        if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
+            return col
+        else:
+            return "`"+col.lower()+"`"  
+        
+        
     text=textin
 
     #Complete \t to tabs
@@ -204,6 +207,11 @@ def mcomplete(textin,state):
     # If completition starts at a string boundary, complete from local dir
     if beforecompl!='' and beforecompl[-1] in ("'", '"'):
         completitions=os.listdir(os.getcwdu())
+        hits=[x for x in completitions if x[:len(text)]==unicode(text)]
+        if state<len(hits):
+            return hits[state]
+        else:
+            return
     # Detect if in simplified 'from' or .schema
     elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)|(^\s*\.t)|(^\s*\.tables)', beforecompl, re.DOTALL| re.UNICODE):
         localtables=alltablescompl[:]
