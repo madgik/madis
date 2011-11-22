@@ -398,13 +398,18 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def read(self, n):
                 
                 def readline():
-                    i=unicode(self.qiter.next()[0]).encode('utf-8')
-                    return i
+                    i=self.qiter.next()[0].encode('utf-8')
+                    try:
+                        if i[-1]=='\n':
+                            return i
+                        else:
+                            return i+'\n'
+                    except IndexError:
+                        return '\n'
 
                 if self.start:
                     self.start=False
                     self.lastline= readline()
-
                     if self.lastline.startswith('<?xml version='):
                         ll=self.lastline
                         while ll.find('?>')==-1:
