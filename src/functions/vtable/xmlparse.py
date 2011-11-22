@@ -290,6 +290,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
         self.query=None
         self.strict=1
         self.namespace=False
+        self.fast=False
 
     def getschema(self, *parsedArgs,**envars):
             s=schemaobj()
@@ -304,6 +305,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
             if 'namespace' in opts[1] or 'ns' in opts[1]:
                 self.namespace=True
+
+            if 'fast' in opts[1]:
+                self.fast=True
 
             try:
                 self.query=opts[1]['query']
@@ -391,10 +395,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
     def open(self, *parsedArgs, **envars):
 
         class inputio():
-            def __init__(self, connection, query):
+            def __init__(self, connection, query, fast=False):
                 self.lastline=''
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
+                self.fast=fast
 
             def restart(self):
                 self.read=self.readstart
@@ -411,7 +416,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     except IndexError:
                         return '\n'
 
-                self.read=self.readtail
+                if self.fast:
+                    self.read=self.readtailfast
+                else:
+                    self.read=self.readtail
+                    
                 self.lastline= readline()
                 if self.lastline.startswith('<?xml version='):
                     ll=self.lastline
@@ -431,8 +440,24 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.lastline=line
                 return line
 
+            def readtailfast(self, n):
+                multiline=[]
+                try:
+                    for i in xrange(100):
+                        line= self.qiter.next()[0].encode('utf-8')
+                        if line.startswith('<?xml version='):
+                            line= self.qiter.next()[0].encode('utf-8')
+                        if line.endswith('\n'):
+                            multiline.append(line)
+                        else:
+                            multiline+=[line,'\n']
+                except StopIteration:
+                    if multiline==[]:
+                        raise StopIteration
+                return ''.join(multiline)
 
-        rio=inputio(envars['db'], self.query)
+
+        rio=inputio(envars['db'], self.query, self.fast)
         etreeended=False
 
         while not etreeended:
