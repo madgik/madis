@@ -426,11 +426,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 line= self.qiter.next()[0].encode('utf-8')
                 if line.startswith('<?xml version='):
                     line= self.qiter.next()[0].encode('utf-8')
-                try:
-                    if not line.endswith('\n'):
-                        line+='\n'
-                except IndexError:
-                    line='\n'
+                if not line.endswith('\n'):
+                    line+='\n'
                 self.lastline=line
                 return line
 
