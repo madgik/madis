@@ -125,7 +125,7 @@ import vtiters
 import functions
 import collections
 import json
-import StringIO
+import cStringIO as StringIO
 
 try:
     import xml.etree.cElementTree as etree
@@ -448,20 +448,20 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return line
 
             def readtailfast(self, n):
-                multiline=[]
+                buffer=StringIO.StringIO()
                 try:
-                    for i in xrange(100):
+                    while buffer.tell()<n:
                         line= self.qiter.next()[0].encode('utf-8')
                         if line.startswith('<?xml version='):
                             line= self.qiter.next()[0].encode('utf-8')
                         if line.endswith('\n'):
-                            multiline.append(line)
+                            buffer.write(line)
                         else:
-                            multiline+=[line,'\n']
+                            buffer.write(line+'\n')
                 except StopIteration:
-                    if multiline==[]:
+                    if buffer.tell()==0:
                         raise StopIteration
-                return ''.join(multiline)
+                return buffer.getvalue()
 
 
         rio=inputio(envars['db'], self.query, self.fast)
