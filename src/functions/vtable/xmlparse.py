@@ -457,7 +457,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         if line.endswith('\n'):
                             buffer.write(line)
                         else:
-                            buffer.write(line+'\n')
+                            buffer.writelines((line,'\n'))
                 except StopIteration:
                     if buffer.tell()==0:
                         raise StopIteration
