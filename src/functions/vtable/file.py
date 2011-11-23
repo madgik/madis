@@ -123,11 +123,12 @@ external_stream=True
 
 from vtiterable import SourceVT
 from lib.dsv import reader                
-import gzip
+import lib.gzip32 as gzip
 import urllib2
 import functions
 from lib.iterutils import peekable
 from lib.ziputils import ZipIter
+
 
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
@@ -171,7 +172,11 @@ class FileCursor:
                 self.fileiter=open(filename)
             else: ### is url non compessed
                 req=urllib2.Request(filename,None,extraurlheaders)
-                self.fileiter=urllib2.urlopen(req)
+                hreq=urllib2.urlopen(req)
+                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+                    self.fileiter=gzip.GzipFile(fileobj=hreq)
+                else:
+                    self.fileiter=hreq
         except Exception,e:
             raise functions.OperatorError(__name__.rsplit('.')[-1],e)
 
