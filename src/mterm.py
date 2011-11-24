@@ -203,7 +203,6 @@ def mcomplete(textin,state):
     # Only complete '.xxx' completitions when nothing exists before completition
     if re.match(r'\s*$', beforecompl):
         completitions+=dotcompletitions
-
     # If at the start of the line, show only tables
     if beforecompl=='' and text=='':
         localtables=alltablescompl[:]
@@ -214,8 +213,7 @@ def mcomplete(textin,state):
         hits=[x for x in completitions if x[:len(text)]==unicode(text)]
         if state<len(hits):
             return hits[state]
-        else:
-            return
+        else: return
     # Detect if in simplified 'from' or .schema
     elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)|(^\s*\.t)|(^\s*\.tables)', beforecompl, re.DOTALL| re.UNICODE):
         localtables=alltablescompl[:]
@@ -240,10 +238,24 @@ def mcomplete(textin,state):
             hits= [x.lower() for x in lastcols+[y for y in colscompl if y.find('.')==-1] if x.lower()[:len(text)]==unicode(text.lower())]
 
     try:
+        # Complete from colnums
         if len(hits)==0:
             icol=int(text)
-            if str(icol)==text and icol<len(lastcols)+1 and state<1:
-                return prefix+normalizename(lastcols[icol-1])
+            if str(icol)==text and lastcols!=[]:
+                if icol==0:
+                    if len(lastcols)==1:
+                        if state>0: return
+                        return prefix+normalizename(lastcols[0])
+                    hits=[]
+                    maxcolchars=len(str(len(lastcols)+1))
+                    for num in xrange(len(lastcols)):
+                        strnum=str(num+1)
+                        hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+lastcols[num] )
+                    if state<len(hits):
+                        return hits[state]
+                    else: return
+                if icol<=len(lastcols) and state<1:
+                    return prefix+normalizename(lastcols[icol-1])
     except:
         pass
 
