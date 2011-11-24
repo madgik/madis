@@ -290,7 +290,7 @@ def schemaprint(cols):
                 i1+=1
             sys.stdout.write('\n')
         else:
-            totalchars=min(colschars/80 +1, 10) * 80
+            totalchars=min(colschars/80 +1, 12) * 80
             mincolchars=12
             colschars=0
             i1=1
