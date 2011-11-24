@@ -277,23 +277,28 @@ def mcomplete(textin,state):
 
 def schemaprint(cols):
     if cols!=[]:
-        print "--- Column names ---"
-        colslen=0
+        sys.stdout.write(Style.BRIGHT+'--- Column names ---'+Style.RESET_ALL+'\n')
+        colschars=0
         i1=1
         for i in cols:
-            colslen+=len(i)+len(str(i1))+3
+            colschars+=len(i)+len(str(i1))+3
             i1+=1
-        if colslen<=80:
+        if colschars<=80:
             i1=1
             for i in cols:
                 sys.stdout.write(Fore.RED+'['+Style.BRIGHT+str(i1)+Style.NORMAL+'|'+Style.RESET_ALL+i+' ')
                 i1+=1
             sys.stdout.write('\n')
         else:
+            totalchars=min(colschars/80 +1, 10) * 80
+            mincolchars=12
+            colschars=0
             i1=1
             for i in cols:
-                if len(i)>12 and len(cols)>1:
-                    i=i[0:10]+'..'
+                charspercolname=max((totalchars-colschars)/(len(cols)+1-i1)-5, mincolchars)
+                colschars+=min(len(i), charspercolname)+len(str(i1))+3
+                if len(i)>charspercolname and len(cols)>1:
+                    i=i[0:charspercolname-1]+'..'
                 else:
                     i=i+' '
                 sys.stdout.write(Fore.RED+'['+Style.BRIGHT+str(i1)+Style.NORMAL+'|'+Style.RESET_ALL+i)
