@@ -289,7 +289,7 @@ def mcomplete(textin,state):
 
 def schemaprint(cols):
     if cols!=[]:
-        sys.stdout.write(Style.BRIGHT+'--- Column names ---'+Style.RESET_ALL+'\n')
+        sys.stdout.write(Style.BRIGHT+'--- '+Style.NORMAL+ Fore.RED+'['+Style.BRIGHT+'0'+Style.NORMAL+'|'+Style.RESET_ALL+Style.BRIGHT+'Column names '+'---'+Style.RESET_ALL+'\n')
         colschars=0
         i1=1
         for i in cols:
