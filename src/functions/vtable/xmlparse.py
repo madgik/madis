@@ -250,7 +250,7 @@ class schemaobj():
         self.colnames={}
 
     def addtoschema(self, path):
-        fpath=cleandata.match("/".join(path)).groups()[0]
+        fpath=cleandata.match("/".join(path)).groups()[0].lower()
         if fpath=='':
             return
 
@@ -267,7 +267,7 @@ class schemaobj():
                 i=i+1
 
     def colname(self, path):
-        sp=self.shortifypath(path)
+        sp=self.shortifypath(path).lower()
         if sp not in self.colnames:
             self.colnames[sp]=0
             return sp
@@ -480,12 +480,12 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 for ev, el in etreeparse:
                     if ev=='start':
                         if capture:
-                            xpath.append(el.tag)
+                            xpath.append(el.tag.lower())
                         else:
                             capture=lmatchtag(el.tag, self.subtreeroot)
                         if el.attrib!={} and capture:
                             for k,v in el.attrib.iteritems():
-                                addtorow(xpath+[attribguard, k], v)
+                                addtorow(xpath+[attribguard, k.lower()], v)
                     else: #if ev=='end':
                         if capture:
                             if el.text!=None:
