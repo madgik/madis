@@ -187,10 +187,10 @@ class LTable: ####Init means setschema and execstatus
         self.tableObj=tableObj
         self.ommituple=ommituple
 
-
     @echocall
     def BestIndex(self, *args):
         return None
+
     @echocall
     def Open(self):
         return Cursor(self.iterFunc, self.openedIter, self.envars , self.ommituple)
@@ -202,6 +202,7 @@ class LTable: ####Init means setschema and execstatus
         """
         if self.tableObj.__class__.__dict__.has_key('disconnect'):
             self.tableObj.disconnect()
+
     @echocall
     def Destroy(self):
         """
@@ -263,7 +264,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         while True:
             try:
                 self.row=self.iter.next()
-                if 'tuple' not in str(type(self.row)):
+                if type(self.row)!=tuple:
                     self.pos+=1
                     break
             except StopIteration:
