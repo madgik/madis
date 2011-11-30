@@ -614,7 +614,7 @@ while True:
                 newcols=[x for x,y in cursor.getdescription()]
                 lastcols[0:len(newcols)]=newcols
             except apsw.ExecutionCompleteError, e:
-                lastcols=[]
+                newcols=[]
 
             colorama.init()
             for row in cexec:
@@ -624,7 +624,7 @@ while True:
             after=datetime.datetime.now()
             tmdiff=after-before
 
-            schemaprint(lastcols)
+            schemaprint(newcols)
             print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
             if beeping:
                 print '\a\a'
@@ -636,7 +636,7 @@ while True:
                 update_tablelist()
 
         except KeyboardInterrupt:
-            schemaprint(lastcols)
+            schemaprint(newcols)
             print "KeyboardInterrupt exception: Query execution stopped"
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
