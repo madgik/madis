@@ -241,20 +241,20 @@ def mcomplete(textin,state):
         # Complete from colnums
         if len(hits)==0:
             icol=int(text)
-            if str(icol)==text and lastcols!=[]:
-                if icol==0:
-                    if len(lastcols)==1:
+            if str(icol)==text:
+                if icol==0 and newcols!=[]:
+                    if len(newcols)==1:
                         if state>0: return
-                        return prefix+normalizename(lastcols[0])
+                        return prefix+normalizename(newcols[0])
                     hits=[]
-                    maxcolchars=len(str(len(lastcols)+1))
-                    for num in xrange(len(lastcols)):
+                    maxcolchars=len(str(len(newcols)+1))
+                    for num in xrange(len(newcols)):
                         strnum=str(num+1)
-                        hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+lastcols[num] )
+                        hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+newcols[num] )
                     if state<len(hits):
                         return hits[state]
                     else: return
-                if icol<=len(lastcols) and state<1:
+                if icol<=len(lastcols) and lastcols!=[] and state<1:
                     return prefix+normalizename(lastcols[icol-1])
     except:
         pass
@@ -432,6 +432,7 @@ alltablescompl=[]
 updated_tables=set()
 update_tablelist()
 lastcols=[]
+newcols=[]
 colscompl=[]
 
 readline.set_completer(mcomplete)
