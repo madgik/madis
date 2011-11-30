@@ -611,7 +611,8 @@ while True:
             cexec=cursor.execute(statement)
 
             try:
-                lastcols=[x for x,y in cursor.getdescription()]
+                newcols=[x for x,y in cursor.getdescription()]
+                lastcols[0:len(newcols)]=newcols
             except apsw.ExecutionCompleteError, e:
                 lastcols=[]
 
