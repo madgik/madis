@@ -463,55 +463,60 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         raise StopIteration
                 return buffer.getvalue()
 
+            def close(self):
+                self.qiter.close()
 
         rio=inputio(envars['db'], self.query, self.fast)
         etreeended=False
 
-        while not etreeended:
-            etreeparse=iter(etree.iterparse(rio, ("start", "end")))
-            capture=False
-            xpath=[]
-            addtorow=self.rowobj.addtorow
-            resetrow=self.rowobj.resetrow
-            lmatchtag=matchtag
-            try:
-                root=etreeparse.next()[1]
+        try:
+            while not etreeended:
+                etreeparse=iter(etree.iterparse(rio, ("start", "end")))
+                capture=False
+                xpath=[]
+                addtorow=self.rowobj.addtorow
+                resetrow=self.rowobj.resetrow
+                lmatchtag=matchtag
+                try:
+                    root=etreeparse.next()[1]
 
-                for ev, el in etreeparse:
-                    if ev=='start':
-                        if capture:
-                            xpath.append(el.tag.lower())
-                        else:
-                            capture=lmatchtag(el.tag, self.subtreeroot)
-                        if el.attrib!={} and capture:
-                            for k,v in el.attrib.iteritems():
-                                addtorow(xpath+[attribguard, k.lower()], v)
-                    else: #if ev=='end':
-                        if capture:
-                            if el.text!=None:
-                                eltext=el.text.strip()
-                                if eltext!='':
-                                    addtorow(xpath, eltext)
-                            if lmatchtag(el.tag, self.subtreeroot):
-                                root.clear()
-                                capture=False
-                                if self.strict>=0:
-                                    yield self.rowobj.row
-                                resetrow()
+                    for ev, el in etreeparse:
+                        if ev=='start':
+                            if capture:
+                                xpath.append(el.tag.lower())
+                            else:
+                                capture=lmatchtag(el.tag, self.subtreeroot)
+                            if el.attrib!={} and capture:
+                                for k,v in el.attrib.iteritems():
+                                    addtorow(xpath+[attribguard, k.lower()], v)
+                        else: #if ev=='end':
+                            if capture:
+                                if el.text!=None:
+                                    eltext=el.text.strip()
+                                    if eltext!='':
+                                        addtorow(xpath, eltext)
+                                if lmatchtag(el.tag, self.subtreeroot):
+                                    root.clear()
+                                    capture=False
+                                    if self.strict>=0:
+                                        yield self.rowobj.row
+                                    resetrow()
 
-                            if len(xpath)>0:
-                                xpath.pop()
+                                if len(xpath)>0:
+                                    xpath.pop()
 
-                        el.clear()
+                            el.clear()
 
-                etreeended=True
-            except etree.ParseError, e:
-                rio.restart()
-                resetrow()
-                if self.strict>=1:
-                    raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
-                if self.strict==-1:
-                    yield [rio.lastline]
+                    etreeended=True
+                except etree.ParseError, e:
+                    rio.restart()
+                    resetrow()
+                    if self.strict>=1:
+                        raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last input line was:\n'+rio.lastline)
+                    if self.strict==-1:
+                        yield [rio.lastline]
+        finally:
+            rio.close()
 
 
 def Source():
