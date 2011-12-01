@@ -106,6 +106,59 @@ class jgroupunion:
     def final(self):
         return jopts.toj(list(self.outgroup))
 
+class jgroupintersection:
+    """
+    .. function:: jgroupintersection(columns) -> jpack
+
+    Calculates the jgroupintersection of all jpacks (by treating them as sets) inside a group.
+
+    Example:
+
+    >>> table1('''
+    ... '[1,2]' 2
+    ... '[2,3]' 2
+    ... '[2,4]' '[2,11]'
+    ... 2 2
+    ... ''')
+    >>> sql("select jgroupintersection(a,b) from table1")
+    jgroupintersection(a,b)
+    -----------------------
+    2
+
+    >>> sql("select jgroupintersection(1)")
+    jgroupintersection(1)
+    ---------------------
+    1
+
+    >>> table1('''
+    ... '{"b":1, "a":1}' 'b'
+    ... '{"b":1}' 'b'
+    ... ''')
+    >>> sql("select jgroupintersection(a,b) from table1")
+    jgroupintersection(a,b)
+    -----------------------
+    b
+
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.outgroup=None #collections.OrderedDict()
+        self.outset=None
+
+    def step(self, *args):
+        if self.outgroup==None:
+            self.outgroup=collections.OrderedDict([(x,None) for x in jopts.fromj(args[0])])
+            self.outset=set(self.outgroup)
+        for jp in args:
+            for i in self.outset.difference(jopts.fromj(jp)):
+                del(self.outgroup[i])
+            self.outset=set(self.outgroup)
+
+    def final(self):
+        return jopts.toj(list(self.outgroup))
+
 class jdictgroupunion:
     """
     .. function:: jgroupunion(jdicts) -> jdict
