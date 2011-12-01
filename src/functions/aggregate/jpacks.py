@@ -110,7 +110,7 @@ class jgroupintersection:
     """
     .. function:: jgroupintersection(columns) -> jpack
 
-    Calculates the jgroupintersection of all jpacks (by treating them as sets) inside a group.
+    Calculates the intersection of all jpacks (by treating them as sets) inside a group.
 
     Example:
 
