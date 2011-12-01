@@ -328,7 +328,10 @@ def printrow(row):
     i1=1
     for d in row:
         if rowlen>3:
-            sys.stdout.write(Fore.RED+'['+str(i1)+Style.BRIGHT+'|'+Style.RESET_ALL)
+            if i1==1:
+                sys.stdout.write(Fore.RED+Style.BRIGHT+'['+'1'+'|'+Style.RESET_ALL)
+            else:
+                sys.stdout.write(Fore.RED+'['+str(i1)+Style.BRIGHT+'|'+Style.RESET_ALL)
         else:
             if i1!=1:
                 sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
