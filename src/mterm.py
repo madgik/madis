@@ -621,17 +621,26 @@ while True:
                 newcols=[]
 
             colorama.init()
+            rownum=0
             for row in cexec:
                 printrow(row)
+                rownum+=1
             cursor.close()
 
             after=datetime.datetime.now()
             tmdiff=after-before
 
             schemaprint(newcols)
-            print "Query executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+            if rownum==0:
+                print "Query executed in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+            else:
+                print "Query executed and displayed %s"%(rownum),
+                if rownum==1: print "row",
+                else: print "rows",
+                print "in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
             if beeping:
                 print '\a\a'
+                
             colscompl=[]
             updated_tables=set()
 
