@@ -346,7 +346,7 @@ def printrow(row):
         i1+=1
     sys.stdout.write('\n')
 
-mtermdetails="mTerm - version 0.8"
+mtermdetails="mTerm - version 0.9"
 intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
