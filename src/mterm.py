@@ -360,7 +360,7 @@ helpmessage=""".functions             Lists all functions
 .separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
-.tables                List names of tables (you can also use ".t" )
+.tables                List names of tables (you can also use ".t" or double TAB)
 .t ?TABLE?             Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers"""
