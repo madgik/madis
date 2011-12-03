@@ -369,9 +369,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
                         path=path[1:]
+                        if v in ('*', '$'):
+                            path+=['*']
                     if type(v) in (list, collections.OrderedDict):
                         for i in xrange(len(v)):
-                            s.addtoschema(path)
+                            if i in ('*', '$'):
+                                s.addtoschema(path+['*'])
+                            else:
+                                s.addtoschema(path)
                     else:
                         s.addtoschema(path)
             else:
@@ -409,10 +414,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         el.clear()
 
             self.schema=s
-
-            relschema=[None]*len(s.schema)
+            
+            relschema=[None]*(len(s.schema)+len(s.getall))
 
             for x,y in s.schema.itervalues():
+                relschema[x]=(y, 'text')
+
+            for x,y in s.getall.itervalues():
                 relschema[x]=(y, 'text')
 
             self.rowobj=rowobj(s, self.strict)
