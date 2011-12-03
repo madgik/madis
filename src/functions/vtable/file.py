@@ -163,23 +163,31 @@ class FileCursor:
             if el not in csvkeywordparams:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Invalid parameter %s" %(el))
 
+        gzipcompressed=False
         try:
             if compression and compressiontype=='zip':
                 self.fileiter=ZipIter(filename,"r")
             elif not isurl:
+                pathname=filename.strip()
                 self.fileiter=open(filename)
             else:
-                path=urlparse.urlparse(filename)[2]
-                gzipcompressed=False
-                if path.endswith('.gz') or path.endswith('.gzip'):
-                    gzipcompressed=True
-
+                pathname=urlparse.urlparse(filename)[2]
                 req=urllib2.Request(filename,None,extraurlheaders)
                 hreq=urllib2.urlopen(req)
-                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1] or gzipcompressed:
-                    self.fileiter=gzip.GzipFile(fileobj=hreq)
-                else:
-                    self.fileiter=hreq
+                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+                    gzipcompressed=True
+                self.fileiter=hreq
+
+            if pathname.endswith('.gz') or pathname.endswith('.gzip'):
+                gzipcompressed=True
+
+            if compression and compressiontype=='gz':
+                gzipcompressed=True
+
+            if gzipcompressed:
+                self.fileiter=gzip.GzipFile(fileobj=self.fileiter)
+            else:
+                self.fileiter=self.fileiter
         except Exception,e:
             raise functions.OperatorError(__name__.rsplit('.')[-1],e)
 
