@@ -162,25 +162,34 @@ def pathwithoutns(path):
 class rowobj():
     def __init__(self, schema, strictness):
         self.schema=schema.schema
+        self.schemagetall=schema.getall
         self.sobj=schema
-        self.row=['']*len(self.schema)
+        self.schemacolsnum=len(schema.schema)+len(schema.getall)
+        self.row=['']*self.schemacolsnum
         self.strict= strictness
         self.tabreplace='    '
+        self.addtorowall=self.addtorow
 
-    def addtorow(self, xpath, data):
+    def addtorow(self, xpath, data, elem=None):
         fullp='/'.join(xpath)
+
+        if elem!=None:
+            s=self.schemagetall
+            data=etree.tostring(elem)
+        else:
+            s=self.schema
 
         path=None
 
-        if fullp in self.schema:
+        if fullp in s:
             path=fullp
         else:
             shortp=pathwithoutns(xpath)
-            if shortp in self.schema:
+            if shortp in s:
                 path=shortp
         
         if path==None:
-            if self.strict==2:
+            if self.strict==2 and elem==None:
                 path=xpath
                 self.resetrow()
                 msg='Undeclared path in xml-prototype was found in the input data. The path is:\n'
@@ -191,27 +200,26 @@ class rowobj():
                 msg+=fullp+'\nThe data to insert into path was:\n'+functions.mstr(data)
                 raise etree.ParseError(msg)
         else:
-            if self.row[self.schema[path][0]]=='':
-                self.row[self.schema[path][0]]=data.replace('\t', self.tabreplace)
+            if self.row[s[path][0]]=='':
+                self.row[s[path][0]]=data.replace('\t', self.tabreplace)
                 return
 
             i=1
             attribnum=path+'1'
 
             oldattribnum=path
-            while attribnum in self.schema:
-                if self.row[self.schema[attribnum][0]]=='':
-                    self.row[self.schema[attribnum][0]]=data.replace('\t', self.tabreplace)
+            while attribnum in s:
+                if self.row[s[attribnum][0]]=='':
+                    self.row[s[attribnum][0]]=data.replace('\t', self.tabreplace)
                     return
                 i+=1
                 oldattribnum=attribnum
                 attribnum=path+str(i)
 
-            self.row[self.schema[oldattribnum][0]]+='\t'+data.replace('\t', self.tabreplace)
-
+            self.row[s[oldattribnum][0]]+='\t'+data.replace('\t', self.tabreplace)
 
     def resetrow(self):
-        self.row=['']*len(self.schema)
+        self.row=['']*self.schemacolsnum
 
 class jdictrowobj():
     def __init__(self, ns, subtreeroot=None):
@@ -236,6 +244,9 @@ class jdictrowobj():
             else:
                 self.rowdata[path]=[self.rowdata[path], data]
             return
+
+    def addtorowall(self, xpath, data, elem):
+        return
     
     @property
     def row(self):
@@ -248,21 +259,29 @@ class schemaobj():
     def __init__(self):
         self.schema={}
         self.colnames={}
+        self.getall={}
 
     def addtoschema(self, path):
+        s=self.schema
+        pathpostfix=[]
+        if path!=[] and path[-1] in ('*', '$'):
+            path=path[0:-1]
+            s=self.getall
+            pathpostfix=['$']
+
         fpath=cleandata.match("/".join(path)).groups()[0].lower()
         if fpath=='':
             return
 
-        if fpath not in self.schema:
-            self.schema[fpath]=(len(self.schema), self.colname(path))
+        if fpath not in s:
+            s[fpath]=(len(self.schema)+len(self.getall), self.colname(path+pathpostfix))
         else:
             fpath1=fpath
             i=1
             while True:
                 fpath1=fpath+str(i)
-                if fpath1 not in self.schema:
-                    self.schema[fpath1]=(len(self.schema), self.colname(path))
+                if fpath1 not in s:
+                    s[fpath1]=(len(self.schema)+len(self.getall), self.colname(path+pathpostfix))
                     break
                 i=i+1
 
@@ -284,7 +303,7 @@ class schemaobj():
                 i=i.split('}')[1]
             elif ":" in i:
                 i=i.split(':')[1]
-            i="".join([x for x in i if x.lower() >="a" and x<="z"])
+            i="".join([x for x in i if x=='$' or (x.lower()>="a" and x<="z")])
             outpath+=[i]
         return "_".join(outpath)
 
@@ -376,7 +395,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                     if capture:
                         if el.text!=None and cleandata.match(el.text).groups()[0]!='':
-                            s.addtoschema(xpath)
+                            if el.text.strip() in ('$', '*'):
+                                s.addtoschema(xpath+['*'])
+                            else:
+                                s.addtoschema(xpath)
                         if ev=="end":
                             if el.tag==self.subtreeroot:
                                 capture=False
@@ -472,6 +494,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 capture=False
                 xpath=[]
                 addtorow=self.rowobj.addtorow
+                addtorowall=self.rowobj.addtorowall
                 resetrow=self.rowobj.resetrow
                 lmatchtag=matchtag
                 try:
@@ -480,6 +503,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     for ev, el in etreeparse:
                         if ev=='start':
                             if capture:
+                                addtorowall(xpath, '', el)
                                 xpath.append(el.tag.lower())
                             else:
                                 capture=lmatchtag(el.tag, self.subtreeroot)
