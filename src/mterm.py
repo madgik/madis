@@ -174,6 +174,21 @@ def update_cols_for_table(t):
         except:
             pass
 
+_update_cols_from_tables_last_text=''
+def update_cols_from_tables_in_text(t):
+    global alltablescompl, _update_cols_from_tables_last_text
+
+    if t==_update_cols_from_tables_last_text:
+        return
+    
+    _update_cols_from_tables_last_text=t
+
+    stablesreg='|'.join( (x.replace('$','\$').replace('.', '\.') for x in sorted(alltablescompl, key=len, reverse=True)) )
+    foundtables=re.findall(r'[(,\s]('+stablesreg+r')[,.\s);]', t)
+
+    for i in foundtables:
+        update_cols_for_table(i)
+
 
 def mcomplete(textin,state):
     
@@ -182,16 +197,13 @@ def mcomplete(textin,state):
             return col
         else:
             return "`"+col.lower()+"`"  
-        
-        
+
     text=textin
 
     #Complete \t to tabs
     if text[-2:]=='\\t':
-        if state==0:
-            return text[:-2]+'\t'
-        else:
-            return
+        if state==0: return text[:-2]+'\t'
+        else: return
         
     prefix=''
 
@@ -200,12 +212,18 @@ def mcomplete(textin,state):
 
     beforecompl= readline.get_line_buffer()[0:readline.get_begidx()]
 
-    # Only complete '.xxx' completitions when nothing exists before completition
+    # Only complete '.xxx' completitions when space chars exist before completition
     if re.match(r'\s*$', beforecompl):
         completitions+=dotcompletitions
-    # If at the start of the line, show only tables
+    # If at the start of the line, show all tables
     if beforecompl=='' and text=='':
-        localtables=alltablescompl[:]
+        localtables=alltables[:]
+
+        # Check if all tables start with the same character
+        if localtables!=[]:
+            prefcharset=set( (x[0] for x in localtables) )
+            if len(prefcharset)==1:
+                localtables+=[' ']
         completitions=localtables
     # If completition starts at a string boundary, complete from local dir
     elif beforecompl!='' and beforecompl[-1] in ("'", '"'):
@@ -225,10 +243,13 @@ def mcomplete(textin,state):
 
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
 
+    update_cols_from_tables_in_text(beforecompl)
+
     if hits==[] and text.find('.')!=-1 and re.match(r'[\w\d._$]+', text):
         tablename=re.match(r'(.+)\.', text).groups()[0].lower()
         update_cols_for_table(tablename)
         hits= [x.lower() for x in colscompl if x.lower()[:len(text)]==unicode(text.lower())]
+
 
     # If completing something that looks like a table, complete only from cols
     if hits==[] and text[-2:]!='..':
@@ -239,23 +260,24 @@ def mcomplete(textin,state):
 
     try:
         # Complete from colnums
-        if len(hits)==0:
-            icol=int(text)
-            if str(icol)==text:
-                if icol==0 and newcols!=[]:
-                    if len(newcols)==1:
-                        if state>0: return
-                        return prefix+normalizename(newcols[0])
-                    hits=[]
-                    maxcolchars=len(str(len(newcols)+1))
-                    for num in xrange(len(newcols)):
-                        strnum=str(num+1)
-                        hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+newcols[num] )
-                    if state<len(hits):
-                        return hits[state]
-                    else: return
-                if icol<=len(lastcols) and lastcols!=[] and state<1:
-                    return prefix+normalizename(lastcols[icol-1])
+        icol=int(text)
+        if len(hits)==0 and str(icol)==text:
+            # Show all tables when completing 0
+            if icol==0 and newcols!=[]:
+                if len(newcols)==1:
+                    if state>0: return
+                    return prefix+normalizename(newcols[0])
+                hits=[]
+                maxcolchars=len(str(len(newcols)+1))
+                for num in xrange(len(newcols)):
+                    strnum=str(num+1)
+                    hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+newcols[num] )
+                if state<len(hits):
+                    return hits[state]
+                else: return
+            # Complete from last seen when completing for other number
+            if icol<=len(lastcols) and lastcols!=[] and state<1:
+                return prefix+normalizename(lastcols[icol-1])
     except:
         pass
 
@@ -346,7 +368,7 @@ def printrow(row):
         i1+=1
     sys.stdout.write('\n')
 
-mtermdetails="mTerm - version 0.8"
+mtermdetails="mTerm - version 0.9"
 intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
@@ -360,7 +382,7 @@ helpmessage=""".functions             Lists all functions
 .separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
-.tables                List names of tables (you can also use ".t" )
+.tables                List names of tables (you can also use ".t" or double TAB)
 .t ?TABLE?             Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers"""
@@ -427,7 +449,7 @@ if len(sys.argv)>2:
     sys.exit()
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
-    "attach database '", 'detach database ']
+    "attach database '", 'detach database ', 'distinct']
 dotcompletitions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
