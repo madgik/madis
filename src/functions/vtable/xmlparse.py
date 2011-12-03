@@ -415,13 +415,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 
                 def readline():
                     i=self.qiter.next()[0].encode('utf-8')
-                    try:
-                        if i.endswith('\n'):
-                            return i
-                        else:
-                            return i+'\n'
-                    except IndexError:
-                        return '\n'
+                    if i.endswith('\n'):
+                        return i
+                    else:
+                        return i+'\n'
 
                 if self.fast:
                     self.read=self.readtailfast
