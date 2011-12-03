@@ -125,6 +125,7 @@ from vtiterable import SourceVT
 from lib.dsv import reader                
 import lib.gzip32 as gzip
 import urllib2
+import urlparse
 import functions
 from lib.iterutils import peekable
 from lib.ziputils import ZipIter
@@ -163,17 +164,19 @@ class FileCursor:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Invalid parameter %s" %(el))
 
         try:
-            if compression:
-                if compressiontype=='zip': #file compression zip
-                    self.fileiter=ZipIter(filename,"r")
-                else:           #file compression gzip
-                    self.fileiter=gzip.GzipFile(filename,mode="r")
+            if compression and compressiontype=='zip':
+                self.fileiter=ZipIter(filename,"r")
             elif not isurl:
                 self.fileiter=open(filename)
-            else: ### is url non compessed
+            else:
+                path=urlparse.urlparse(filename)[2]
+                gzipcompressed=False
+                if path.endswith('.gz') or path.endswith('.gzip'):
+                    gzipcompressed=True
+
                 req=urllib2.Request(filename,None,extraurlheaders)
                 hreq=urllib2.urlopen(req)
-                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1] or gzipcompressed:
                     self.fileiter=gzip.GzipFile(fileobj=hreq)
                 else:
                     self.fileiter=hreq
@@ -249,7 +252,7 @@ class FileVT:
                         break
                 if 'User-Agent' not in self.extraheader:
                     self.extraheader['User-Agent']='Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-            if inoutargs['url'] and inoutargs['compression']:
+            if inoutargs['url'] and inoutargs['compression'] and inoutargs['compressiontype']=='zip':
                 inoutargs['filename']=lib.inoutparsing.cacheurl(inoutargs['filename'],self.extraheader)
                 self.destroyfiles=[inoutargs['filename']]
                 inoutargs['url']=False
