@@ -1,6 +1,5 @@
 import urllib2
 import tempfile
-import apsw
 import csv
 import re
 import os
