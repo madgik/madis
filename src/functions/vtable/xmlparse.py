@@ -7,8 +7,15 @@ If multiple values are found for the same tag in the input stream, then all valu
 If no XML prototype is provided, then a jdict of the data is returned. In this case the *root* tag has to be provided. By default no namespace information is included in this mode.
 To include the namespace information, the *namespace:1* or *ns:1* switch should also be provided.
 
+: 'XML prototype':
+    XML prototype may be:
+    - a fragment of XML which will be matched with the input data.
+    - a jpack.
+    - a jdict.
+    If a the characters "*" or "$" are provided as a value of any of these prototypes, then a full XML subtree of a path will be returned in the resulting data.
+
 : 'namespace' or 'ns' option:
-    Include namespace information in the returned jdicts
+    Include namespace information in the returned jdicts.
 
 : 'fast' option:
     Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
@@ -48,7 +55,7 @@ Examples:
     ... '<a b="attrval1"><b>row1val1</b></a>'
     ... '<a>'
     ... '<b>'
-    ... 'row2val1</b><c><d>row2val</d></c>'
+    ... 'row2val1</b><c>asdf<d>row2val</d></c>'
     ... '</a>'
     ... ''')
     >>> sql("select * from (xmlparse '<a b=\\"v\\"><b>v</b><c><d>v</d></c></a>' select * from table2)")
@@ -69,12 +76,29 @@ Examples:
     row1val1 |    |
     row2val1 |    | row2val
 
+    >>> sql('''select * from (xmlparse  '{"a/b":[1,2] ,"a/c":[1,"*"]}' select * from table2)''')
+    b        | b1 | c    | c_$
+    -------------------------------------
+    row1val1 |    |      |
+    row2val1 |    | asdf | <d>row2val</d>
+
+    >>> sql('''select * from (xmlparse  '["a/b", "a/c", "a/c/*"]' select * from table2)''')
+    b        | c    | c_$
+    --------------------------------
+    row1val1 |      |
+    row2val1 | asdf | <d>row2val</d>
+
+    >>> sql("select * from (xmlparse '<a><b>v</b><c>*</c></a>' select * from table2)")
+    b        | c_$
+    -------------------------
+    row1val1 |
+    row2val1 | <d>row2val</d>
 
     >>> sql("select * from (xmlparse root:a select * from table2)")
     C1
-    -------------------------------------
+    -------------------------------------------------
     {"a/@/b":"attrval1","a/b":"row1val1"}
-    {"a/b":"row2val1","a/c/d":"row2val"}
+    {"a/b":"row2val1","a/c/d":"row2val","a/c":"asdf"}
 
     >>> table2('''
     ... '<a b="attrval1"><b>row1val1</b></a>'
@@ -380,16 +404,17 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
                         path=path[1:]
-                        if v in ('*', '$'):
-                            path+=['*']
                     if type(v) in (list, collections.OrderedDict):
-                        for i in xrange(len(v)):
+                        for i in v:
                             if i in ('*', '$'):
                                 s.addtoschema(path+['*'])
                             else:
                                 s.addtoschema(path)
                     else:
-                        s.addtoschema(path)
+                        if v in ('*', '$'):
+                            s.addtoschema(path+['*'])
+                        else:
+                            s.addtoschema(path)
             else:
                 xpath=[]
                 capture=False
