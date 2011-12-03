@@ -99,7 +99,7 @@ Examples:
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator XMLPARSE: Undeclared path in xml-prototype was found in the input data. The path is:
+    Operator XMLPARSE: Undeclared path in XML-prototype was found in the input data. The path is:
     /b/@/np
     The data to insert into path was:
     np
@@ -192,7 +192,7 @@ class rowobj():
             if self.strict==2 and elem==None:
                 path=xpath
                 self.resetrow()
-                msg='Undeclared path in xml-prototype was found in the input data. The path is:\n'
+                msg='Undeclared path in XML-prototype was found in the input data. The path is:\n'
                 shortp='/'+pathwithoutns(path)
                 fullp='/'+'/'.join(path)
                 if shortp!=fullp:
@@ -307,6 +307,17 @@ class schemaobj():
             outpath+=[i]
         return "_".join(outpath)
 
+    def getrelschema(self):
+        relschema=[None]*(len(self.schema)+len(self.getall))
+
+        for x,y in self.schema.itervalues():
+            relschema[x]=(y, 'text')
+
+        for x,y in self.getall.itervalues():
+            relschema[x]=(y, 'text')
+
+        return relschema
+
 
 class XMLparse(vtiters.SchemaFromArgsVT):
     def __init__(self):
@@ -413,19 +424,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if ev=="end":
                         el.clear()
 
-            self.schema=s
+            relschema=s.getrelschema()
             
-            relschema=[None]*(len(s.schema)+len(s.getall))
-
-            for x,y in s.schema.itervalues():
-                relschema[x]=(y, 'text')
-
-            for x,y in s.getall.itervalues():
-                relschema[x]=(y, 'text')
+            if relschema==[]:
+                raise functions.OperatorError(__name__.rsplit('.')[-1], 'No input schema found')
 
             self.rowobj=rowobj(s, self.strict)
             if self.strict>=0:
-                return relschema
+                return s.getrelschema()
             else:
                 return [('C1', 'text')]
 
