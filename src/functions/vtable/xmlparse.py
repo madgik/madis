@@ -195,13 +195,15 @@ class rowobj():
         self.addtorowall=self.addtorow
 
     def addtorow(self, xpath, data, elem=None):
-        fullp='/'.join(xpath)
-
         if elem!=None:
+            if self.schemagetall=={}:
+                return
             s=self.schemagetall
             data=etree.tostring(elem)
         else:
             s=self.schema
+
+        fullp='/'.join(xpath)
 
         path=None
 
