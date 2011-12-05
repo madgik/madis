@@ -184,7 +184,7 @@ def update_cols_from_tables_in_text(t):
     _update_cols_from_tables_last_text=t
 
     stablesreg='|'.join( (x.replace('$','\$').replace('.', '\.') for x in sorted(alltablescompl, key=len, reverse=True)) )
-    foundtables=re.findall(r'[\W]('+stablesreg+r')[,.\s);]', t)
+    foundtables=re.findall(r'[^a-zA-Z0-9_$]('+stablesreg+r')[,.\s)]', t)
 
     for i in foundtables:
         update_cols_for_table(i)
