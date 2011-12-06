@@ -675,7 +675,15 @@ while True:
             print "KeyboardInterrupt exception: Query execution stopped"
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
-            print e
+            emsg=unicode(e)
+            try:
+                if u'Error:' in emsg:
+                    emsgsplit=emsg.split(u':')
+                    print Fore.RED+Style.BRIGHT+ emsgsplit[0] +u':'+Style.RESET_ALL+ u':'.join(emsgsplit[1:])
+                else:
+                    print e
+            except:
+                print e
             continue
         except Exception, e:
             print "Unknown error:"+functions.mstr(e)
