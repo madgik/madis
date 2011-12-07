@@ -143,19 +143,19 @@ def sectohuman(*args):
 
 sectohuman.registered=True
 
-def dateisoweek2week52(*args):
+def datestrf2isoweek(*args):
 
     """
     .. function:: dateisoweek2week52(sec) -> isoweek
 
-    Converts an ISOweek (having weeks in range [0,53]) to a rounded ISOweek
-    format which has weeks in range [1,52]. This function is usefull for
+    Converts an ISOweek (having weeks in range [0,53]) to an ISOweek
+    format which has weeks in range [1,53]. This function is usefull for
     producing week statistics which do not have incomplete weeks.
 
     Examples:
 
     >>> table1('''
-    ... 2007-12-31T22:52:59Z
+    ... 2007-12-31
     ... 2010-01-01
     ... ''')
 
@@ -165,24 +165,23 @@ def dateisoweek2week52(*args):
     2007W53
     2010W00
 
-    >>> sql("select dateisoweek2week52(strftime('%YW%W',a)) from table1")
-    dateisoweek2week52(strftime('%YW%W',a))
-    ---------------------------------------
-    2007W52
-    2010W01
+    >>> sql("select datestrf2isoweek(strftime('%YW%W',a)) from table1")
+    datestrf2isoweek(strftime('%YW%W',a))
+    -------------------------------------
+    2007W53
+    2009W53
     """
 
-    year=args[0][0:4]
-    week=min(max(1,int(args[0][-2:])),52)
+    year=int(args[0][0:4])
+    week=args[0][-2:]
 
-    if week<10:
-        week='0'+str(week)
-    else:
-        week=str(week)
+    if week=='00':
+        year-=1
+        week='53'
 
-    return year+'W'+week
+    return str(year)+'W'+week
 
-dateisoweek2week52.registered=True
+datestrf2isoweek.registered=True
 
 
 if not ('.' in __name__):
