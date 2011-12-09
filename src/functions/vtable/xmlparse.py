@@ -8,6 +8,7 @@ If no XML prototype is provided, then a jdict of the data is returned. In this c
 To include the namespace information, the *namespace:1* or *ns:1* switch should also be provided.
 
 : 'XML prototype':
+
     XML prototype may be:
     - a fragment of XML which will be matched with the input data.
     - a jpack.
@@ -15,9 +16,11 @@ To include the namespace information, the *namespace:1* or *ns:1* switch should 
     If a the characters "*" or "$" are provided as a value of any of these prototypes, then a full XML subtree of a path will be returned in the resulting data.
 
 : 'namespace' or 'ns' option:
+
     Include namespace information in the returned jdicts.
 
 : 'fast' option:
+
     Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
     occurs no last line information is returned, so use this option only when you are sure that the XML input is well formed.
 
@@ -29,6 +32,7 @@ To include the namespace information, the *namespace:1* or *ns:1* switch should 
     - strict:-1 , returns all input lines in which the xml parser finds a problem. In essence this works as a negative xml parser.
 
 :Returned table schema:
+
     Column names are named according to the schema of the provided xml prototype.
 
 Examples:
