@@ -12,11 +12,16 @@ The requirements for using madIS are:
 
 2.  **APSW**:
 
-    For Windows, download the windows distribution of `APSW` from
-    http://code.google.com/p/apsw/downloads/list .
+    Windows:
+
+    Download the windows distribution of `APSW` from http://code.google.com/p/apsw/downloads/list .
+
+    Linux:
 
     Most Linux distributions contain in their repositories a sufficiently recent version of `APSW`.
-    If you use Ubuntu 10.04 and later, install the `python-apsw` package.
+    If you use Ubuntu 10.04 and later, install the `python-apsw` package::
+
+        sudo apt-get install python-apsw
 
     In case `APSW` is not provided with your Linux distribution of choise, `APSW` should be build from source.
     The detailed instructions for building `APSW` can be found at:
