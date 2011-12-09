@@ -381,7 +381,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 xp=opts[0][0]
             except:
                 if self.subtreeroot==None:
-                    raise functions.OperatorError(__name__.rsplit('.')[-1],"If no XML prototype is provided then at least a root should be provided")
+                    raise functions.OperatorError(__name__.rsplit('.')[-1],"A root (using root:****) should be provided when no prototype is given")
                 self.rowobj=jdictrowobj(self.namespace, self.subtreeroot)
                 self.schema=None
                 return [('C1', 'text')]
