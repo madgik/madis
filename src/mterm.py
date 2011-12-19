@@ -184,7 +184,7 @@ def update_cols_from_tables_in_text(t):
     _update_cols_from_tables_last_text=t
 
     stablesreg='|'.join( (x.replace('$','\$').replace('.', '\.') for x in sorted(alltablescompl, key=len, reverse=True)) )
-    foundtables=re.findall(r'[^a-zA-Z0-9_$]('+stablesreg+r')[,.\s)]', t)
+    foundtables=re.findall(r'[^a-zA-Z0-9_$]('+stablesreg+r')[,.\s)]', t+u' ')
 
     for i in foundtables:
         update_cols_for_table(i)
@@ -210,7 +210,9 @@ def mcomplete(textin,state):
     localtables=[]
     completitions=[]
 
-    beforecompl= readline.get_line_buffer()[0:readline.get_begidx()]
+    linebuffer=readline.get_line_buffer()
+
+    beforecompl= linebuffer[0:readline.get_begidx()]
 
     # Only complete '.xxx' completitions when space chars exist before completition
     if re.match(r'\s*$', beforecompl):
@@ -243,7 +245,7 @@ def mcomplete(textin,state):
 
     hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
 
-    update_cols_from_tables_in_text(beforecompl)
+    update_cols_from_tables_in_text(linebuffer)
 
     if hits==[] and text.find('.')!=-1 and re.match(r'[\w\d._$]+', text):
         tablename=re.match(r'(.+)\.', text).groups()[0].lower()
