@@ -271,9 +271,9 @@ def mcomplete(textin,state):
                     return prefix+normalizename(newcols[0])
                 hits=[]
                 maxcolchars=len(str(len(newcols)+1))
+                formatstring='{:'+'>'+str(maxcolchars)+'}'
                 for num in xrange(len(newcols)):
-                    strnum=str(num+1)
-                    hits.append( ' '*(maxcolchars-len(strnum))+strnum+'|'+newcols[num] )
+                    hits.append( formatstring.format(num+1)+'|'+newcols[num] )
                 if state<len(hits):
                     return hits[state]
                 else: return
