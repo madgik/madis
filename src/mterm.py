@@ -669,7 +669,7 @@ while True:
             updated_tables=set()
 
             #Autoupdate in case of schema change
-            if re.search(r'(?i)(create|attach)', statement):
+            if re.search(r'(?i)(create|attach|drop)', statement):
                 update_tablelist()
 
         except KeyboardInterrupt:
