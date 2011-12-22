@@ -387,7 +387,8 @@ helpmessage=""".functions             Lists all functions
 .tables                List names of tables (you can also use ".t" or double TAB)
 .t ?TABLE?             Browse table
 .explain               Explain query plan
-.colnums               Toggle showing column numbers"""
+.colnums               Toggle showing column numbers
+.vacuum                Vacuum in current path"""
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
@@ -493,23 +494,27 @@ while True:
 
     number_of_kb_exceptions=0
     statement=statement.decode(output_encoding)
-    #replace .explain with explain query plan
-    statement=re.sub("^\s*\.explain\s+", "explain query plan ", statement)
     #scan for commands
-    iscommand=re.match("\s*\.(?P<command>\w+)\s*(?P<argument>([\w\.]*))\s*;?\s*$", statement)
+    iscommand=re.match("\s*\.(?P<command>\w+)\s*(?P<argument>([\w\.]*))(?P<rest>.*)$", statement)
     validcommand=False
 
     if iscommand:
         validcommand=True
         command=iscommand.group('command')
         argument=iscommand.group('argument')
+        rest=iscommand.group('rest')
+        origstatement=statement
         statement=None
 
         if command=='mode' and argument=='csv':
-            separator = ","
+            if argument=='csv':
+                separator = ","
+            elif argument=='tabs':
+                separator = "\t"
 
-        elif command=='mode' and argument=='tabs':
-            separator = "\t"
+
+        elif command=='explain':
+            statement=re.sub("^\s*\.explain\s+", "explain query plan ", origstatement)
 
         elif command=='separator' and argument:
             separator=argument
@@ -561,6 +566,9 @@ while True:
                     print i
             else:
                 statement='select * from '+argument+' limit 2;'
+
+        elif command=='vacuum':
+            statement="PRAGMA temp_store_directory = '.';VACUUM;PRAGMA temp_store_directory = '';"
           
         elif command=='schema':
             if not argument:
@@ -605,7 +613,7 @@ while True:
             print """unknown command. Enter ".help" for help"""
 
         if validcommand:
-            histstatement='.'+command+' '+argument
+            histstatement='.'+command+' '+argument+rest
             try:
                 readline.add_history(histstatement.encode('utf-8'))
             except:
