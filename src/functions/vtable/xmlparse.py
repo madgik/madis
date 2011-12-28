@@ -386,8 +386,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             try:
                 xp=opts[0][0]
             except:
-                if self.subtreeroot==None:
-                    raise functions.OperatorError(__name__.rsplit('.')[-1],"A root (using root:****) should be provided when no prototype is given")
                 self.rowobj=jdictrowobj(self.namespace, self.subtreeroot)
                 self.schema=None
                 return [('C1', 'text')]
@@ -476,8 +474,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
+                self.insertedforcedroot=False
 
             def restart(self):
+                self.insertedforcedroot=False
                 self.read=self.readstart
 
             def readstart(self, n):
@@ -489,20 +489,41 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     else:
                         return i+'\n'
 
-                if self.fast:
-                    self.read=self.readtailfast
-                else:
-                    self.read=self.readtail
-                    
                 self.lastline= readline()
-                if self.lastline.startswith('<?xml version='):
+                
+                rline=self.lastline.strip()
+
+                if not (rline.startswith('<?xml version=') or rline.startswith('<!DOCTYPE')):
+                    if self.fast:
+                        self.read=self.readtailfast
+                    else:
+                        self.read=self.readtail
+
+                if rline.startswith('<?xml version='):
                     ll=self.lastline
                     while ll.find('?>')==-1:
                         ll+= readline()
                     self.lastline=ll
-                    return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
+                    if self.insertedforcedroot:
+                        return ll
+                    else:
+                        self.insertedforcedroot=True
+                        return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
+                elif rline.startswith('<!DOCTYPE'):
+                    ll=self.lastline
+                    while ll.find('>')==-1:
+                        ll+= readline()
+                    self.lastline=ll
+                    if self.insertedforcedroot:
+                        return re.sub(r'[^>]+>','', ll, 1)
+                    else:
+                        self.insertedforcedroot=True
+                        return re.sub(r'[^>]+>','<xmlparce-forced-root-element>\n', ll, 1)
                 else:
-                    return "<xmlparce-forced-root-element>\n"+self.lastline
+                    if self.insertedforcedroot:
+                        return self.lastline
+                    else:
+                        return "<xmlparce-forced-root-element>\n"+self.lastline
 
             def readtail(self, n):
                 line= self.qiter.next()[0].encode('utf-8')
@@ -543,7 +564,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 addtorow=self.rowobj.addtorow
                 addtorowall=self.rowobj.addtorowall
                 resetrow=self.rowobj.resetrow
-                lmatchtag=matchtag
+                if self.subtreeroot==None:
+                    lmatchtag=lambda x,y:True
+                else:
+                    lmatchtag=matchtag
                 try:
                     root=etreeparse.next()[1]
 
@@ -557,7 +581,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             if el.attrib!={} and capture:
                                 for k,v in el.attrib.iteritems():
                                     addtorow(xpath+[attribguard, k.lower()], v)
-                        else: #if ev=='end':
+                        else:
                             if capture:
                                 if el.text!=None:
                                     eltext=el.text.strip()
@@ -565,7 +589,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                         addtorow(xpath, eltext)
                                 if lmatchtag(el.tag, self.subtreeroot):
                                     root.clear()
-                                    capture=False
+                                    if self.subtreeroot!=None:
+                                        capture=False
                                     if self.strict>=0:
                                         yield self.rowobj.row
                                     resetrow()
