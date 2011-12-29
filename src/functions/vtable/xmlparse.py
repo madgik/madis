@@ -4,8 +4,10 @@
 Parses an input xml stream. It starts parsing when it finds a root tag. A provided XML prototype fragment is used to create an schema, mapping from xml to a relational table.
 If multiple values are found for the same tag in the input stream, then all values are returned separated with a tab (use tab-set operators to process them).
 
-If no XML prototype is provided, then a jdict of the data is returned. In this case the *root* tag has to be provided. By default no namespace information is included in this mode.
-To include the namespace information, the *namespace:1* or *ns:1* switch should also be provided.
+If no XML prototype is provided, then a jdict of the data is returned. If no *root* tag is provided, then the output is a raw feed of {path:data} pairs without any row aggregation.
+Rootless mode is usefull when trying to find what *root* tag to use.
+
+Is a *root* tag is provided then each returned row, contains a jdict of all the paths found below the specified *root* tag.
 
 :XML prototype:
 
@@ -21,10 +23,13 @@ To include the namespace information, the *namespace:1* or *ns:1* switch should 
 
     Include namespace information in the returned jdicts.
 
-:'fast' option:
+:'fast' option (default 0):
 
     Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
     occurs no last line information is returned, so use this option only when you are sure that the XML input is well formed.
+
+    - fast:1  ,is the same as fast:0 (default), but it doesn't return *Last line* information in the case of an error
+    - fast:2  ,in this mode XMLPARSER doesn't convert HTML entities and doesn't skip "<?xml version=..." lines
 
 :'strict' option:
 
@@ -360,7 +365,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
         self.query=None
         self.strict=1
         self.namespace=False
-        self.fast=False
+        self.fast=0
 
     def getschema(self, *parsedArgs,**envars):
             s=schemaobj()
@@ -377,7 +382,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.namespace=True
 
             if 'fast' in opts[1]:
-                self.fast=True
+                try:
+                    self.fast=int(opts[1]['fast'])
+                except:
+                    self.fast=1
 
             try:
                 self.query=opts[1]['query']
@@ -426,8 +434,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 xpath=[]
                 capture=False
 
-                import StringIO
-
                 for ev, el in etree.iterparse(StringIO.StringIO(xp), ("start", "end")):
                     if ev=="start":
                         if self.subtreeroot==None:
@@ -475,17 +481,16 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.htmlentities=htmlentitydefs.name2codepoint.copy()
+                self.htmlentities=dict((x,unichr(v)) for x,v in htmlentitydefs.name2codepoint.iteritems())
                 del(self.htmlentities['amp'])
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
                 del(self.htmlentities['quot'])
-                self.unescapere=re.compile(r"&("+'|'.join(self.htmlentities.keys())+");")
+                self.unescapere=re.compile(r"&(?:"+'|'.join(self.htmlentities.keys())+");")
+                self.fixup=lambda x:self.htmlentities[x.group(0)[1:-1]]
 
             def unescape(self, text):
-                def fixup(m):
-                    return unichr(self.htmlentities[m.group(0)[1:-1]])
-                return self.unescapere.sub(fixup, text)
+                return self.unescapere.sub(self.fixup, text)
 
             def restart(self):
                 self.read=self.readstart
@@ -493,21 +498,26 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def readstart(self, n):
                 
                 def readline():
-                    i=self.qiter.next()[0].encode('utf-8')
+                    i=self.unescape(self.qiter.next()[0])
                     if i.endswith('\n'):
                         return i
                     else:
                         return i+'\n'
 
                 self.lastline= readline()
-                
                 rline=self.lastline.strip()
 
                 if rline!='':
                     if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
-                        self.lastline="<xmlparce-forced-root-element>\n"+self.lastline
+                        self.lastline=u"<xmlparce-forced-root-element>\n"+self.lastline
                         if self.fast:
-                            self.read=self.readtailfast
+                            if self.fast==2:
+                                self.read=self.readtailfast2
+                            else:
+                                self.read=self.readtailfast
+                            tmpline=self.lastline
+                            self.lastline='NO LAST LINE INFO IN FAST MODE'
+                            return tmpline.encode('utf-8')
                         else:
                             self.read=self.readtail
                     else:
@@ -516,7 +526,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                 ll+= readline()
                             self.lastline=ll
 
-                return self.unescape(self.lastline)
+                return self.lastline.encode('utf-8')
 
             def readtail(self, n):
                 line= self.unescape(self.qiter.next()[0]).encode('utf-8')
@@ -532,7 +542,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 try:
                     while buffer.tell()<n:
                         line= self.qiter.next()[0]
-                        if line.startswith('<?xml version='):
+                        if line.startswith('<?xml v'):
                             line= self.qiter.next()[0]
                         if line.endswith('\n'):
                             buffer.write(line)
@@ -541,7 +551,17 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 except StopIteration:
                     if buffer.tell()==0:
                         raise StopIteration
-                return self.unescapere.sub(lambda x:unichr(self.htmlentities[x.group(0)[1:-1]]), buffer.getvalue()).encode('utf-8')
+                return self.unescapere.sub(self.fixup, buffer.getvalue()).encode('utf-8')
+
+            def readtailfast2(self, n):
+                buffer=StringIO.StringIO()
+                try:
+                    while buffer.tell()<n:
+                        buffer.write(self.qiter.next()[0])
+                except StopIteration:
+                    if buffer.tell()==0:
+                        raise StopIteration
+                return buffer.getvalue().encode('utf-8')
 
             def close(self):
                 self.qiter.close()
