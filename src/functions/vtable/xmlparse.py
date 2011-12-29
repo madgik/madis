@@ -497,10 +497,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.insertedforcedroot=False
 
             def restart(self):
-                self.insertedforcedroot=False
                 self.read=self.readstart
 
             def readstart(self, n):
@@ -516,37 +514,19 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 
                 rline=self.lastline.strip()
 
-                if not (rline.startswith('<?xml version=') or rline.startswith('<!DOCTYPE')):
+                if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
+                    self.lastline="<xmlparce-forced-root-element>\n"+self.lastline
                     if self.fast:
                         self.read=self.readtailfast
                     else:
                         self.read=self.readtail
-
-                if rline.startswith('<?xml version='):
-                    ll=self.lastline
-                    while ll.find('?>')==-1:
-                        ll+= readline()
-                    self.lastline=ll
-                    if self.insertedforcedroot:
-                        return ll
-                    else:
-                        self.insertedforcedroot=True
-                        return ll.replace('?>','?>\n<xmlparce-forced-root-element>\n')
-                elif rline.startswith('<!DOCTYPE'):
-                    ll=self.lastline
-                    while ll.find('>')==-1:
-                        ll+= readline()
-                    self.lastline=ll
-                    if self.insertedforcedroot:
-                        return re.sub(r'[^>]+>','', ll, 1)
-                    else:
-                        self.insertedforcedroot=True
-                        return re.sub(r'[^>]+>','<xmlparce-forced-root-element>\n', ll, 1)
                 else:
-                    if self.insertedforcedroot:
-                        return self.lastline
-                    else:
-                        return "<xmlparce-forced-root-element>\n"+self.lastline
+                        ll=self.lastline
+                        while ll.find('>')==-1:
+                            ll+= readline()
+                        self.lastline=ll
+
+                return self.lastline
 
             def readtail(self, n):
                 line= unescape(self.qiter.next()[0]).encode('utf-8')
