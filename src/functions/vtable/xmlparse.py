@@ -172,28 +172,6 @@ attribguard='@'
 if not hasattr(etree, 'ParseError'):
     etree.ParseError=etree.XMLParserError
 
-def unescape(text):
-    def fixup(m):
-        text = m.group(0)
-        if text=='&amp;': return text
-        if text[:2] == "&#":
-            # character reference
-            try:
-                if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
-                else:
-                    return unichr(int(text[2:-1]))
-            except ValueError:
-                pass
-        else:
-            # named entity
-            try:
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
-            except KeyError:
-                pass
-        return text # leave as is
-    return re.sub("&#?\w+;", fixup, text)
-
 def matchtag(a, b):
     if b[0] == '{':
         return a == b
@@ -497,6 +475,21 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
+                self.unescapere=re.compile(r"&\w+;")
+                self.htmlentities=htmlentitydefs.name2codepoint.copy()
+                del(self.htmlentities['amp'])
+                del(self.htmlentities['lt'])
+                del(self.htmlentities['gt'])
+                del(self.htmlentities['quot'])
+
+            def unescape(self, text):
+                def fixup(m):
+                    text = m.group(0)
+                    try:
+                        text = unichr(self.htmlentities[text[1:-1]])
+                    except KeyError:
+                        return text
+                return self.unescapere.sub(fixup, text)
 
             def restart(self):
                 self.read=self.readstart
@@ -514,36 +507,44 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 
                 rline=self.lastline.strip()
 
-                if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
-                    self.lastline="<xmlparce-forced-root-element>\n"+self.lastline
-                    if self.fast:
-                        self.read=self.readtailfast
+                if rline!='':
+                    if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
+                        self.lastline="<xmlparce-forced-root-element>\n"+self.lastline
+                        if self.fast:
+                            self.read=self.readtailfast
+                        else:
+                            self.read=self.readtail
                     else:
-                        self.read=self.readtail
-                else:
-                        ll=self.lastline
-                        while ll.find('>')==-1:
-                            ll+= readline()
-                        self.lastline=ll
+                            ll=self.lastline
+                            while ll.find('>')==-1:
+                                ll+= readline()
+                            self.lastline=ll
 
-                return self.lastline
+                return self.unescape(self.lastline)
 
             def readtail(self, n):
-                line= unescape(self.qiter.next()[0]).encode('utf-8')
+                line= self.unescape(self.qiter.next()[0]).encode('utf-8')
                 if line.startswith('<?xml version='):
-                    line= self.qiter.next()[0].encode('utf-8')
+                    line= self.unescape(self.qiter.next()[0]).encode('utf-8')
                 if not line.endswith('\n'):
                     line+='\n'
                 self.lastline=line
                 return line
 
             def readtailfast(self, n):
+                def fixup(m):
+                    text = m.group(0)
+                    try:
+                        text = unichr(self.htmlentities[text[1:-1]])
+                    except KeyError:
+                        return text
+                    
                 buffer=StringIO.StringIO()
                 try:
                     while buffer.tell()<n:
-                        line= self.qiter.next()[0].encode('utf-8')
+                        line= self.qiter.next()[0]
                         if line.startswith('<?xml version='):
-                            line= self.qiter.next()[0].encode('utf-8')
+                            line= self.qiter.next()[0]
                         if line.endswith('\n'):
                             buffer.write(line)
                         else:
@@ -551,7 +552,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 except StopIteration:
                     if buffer.tell()==0:
                         raise StopIteration
-                return buffer.getvalue()
+                return self.unescapere.sub(fixup, buffer.getvalue()).encode('utf-8')
 
             def close(self):
                 self.qiter.close()
