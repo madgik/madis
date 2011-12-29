@@ -475,20 +475,16 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.unescapere=re.compile(r"&\w{2,8};")
                 self.htmlentities=htmlentitydefs.name2codepoint.copy()
                 del(self.htmlentities['amp'])
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
                 del(self.htmlentities['quot'])
+                self.unescapere=re.compile(r"&("+'|'.join(self.htmlentities.keys())+");")
 
             def unescape(self, text):
                 def fixup(m):
-                    text = m.group(0)
-                    try:
-                        text = unichr(self.htmlentities[text[1:-1]])
-                    except KeyError:
-                        return text
+                    return unichr(self.htmlentities[m.group(0)[1:-1]])
                 return self.unescapere.sub(fixup, text)
 
             def restart(self):
@@ -532,13 +528,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return line
 
             def readtailfast(self, n):
-                def fixup(m):
-                    text = m.group(0)
-                    try:
-                        text = unichr(self.htmlentities[text[1:-1]])
-                    except KeyError:
-                        return text
-                    
                 buffer=StringIO.StringIO()
                 try:
                     while buffer.tell()<n:
@@ -552,7 +541,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 except StopIteration:
                     if buffer.tell()==0:
                         raise StopIteration
-                return self.unescapere.sub(fixup, buffer.getvalue()).encode('utf-8')
+                return self.unescapere.sub(lambda x:unichr(self.htmlentities[x.group(0)[1:-1]]), buffer.getvalue()).encode('utf-8')
 
             def close(self):
                 self.qiter.close()
