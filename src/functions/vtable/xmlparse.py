@@ -475,7 +475,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.unescapere=re.compile(r"&\w+;")
+                self.unescapere=re.compile(r"&\w{2,8};")
                 self.htmlentities=htmlentitydefs.name2codepoint.copy()
                 del(self.htmlentities['amp'])
                 del(self.htmlentities['lt'])
