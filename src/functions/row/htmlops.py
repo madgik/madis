@@ -2,7 +2,6 @@
 import urllib
 import re
 from htmlentitydefs import name2codepoint
-name2codepoint['#39'] = 39
 import urlparse
 import os
 import mimetypes
