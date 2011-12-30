@@ -162,12 +162,12 @@ import collections
 import htmlentitydefs
 import json
 import cStringIO as StringIO
+import re
 
 try:
     import xml.etree.cElementTree as etree
 except:
     import xml.etree.ElementTree as etree
-import re
 
 registered=True
 cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
@@ -481,13 +481,15 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.htmlentities=dict((x,unichr(v)) for x,v in htmlentitydefs.name2codepoint.iteritems())
+                self.htmlentities=htmlentitydefs.name2codepoint.copy()
                 del(self.htmlentities['amp'])
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
                 del(self.htmlentities['quot'])
-                self.unescapere=re.compile(r"&(?:"+'|'.join(self.htmlentities.keys())+");")
-                self.fixup=lambda x:self.htmlentities[x.group(0)[1:-1]]
+                if self.fast==2:
+                    self.header='<xmlparce-forced-root-element>\n'
+                else:
+                    self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n<xmlparce-forced-root-element>\n'
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
@@ -498,7 +500,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def readstart(self, n):
                 
                 def readline():
-                    i=self.unescape(self.qiter.next()[0])
+                    i=self.qiter.next()[0]
                     if i.endswith('\n'):
                         return i
                     else:
@@ -509,14 +511,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 if rline!='':
                     if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
-                        self.lastline=u"<xmlparce-forced-root-element>\n"+self.lastline
+                        self.lastline=self.header+self.lastline
                         if self.fast:
                             if self.fast==2:
                                 self.read=self.readtailfast2
                             else:
                                 self.read=self.readtailfast
                             tmpline=self.lastline
-                            self.lastline='NO LAST LINE INFO IN FAST MODE'
+                            self.lastline='[In fast mode there is no lastline information available]'
                             return tmpline.encode('utf-8')
                         else:
                             self.read=self.readtail
@@ -524,14 +526,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             ll=self.lastline
                             while ll.find('>')==-1:
                                 ll+= readline()
-                            self.lastline=ll
+                            self.lastline='\n'
 
                 return self.lastline.encode('utf-8')
 
             def readtail(self, n):
-                line= self.unescape(self.qiter.next()[0]).encode('utf-8')
+                line= self.qiter.next()[0].encode('utf-8')
                 if line.startswith('<?xml version='):
-                    line= self.unescape(self.qiter.next()[0]).encode('utf-8')
+                    line= self.qiter.next()[0].encode('utf-8')
                 if not line.endswith('\n'):
                     line+='\n'
                 self.lastline=line
@@ -551,7 +553,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 except StopIteration:
                     if buffer.tell()==0:
                         raise StopIteration
-                return self.unescapere.sub(self.fixup, buffer.getvalue()).encode('utf-8')
+                return buffer.getvalue().encode('utf-8')
 
             def readtailfast2(self, n):
                 buffer=StringIO.StringIO()
