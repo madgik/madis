@@ -486,10 +486,12 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
                 del(self.htmlentities['quot'])
+                self.forcedroottag='<xmlparce-forced-root-element>\n'
                 if self.fast==2:
-                    self.header='<xmlparce-forced-root-element>\n'
+                    self.header=self.forcedroottag
                 else:
-                    self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n<xmlparce-forced-root-element>\n'
+                    self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
+                self.foundentities=False
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
@@ -511,7 +513,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 if rline!='':
                     if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
-                        self.lastline=self.header+self.lastline
+                        if self.foundentities:
+                            self.lastline=self.forcedroottag+self.lastline
+                        else:
+                            self.lastline=self.header+self.lastline
                         if self.fast:
                             if self.fast==2:
                                 self.read=self.readtailfast2
@@ -523,17 +528,21 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         else:
                             self.read=self.readtail
                     else:
-                            ll=self.lastline
-                            while ll.find('>')==-1:
-                                ll+= readline()
-                            self.lastline='\n'
+                            line=self.lastline
+                            ll=line
+                            while line.find('>')==-1 or line.strip()=='':
+                                line=readline()
+                                ll+= line
+                            if ll.find('<!ENTITY')!=-1:
+                                self.lastline=ll
+                                self.foundentities=True
+                            else:
+                                self.lastline='\n'
 
                 return self.lastline.encode('utf-8')
 
             def readtail(self, n):
                 line= self.qiter.next()[0].encode('utf-8')
-                if line.startswith('<?xml version='):
-                    line= self.qiter.next()[0].encode('utf-8')
                 if not line.endswith('\n'):
                     line+='\n'
                 self.lastline=line
@@ -544,8 +553,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 try:
                     while buffer.tell()<n:
                         line= self.qiter.next()[0]
-                        if line.startswith('<?xml v'):
-                            line= self.qiter.next()[0]
                         if line.endswith('\n'):
                             buffer.write(line)
                         else:
