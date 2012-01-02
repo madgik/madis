@@ -513,7 +513,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 rline=self.lastline.strip()
 
                 if rline!='':
-                    if not (rline.startswith('<?xml version=') or rline.startswith('<!')):
+                    if not (rline.startswith('<?xml version=') or rline.startswith('<!') or (rline.find('>')!=-1 and rline.find('<')==-1)):
                         if self.foundentities:
                             self.lastline=self.forcedroottag+self.lastline
                         else:
