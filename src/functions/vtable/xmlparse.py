@@ -497,6 +497,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return self.unescapere.sub(self.fixup, text)
 
             def restart(self):
+                self.foundentities=False
                 self.read=self.readstart
 
             def readstart(self, n):
@@ -533,7 +534,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             while line.find('>')==-1 or line.strip()=='':
                                 line=readline()
                                 ll+= line
-                            if ll.find('<!ENTITY')!=-1:
+                            if self.foundentities or ll.find('<!E')!=-1:
                                 self.lastline=ll
                                 self.foundentities=True
                             else:
