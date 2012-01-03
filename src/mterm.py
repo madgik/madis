@@ -388,7 +388,7 @@ helpmessage=""".functions             Lists all functions
 .t ?TABLE?             Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers
-.vacuum                Vacuum in current path"""
+.vacuum                Vacuum DB using a temp file in current path"""
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
