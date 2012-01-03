@@ -126,9 +126,23 @@ def urlquery2jdict(*args):
 
 urlquery2jdict.registered=True
 
+EntityPattern = re.compile('&(?:#(\d+)|(?:#x([\da-fA-F]+))|([a-zA-Z]+));')
 def htmlunescape(s):
-    return re.sub('&(%s);' % '|'.join(name2codepoint),
-              lambda m: unichr(name2codepoint[m.group(1)]), s)
+    def unescape(match):
+        code = match.group(1)
+        if code:
+            return unichr(int(code, 10))
+        else:
+            code = match.group(2)
+            if code:
+                return unichr(int(code, 16))
+            else:
+                code = match.group(3)
+                if code in name2codepoint:
+                    return unichr(name2codepoint[code])
+        return match.group(0)
+
+    return EntityPattern.sub(unescape, s)
 
 def htmldecode(*args):
     """
