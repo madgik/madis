@@ -209,6 +209,84 @@ class maxrow:
             return None
         return self.maxv[1]
 
+class groupdiff:
+    """
+    .. function:: groupdiff(compare,values)
+
+    Compares group members over the first argument (i.e. *compare*). It keeps only the rows where *compare* changes.
+    It appends a column at the end containing how many times *compare* repeats.
+
+    Examples:
+
+    >>> table1('''
+    ... 0  a
+    ... 0  b
+    ... 1  c
+    ... 1  d
+    ... 2  e
+    ... 3  e
+    ... 3  f
+    ... 3  g
+    ... ''')
+    >>> sql("select groupdiff(a,b) as b from table1")
+    b1 | b2 | b3
+    ------------
+    0  | a  | 2
+    1  | c  | 2
+    2  | e  | 1
+    3  | e  | 3
+    >>> sql("select groupdiff(a) as a from table1")
+    a1 | a2
+    -------
+    0  | 2
+    1  | 2
+    2  | 1
+    3  | 3
+    >>> sql("select groupdiff(b,a) as a from table1")
+    a1 | a2 | a3
+    ------------
+    a  | 0  | 1
+    b  | 0  | 1
+    c  | 1  | 1
+    d  | 1  | 1
+    e  | 2  | 2
+    f  | 3  | 1
+    g  | 3  | 1
+    """
+    registered=True
+
+    def __init__(self):
+        self.first=True
+        self.data=[]
+        self.prevcomp=None
+        self.size=0
+        self.repeat=1
+
+    def step(self, *args):
+        if self.first:
+            if not args:
+                raise functions.OperatorError("groupdiff","No arguments")
+            self.prevcomp=args[0]
+            self.data.append(list(args))
+            self.first=False
+            self.size=len(args)
+            return
+
+        if args[0]!=self.prevcomp:
+            self.prevcomp=args[0]
+            self.data[-1].append(self.repeat)
+            self.data.append(list(args))
+            self.repeat=1
+        else:
+            self.repeat+=1
+
+    def final(self):
+        self.data[-1].append(self.repeat)
+        yield tuple(["compid"]+["C"+str(i) for i in xrange(1,self.size)]+["repetition"])
+        for i in self.data:
+            yield i
+
+
 class ontop:
     """
 
