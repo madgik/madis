@@ -2,6 +2,7 @@ import lib.jopts as jopts
 import json
 import operator
 import collections
+import itertools
 
 def jpack(*args):
 
@@ -490,6 +491,100 @@ def jsplice(*args):
         
 
 jsplice.registered=True
+
+def jcombinations(*args):
+
+    """
+    .. function:: jcombinations(jpack, r) -> multiset
+
+    Returns all length r combinations of jpack.
+
+    Examples:
+
+    >>> sql('''select jcombinations('["t1","t2","t3"]',2)''')
+    C1 | C2
+    -------
+    t1 | t2
+    t1 | t3
+    t2 | t3
+
+    >>> sql('''select jcombinations('["t1","t2",["t3","t4"]]',2)''')
+    C1 | C2
+    ----------------
+    t1 | t2
+    t1 | ["t3","t4"]
+    t2 | ["t3","t4"]
+
+    >>> sql('''select jcombinations(null,2)''')
+
+    >>> sql('''select jcombinations('["t1","t2","t3","t4"]')''')
+    C1
+    --
+    t1
+    t2
+    t3
+    t4
+    """
+
+    r=1
+    if len(args)==2:
+        r=args[1]
+
+    yield tuple(('C'+str(x) for x in xrange(1,r+1)))
+    for p in itertools.combinations(jopts.fromj(args[0]), r):
+        yield [jopts.toj(x) for x in p]
+
+jcombinations.registered=True
+
+def jpermutations(*args):
+
+    """
+    .. function:: jpermutations(jpack, r) -> multiset
+
+    Returns all length r permutations of jpack.
+
+    Examples:
+
+    >>> sql('''select jpermutations('["t1","t2","t3"]',2)''')
+    C1 | C2
+    -------
+    t1 | t2
+    t1 | t3
+    t2 | t1
+    t2 | t3
+    t3 | t1
+    t3 | t2
+
+    >>> sql('''select jpermutations('["t1","t2",["t3","t4"]]',2)''')
+    C1          | C2
+    -------------------------
+    t1          | t2
+    t1          | ["t3","t4"]
+    t2          | t1
+    t2          | ["t3","t4"]
+    ["t3","t4"] | t1
+    ["t3","t4"] | t2
+
+    >>> sql('''select jpermutations(null,2)''')
+
+    >>> sql('''select jpermutations('["t1","t2","t3","t4"]')''')
+    C1
+    --
+    t1
+    t2
+    t3
+    t4
+    """
+
+    r=1
+    if len(args)==2:
+        r=args[1]
+
+    yield tuple(('C'+str(x) for x in xrange(1,r+1)))
+    for p in itertools.permutations(jopts.fromj(args[0]), r):
+        yield [jopts.toj(x) for x in p]
+
+jpermutations.registered=True
 
 
 if not ('.' in __name__):
