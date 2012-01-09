@@ -203,7 +203,7 @@ def htmlstriptags(*args):
 
     Examples:
 
-    >>> sql("select htmlstriptags('<tag1>asdf<>as<br>df<tag2>') as query")
+    >>> sql("select htmlstriptags('<tag1>asdf<>as<br>df<br><p>paragraph</p>anotherline<tag2>') as query")
     query
     ---------
     asdfas
@@ -215,9 +215,8 @@ def htmlstriptags(*args):
     """
     def tagdecode(tag):
         t=tag.group(1)
-        if 'br' in t:
-            if re.search(r'^\s*br',t):
-                return u'\n'
+        if re.search(r'^\s*(br|/p\s*$)',t):
+            return u'\n'
         else: return ''
 
     text=u''
