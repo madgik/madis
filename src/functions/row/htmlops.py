@@ -195,6 +195,39 @@ def htmlencode(*args):
 
 htmlencode.registered=True
 
+def htmlstriptags(*args):
+    """
+    .. function:: htmlstriptags(str)
+
+    Strips the html tags of input. It also converts "<br>" tags to new lines.
+
+    Examples:
+
+    >>> sql("select htmlstriptags('<tag1>asdf<>as<br>df<tag2>') as query")
+    query
+    ---------
+    asdfas
+    df
+    >>> sql("select htmlstriptags(null) as query")
+    query
+    -----
+    <BLANKLINE>
+    """
+    def tagdecode(tag):
+        t=tag.group(1)
+        if 'br' in t:
+            if re.search(r'^\s*br',t):
+                return u'\n'
+        else: return ''
+
+    text=u''
+    for i in args:
+        if i!=None:
+            text+=unicode(i)
+    return re.sub(r'<([^>]*?)>', tagdecode, text)
+
+htmlstriptags.registered=True
+
 def urldecode(*args):
     """
     .. function:: urldecode(str)
