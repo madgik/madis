@@ -3,6 +3,10 @@
 
     Fetches data from an OAIPMH service, using resumption tokens to fetch large datasets.
 
+    - If no *verb* is provided then *verb* is assumed to be 'ListRecords'.
+    - If no *metadataPrefix* is provided then *verb* is assumed to be 'ListMetadataFormats', which will list
+      all metadata formats.
+
 :Returned table schema:
     Column C1 as text
 
@@ -39,6 +43,10 @@ class oaiget(vtiters.StaticSchemaVT):
 
         opts= self.full_parse(parsedArgs)[1]
 
+        if 'verb' not in opts:
+            opts['verb']='ListRecords'
+        if 'metadataPrefix' not in opts:
+            opts['verb']='ListMetadataFormats'
         if 'http' not in opts:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"An OAIPMH URL should be provided")
 
