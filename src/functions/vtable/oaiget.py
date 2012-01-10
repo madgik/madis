@@ -60,7 +60,7 @@ class oaiget(vtiters.StaticSchemaVT):
                         t=findrestoken.search(i)
                         if t:
                             resumptionToken=t.groups()[0]
-                    yield i.strip()
+                    yield (unicode(i.rstrip("\n"), 'utf-8'),)
                 if resumptionToken==None:
                     break
                 url=buildURL(baseurl, [(x,y) for x,y in opts if x=='verb']+[('resumptionToken', resumptionToken)])
