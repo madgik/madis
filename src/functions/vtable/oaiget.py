@@ -55,7 +55,7 @@ class oaiget(vtiters.StaticSchemaVT):
 
         try:
             while True:
-                for i in urllib2.urlopen(url):
+                for i in urllib2.urlopen(url, timeout=1200):
                     if resumptionToken==None:
                         t=findrestoken.search(i)
                         if t:
