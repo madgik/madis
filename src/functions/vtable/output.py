@@ -1,7 +1,7 @@
 """
-.. function:: output(query:None,file, [formatting options])
+.. function:: output formatting_options 'filename' query
 
-Writes in *file* the output of *query* formatted according to *formatting* options.
+Writes in *filename* the output of *query* formatted according to *formatting* options.
 
 :Returned table schema:
     - *return_value* int
@@ -12,16 +12,16 @@ Formatting options:
 .. toadd html        In html mode table is formatted as an html table TODO ????
 
 :mode:
-    - tsv       Default. Writes data in a tab separated format.
-    - csv       Writes data in a comma separated format.
-    - plain     The columns are concatened and written together.
+    - tsv       Default. Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in *tsv*.
+    - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in *csv*.
+    - plain     The columns are concatened and written together. *Plain* mode is autoselected when the filename ends in *txt*.
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
 
     If *mode* is not *csv* any given csv formatting options are ignored
 
 :append:
-                    t/f If true the output is append in the file, ignored in compression mode
+    t/f If true the output is append in the file, ignored in compression mode
 
 Detailed description of additional output formating options can be found in :func:`~functions.vtable.file.file` function description.
 
