@@ -36,6 +36,36 @@ def jpack(*args):
 
 jpack.registered=True
 
+def jlen(*args):
+
+    """
+    .. function:: jlen(args...) -> int
+
+    Returns the total length in elements of the input jpacks.
+
+    Examples:
+
+    >>> sql("select jlen('abc')")
+    jlen('abc')
+    -----------
+    1
+
+    >>> sql("select jlen('a','b',3)")
+    jlen('a','b',3)
+    ---------------
+    3
+
+    >>> sql("select jlen('a', jpack('b',3))")
+    jlen('a', jpack('b',3))
+    -----------------------
+    2
+
+    """
+
+    return len(jopts.elemfromj(*args))
+
+jlen.registered=True
+
 def jfilterempty(*args):
     """
     .. function:: jfilterempty(jpacks.) -> jpack
