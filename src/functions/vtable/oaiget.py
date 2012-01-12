@@ -47,6 +47,8 @@ class oaiget(vtiters.StaticSchemaVT):
             opts['verb']='ListRecords'
         if 'metadataPrefix' not in opts:
             opts['verb']='ListMetadataFormats'
+        if 'resumptionToken' in opts:
+            opts['verb']='ListRecords'
         if 'http' not in opts:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"An OAIPMH URL should be provided")
 
@@ -61,8 +63,9 @@ class oaiget(vtiters.StaticSchemaVT):
         resumptionToken=None
         url=buildURL(baseurl, opts+[('resumptionToken', resumptionToken)])
 
-        try:
-            while True:
+        errorcount=0
+        while True:
+            try:
                 for i in urllib2.urlopen(url, timeout=1200):
                     if resumptionToken==None:
                         t=findrestoken.search(i)
@@ -73,8 +76,11 @@ class oaiget(vtiters.StaticSchemaVT):
                     break
                 url=buildURL(baseurl, [(x,y) for x,y in opts if x=='verb']+[('resumptionToken', resumptionToken)])
                 resumptionToken=None
-        except Exception,e:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],e)
+            except Exception,e:
+                if errorcount<10:
+                    errorcount+=1
+                else:
+                    raise functions.OperatorError(__name__.rsplit('.')[-1],e)
 
 
 def Source():
