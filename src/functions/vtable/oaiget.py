@@ -70,6 +70,7 @@ class oaiget(vtiters.StaticSchemaVT):
                     if resumptionToken==None:
                         t=findrestoken.search(i)
                         if t:
+                            errorcount=0
                             resumptionToken=t.groups()[0]
                     yield (unicode(i.rstrip("\n"), 'utf-8'),)
                 if resumptionToken==None:
