@@ -377,11 +377,8 @@ Enter SQL statements terminated with a ";" """
 helpmessage=""".functions             Lists all functions
 .help                  Show this message (also accepts '.h' )
 .help FUNCTION         Show FUNCTION's help page
-.output FILENAME       Send output to FILENAME
-.output stdout         Send output to the screen
 .quit                  Exit this program
 .schema ?TABLE?        Show the CREATE statements
-.separator STRING      Change separator used by output mode and .import
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
 .tables                List names of tables (you can also use ".t" or double TAB)
@@ -405,7 +402,6 @@ except IOError:
 import atexit
 atexit.register(readline.write_history_file, histfile)
 
-output = sys.stdout
 separator = "|"
 allquote = False
 beeping = False
@@ -430,7 +426,7 @@ else:
     
 functions.variables.flowname='main'
 
-rawprinter=writer(output,dialect=mtermoutput(),delimiter=separator)
+rawprinter=writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
 
 if len(sys.argv)>2:
         
@@ -512,19 +508,8 @@ while True:
             elif argument=='tabs':
                 separator = "\t"
 
-
         elif command=='explain':
             statement=re.sub("^\s*\.explain\s+", "explain query plan ", origstatement)
-
-        elif command=='separator' and argument:
-            separator=argument
-            if not argument.startswith("'") or not argument.endswith("'"):
-                if not argument.startswith('"') or not argument.endswith('"'):
-                    argument='"'+argument+'"'
-            try:
-                separator = eval(argument)
-            except Exception:
-                print "Cannot parse separator value"
 
         elif command=='quote':
             allquote^=True
@@ -534,15 +519,7 @@ while True:
             else:
                 print "Not quoting output, coloured columns"
                 colnums=True
-            rawprinter=writer(output,dialect=mtermoutput(),delimiter=separator)
-
-        elif command=='output':
-            if output!=sys.stdout:
-                    output.close()
-            if argument=="stdout":         
-                    output=sys.stdout
-            else:
-                output=open(argument,"w")
+            rawprinter=writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
 
         elif command=='beep':
             beeping^=True
