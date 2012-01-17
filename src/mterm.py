@@ -591,9 +591,9 @@ while True:
             exit(0)
 
         elif command=="functions":
-            for type in functions.functions:
-                for f in functions.functions[type]:
-                    print f+' :'+type
+            for ftype in functions.functions:
+                for f in functions.functions[ftype]:
+                    print f+' :'+ftype
 
         elif "help".startswith(command):
             if not argument:
