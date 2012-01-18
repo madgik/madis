@@ -25,6 +25,7 @@ Examples:
 """
 import vtiters
 import functions
+import time
 
 registered=True
 external_stream=True
@@ -61,6 +62,7 @@ class oaiget(vtiters.StaticSchemaVT):
         findrestoken=re.compile(r""">([^\s]+?)</resumptionToken>""", re.DOTALL| re.UNICODE)
 
         resumptionToken=None
+        firsttime=True
         url=buildURL(baseurl, opts+[('resumptionToken', resumptionToken)])
 
         errorcount=0
@@ -77,8 +79,10 @@ class oaiget(vtiters.StaticSchemaVT):
                     break
                 url=buildURL(baseurl, [(x,y) for x,y in opts if x=='verb']+[('resumptionToken', resumptionToken)])
                 resumptionToken=None
+                firsttime=False
             except Exception,e:
-                if errorcount<10:
+                if errorcount<10 and not firsttime:
+                    time.sleep(2**errorcount)
                     errorcount+=1
                 else:
                     raise functions.OperatorError(__name__.rsplit('.')[-1],e)
