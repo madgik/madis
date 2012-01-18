@@ -378,11 +378,11 @@ helpmessage=""".functions             Lists all functions
 .help                  Show this message (also accepts '.h' )
 .help FUNCTION         Show FUNCTION's help page
 .quit                  Exit this program
-.schema ?TABLE?        Show the CREATE statements
+.schema TABLE          Show the CREATE statements
 .quote                 Toggle between normal quoting mode and quoting all mode
 .beep                  Make a sound when a query finishes executing
 .tables                List names of tables (you can also use ".t" or double TAB)
-.t ?TABLE?             Browse table
+.t TABLE               Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers
 .vacuum                Vacuum DB using a temp file in current path"""
