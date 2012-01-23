@@ -28,7 +28,8 @@ Is a *root* tag is provided then each returned row, contains a jdict of all the 
     Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
     occurs no last line information is returned, so use this option only when you are sure that the XML input is well formed.
 
-    - fast:1  ,is the same as fast:0 (default), but it doesn't return *Last line* information in the case of an error
+    - fast:0  (default), parses the input stream in a conservative line by line way
+    - fast:1  ,is the same as fast:0, but it doesn't return *Last line* information in the case of an error
     - fast:2  ,in this mode XMLPARSER doesn't convert HTML entities and doesn't skip "<?xml version=..." lines
 
 :'strict' option:
@@ -37,6 +38,8 @@ Is a *root* tag is provided then each returned row, contains a jdict of all the 
     - strict:1  (default), if a failure occurs, the current transaction will be cancelled. Undeclared tags aren't regarded as failure.
     - strict:0  , returns all data that succesfully parses. The difference with strict 1, is that strict 0 tries to restart the xml-parsing after the failures and doesn't fail the transaction.
     - strict:-1 , returns all input lines in which the xml parser finds a problem. In essence this works as a negative xml parser.
+
+    For strict modes 0 and -1, the fast:0 mode is enforced.
 
 :Returned table schema:
 
@@ -375,9 +378,6 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             if 'root' in opts[1]:
                 self.subtreeroot=opts[1]['root']
 
-            if 'strict' in opts[1]:
-                self.strict=int(opts[1]['strict'])
-
             if 'namespace' in opts[1] or 'ns' in opts[1]:
                 self.namespace=True
 
@@ -386,6 +386,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.fast=int(opts[1]['fast'])
                 except:
                     self.fast=1
+
+            if 'strict' in opts[1]:
+                self.strict=int(opts[1]['strict'])
+                if self.strict<=0:
+                    self.fast=0
 
             try:
                 self.query=opts[1]['query']
