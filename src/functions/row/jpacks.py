@@ -36,6 +36,38 @@ def jpack(*args):
 
 jpack.registered=True
 
+def jsonstrict(*args):
+
+    """
+    .. function:: jsonstrict(args...) -> json string
+
+    Sometimes we wish to process json lists from another application. Jsonstrict function
+    tries to always create json compatible lists. So it doesn't keep single values
+    as themselves.
+
+    Examples:
+
+    >>> sql("select jsonstrict('a')")
+    jsonstrict('a')
+    ---------------
+    ["a"]
+
+    >>> sql("select jsonstrict('a','b',3)")
+    jsonstrict('a','b',3)
+    ---------------------
+    ["a","b",3]
+
+    >>> sql("select jsonstrict('a', jpack('b',3))")
+    jsonstrict('a', jpack('b',3))
+    -----------------------------
+    ["a",["b",3]]
+
+    """
+
+    return json.dumps(jopts.elemfromj(*args), separators=(',',':'), ensure_ascii=False)
+
+jsonstrict.registered=True
+
 def jlen(*args):
 
     """
