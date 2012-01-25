@@ -42,8 +42,7 @@ def jsonstrict(*args):
     .. function:: jsonstrict(args...) -> json string
 
     Sometimes we wish to process json lists from another application. Jsonstrict function
-    tries to always create json compatible lists. So it doesn't keep single values
-    as themselves.
+    tries to always create json compatible lists. So it always returns json lists.
 
     Examples:
 
