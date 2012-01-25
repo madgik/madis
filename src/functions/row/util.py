@@ -58,7 +58,6 @@ def ungz(*args):
     except:
         return args[0]
 
-
 ungz.registered=True
 
 if not ('.' in __name__):
