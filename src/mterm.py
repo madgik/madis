@@ -9,7 +9,6 @@ if sys.platform == 'darwin':
     reload(sys)
     sys.setdefaultencoding("utf-8")
 
-
 # Workaround for windows - DISABLED
 #try: import lib.winunicode
 #except ImportError: pass
@@ -33,11 +32,20 @@ import os
 from lib.dsv import writer
 import csv
 
+pipedinput=not sys.stdin.isatty()
+
 try:
+    if pipedinput:
+        raise 'go to except'
     import lib.colorama as colorama
     from colorama import Fore, Back, Style
     colnums = True
 except:
+    colorama=lambda x:x
+    def dummyfunction():
+        pass
+    colorama.deinit=dummyfunction
+    colorama.init=dummyfunction
     colnums = False
     pass
 
@@ -59,7 +67,6 @@ def createConnection(db):
     connection.enableloadextension(True)
     return connection
 
-
 def reloadfunctions():
     global connection, automatic_reload, db
 
@@ -80,6 +87,16 @@ def reloadfunctions():
     functions.variables=tmp_vars
 
 def raw_input_no_history(*args):
+    global pipedinput
+
+    if pipedinput:
+        try:
+            input = raw_input()
+        except EOFError:
+            connection.close()
+            exit(0)
+        return input
+    
     try:
         input = raw_input(*args)
     except:
@@ -312,6 +329,11 @@ def mcomplete(textin,state):
         return
 
 def schemaprint(cols):
+    global pipedinput
+
+    if pipedinput:
+        return
+    
     if cols!=[]:
         sys.stdout.write(Style.BRIGHT+'--- '+Style.NORMAL+ Fore.RED+'['+Style.BRIGHT+'0'+Style.NORMAL+'|'+Style.RESET_ALL+Style.BRIGHT+'Column names '+'---'+Style.RESET_ALL+'\n')
         colschars=0
@@ -370,6 +392,12 @@ def printrow(row):
         i1+=1
     sys.stdout.write('\n')
 
+def printterm(*args):
+    global pipedinput
+
+    if not pipedinput:
+        print(','.join([unicode(x) for x in args]))
+
 mtermdetails="mTerm - version 0.9"
 intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
@@ -395,18 +423,24 @@ if 'HOME' not in os.environ: # Windows systems
 
 histfile = os.path.join(os.environ["HOME"], ".mterm")
 
-try:
-    readline.read_history_file(histfile)
-except IOError:
-    pass
-import atexit
-atexit.register(readline.write_history_file, histfile)
+automatic_reload=False
+if not pipedinput:
+    try:
+        readline.read_history_file(histfile)
+    except IOError:
+        pass
+    import atexit
+    atexit.register(readline.write_history_file, histfile)
+    
+    automatic_reload=True
+    readline.set_completer(mcomplete)
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer_delims(' \t\n`!@#$^&*()=+[{]}|;:\'",<>?')
 
 separator = "|"
 allquote = False
 beeping = False
 db = ""
-automatic_reload=True
 language, output_encoding = locale.getdefaultlocale()
 
 if output_encoding==None:
@@ -459,19 +493,15 @@ lastcols=[]
 newcols=[]
 colscompl=[]
 
-readline.set_completer(mcomplete)
-readline.parse_and_bind("tab: complete")
-readline.set_completer_delims(' \t\n`!@#$^&*()=+[{]}|;:\'",<>?')
-
 #Intro Message
-print mtermdetails
-print "running on Python: "+'.'.join([str(x) for x in sys.version_info[0:3]])+', APSW: '+apsw.apswversion()+', SQLite: '+apsw.sqlitelibversion(),
-try:
-    sys.stdout.write(", madIS: "+functions.VERSION+'\n')
-except:
-    print
-print intromessage
-
+if not pipedinput:
+    print mtermdetails
+    print "running on Python: "+'.'.join([str(x) for x in sys.version_info[0:3]])+', APSW: '+apsw.apswversion()+', SQLite: '+apsw.sqlitelibversion(),
+    try:
+        sys.stdout.write(", madIS: "+functions.VERSION+'\n')
+    except:
+        print
+    print intromessage
 
 number_of_kb_exceptions=0
 while True:
@@ -514,38 +544,38 @@ while True:
         elif command=='quote':
             allquote^=True
             if allquote:
-                print "Quoting output, uncoloured columns"
+                printterm("Quoting output, uncoloured columns")
                 colnums=False
             else:
-                print "Not quoting output, coloured columns"
+                printterm("Not quoting output, coloured columns")
                 colnums=True
             rawprinter=writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
 
         elif command=='beep':
             beeping^=True
             if beeping:
-                print "Beeping enabled"
+                printterm("Beeping enabled")
             else:
-                print "Beeping disabled"
+                printterm("Beeping disabled")
 
         elif command=='colnums':
             colnums^=True
             if colnums:
-                print "Colnums enabled"
+                printterm("Colnums enabled")
             else:
-                print "Colnums disabled"                
+                printterm("Colnums disabled")
 
         elif 'tables'.startswith(command):
             update_tablelist()
             argument=argument.rstrip('; ')
             if not argument:
                 for i in sorted(alltables):
-                    print i
+                    printterm(i)
             else:
                 statement='select * from '+argument+' limit 2;'
 
         elif command=='vacuum':
-            statement="PRAGMA temp_store_directory = '.';VACUUM;PRAGMA temp_store_directory = '';"
+            statement="PRAGMA temp_store_directory = '.';VACUUM;printtePRAGMA temp_store_directory = '';"
           
         elif command=='schema':
             if not argument:
@@ -554,7 +584,7 @@ while True:
                 argument=argument.rstrip('; ')
                 update_tablelist()
                 if argument not in alltables:
-                    print "No table found"
+                    printterm("No table found")
                 else:
                     db='main'
                     if '.' in argument:
@@ -570,24 +600,24 @@ while True:
         elif command=="functions":
             for ftype in functions.functions:
                 for f in functions.functions[ftype]:
-                    print f+' :'+ftype
+                    printterm(f+' :'+ftype)
 
         elif "help".startswith(command):
             if not argument:
-                print helpmessage
+                printterm(helpmessage)
             else:
                 for i in functions.functions:
                     if argument in functions.functions[i]:
-                        print "Function "+ argument + ":"
-                        print functions.functions[i][argument].__doc__
+                        printterm("Function "+ argument + ":")
+                        printterm(functions.functions[i][argument].__doc__)
 
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
-            print "Automatic reload is now: " + str(automatic_reload)
+            printterm("Automatic reload is now: " + str(automatic_reload))
 
         else:
             validcommand=False
-            print """unknown command. Enter ".help" for help"""
+            printterm("""unknown command. Enter ".help" for help""")
 
         if validcommand:
             histstatement='.'+command+' '+argument+rest
@@ -610,7 +640,7 @@ while True:
         reloadfunctions()
         number_of_kb_exceptions=0
         if not statement:
-            print
+            printterm()
             continue
         try:
             if not validcommand:
@@ -640,15 +670,16 @@ while True:
             tmdiff=after-before
 
             schemaprint(newcols)
-            if rownum==0:
-                print "Query executed in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
-            else:
-                print "Query executed and displayed %s"%(rownum),
-                if rownum==1: print "row",
-                else: print "rows",
-                print "in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+            if not pipedinput:
+                if rownum==0:
+                    printterm( "Query executed in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000))) )
+                else:
+                    print "Query executed and displayed %s"%(rownum),
+                    if rownum==1: print "row",
+                    else: print "rows",
+                    print "in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
             if beeping:
-                print '\a\a'
+                printterm('\a\a')
                 
             colscompl=[]
             updated_tables=set()
@@ -659,7 +690,7 @@ while True:
 
         except KeyboardInterrupt:
             schemaprint(newcols)
-            print "KeyboardInterrupt exception: Query execution stopped"
+            printterm("KeyboardInterrupt exception: Query execution stopped")
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
             emsg=unicode(e)
