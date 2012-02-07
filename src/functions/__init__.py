@@ -267,19 +267,19 @@ def register(connection=None):
     flvtabfiles = findmodules(functionslocalpath, 'vtable')
 
     for module in flrowfiles:
-        tmp=__import__("functionslocal.row" + "." + module)
+        tmp=__import__("functionslocal.row." + module)
         register_ops(tmp.row.__dict__[module], connection)
 
     for module in flaggrfiles:
-        tmp=__import__("functionslocal.aggregate" + "." + module)
+        tmp=__import__("functionslocal.aggregate." + module)
         register_ops(tmp.aggregate.__dict__[module], connection)
 
     localvtable=lambda x:x
     for module in flvtabfiles:
-        localvtable.__dict__[module]=__import__("functionslocal.vtable" + "." + module)
+        localvtable.__dict__[module]=__import__("functionslocal.vtable." + module, fromlist=['functionslocal.vtable'])
 
     if len(flvtabfiles)!=0:
-        register_ops(localvtable.vtable,connection)
+        register_ops(localvtable,connection)
 
     # Register db local functions
     if variables.execdb!=oldexecdb:
