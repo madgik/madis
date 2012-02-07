@@ -12,15 +12,17 @@
 
 Examples:
 
-    >>> sql("select * from oaiget('verb:ListRecords', 'metadataPrefix:ctxo')")    # doctest:+ELLIPSIS
+    >>> sql("select * from oaiget('verb:ListRecords', 'metadataPrefix:ctxo')")    # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator oaiget: An OAIPMH URL should be provided
+    OperatorError: Madis SQLError:
+    Operator OAIGET: An OAIPMH URL should be provided
 
-    >>> sql("select * from (oaiget verb:ListRecords metadataPrefix:ctxo 'http://oaiurl' )")    # doctest:+ELLIPSIS
+    >>> sql("select * from (oaiget verb:ListRecords metadataPrefix:ctxo 'http://oaiurl' )")    # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator oaiget: <urlopen error [Errno -2] Name or service not known>
+    OperatorError: Madis SQLError:
+    Operator OAIGET: <urlopen error [Errno -2] Name or service not known>
 
 """
 import vtiters
@@ -61,7 +63,7 @@ class oaiget(vtiters.StaticSchemaVT):
 
         findrestoken=re.compile(r""">([^\s]+?)</resumptionToken>""", re.DOTALL| re.UNICODE)
 
-        resumptionToken=None
+        resumptionToken=lastResToken=None
         firsttime=True
         url=buildURL(baseurl, opts+[('resumptionToken', resumptionToken)])
 
@@ -78,6 +80,7 @@ class oaiget(vtiters.StaticSchemaVT):
                 if resumptionToken==None:
                     break
                 url=buildURL(baseurl, [(x,y) for x,y in opts if x=='verb']+[('resumptionToken', resumptionToken)])
+                lastResToken=resumptionToken
                 resumptionToken=None
                 firsttime=False
             except Exception,e:
@@ -85,7 +88,10 @@ class oaiget(vtiters.StaticSchemaVT):
                     time.sleep(2**errorcount)
                     errorcount+=1
                 else:
-                    raise functions.OperatorError(__name__.rsplit('.')[-1],e)
+                    if lastResToken==None:
+                        raise functions.OperatorError(__name__.rsplit('.')[-1], e)
+                    else:
+                        raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last resumptionToken was:\n'+str(lastResToken))
 
 
 def Source():
