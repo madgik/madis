@@ -68,10 +68,21 @@ class diavgeiaget(vtiters.StaticSchemaVT):
         opts=list(opts.iteritems())
         url=buildURL(baseurl, opts)
 
+        def buildopener():
+            o = urllib2.build_opener()
+            o.addheaders = [
+             ('Accept', '*/*'),
+             ('Connection', 'Keep-Alive'),
+             ('Content-type', 'text/xml')
+            ]
+            return o
+
+        opener=buildopener()
+
         errorcount=0
         while True:
             try:
-                for i in urllib2.urlopen(url, timeout=1200):
+                for i in opener.open( url, timeout=1200 ).read() :
                     if count==None:
                         t=findcount.search(i)
                         if t:
@@ -100,6 +111,7 @@ class diavgeiaget(vtiters.StaticSchemaVT):
                 if errorcount<10 and not firsttime:
                     time.sleep(2**errorcount)
                     errorcount+=1
+                    opener=buildopener()
                 else:
                     if lastfromv==None:
                         raise functions.OperatorError(__name__.rsplit('.')[-1], e)
