@@ -37,12 +37,21 @@ class diavgeiaget(vtiters.StaticSchemaVT):
         return [('c1', 'text')]
 
     def open(self, *parsedArgs, **envars):
+
+        import urllib2
+        import re
         
         def buildURL(baseurl, opts):
             return '?'.join([ baseurl, '&'.join([x+'='+unicode(y) for x,y in opts if y!=None]) ])
 
-        import urllib2
-        import re
+        def buildopener():
+            o = urllib2.build_opener()
+            o.addheaders = [
+             ('Accept', '*/*'),
+             ('Connection', 'Keep-Alive'),
+             ('Content-type', 'text/xml')
+            ]
+            return o
 
         opts= self.full_parse(parsedArgs)[1]
 
@@ -68,14 +77,7 @@ class diavgeiaget(vtiters.StaticSchemaVT):
         opts=list(opts.iteritems())
         url=buildURL(baseurl, opts)
 
-        def buildopener():
-            o = urllib2.build_opener()
-            o.addheaders = [
-             ('Accept', '*/*'),
-             ('Connection', 'Keep-Alive'),
-             ('Content-type', 'text/xml')
-            ]
-            return o
+
 
         opener=buildopener()
 
