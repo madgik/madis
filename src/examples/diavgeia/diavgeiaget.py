@@ -82,7 +82,7 @@ class diavgeiaget(vtiters.StaticSchemaVT):
         errorcount=0
         while True:
             try:
-                for i in opener.open( url, timeout=1200 ).read() :
+                for i in opener.open( url, timeout=1200 ):
                     if count==None:
                         t=findcount.search(i)
                         if t:
