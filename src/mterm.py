@@ -413,7 +413,10 @@ helpmessage=""".functions             Lists all functions
 .t TABLE               Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers
-.vacuum                Vacuum DB using a temp file in current path"""
+.vacuum                Vacuum DB using a temp file in current path
+
+Use: FILE or CLIPBOARD function for importing data
+     OUTPUT or CLIPOUT function for exporting data"""
 
 if 'HOME' not in os.environ: # Windows systems
         if 'HOMEDRIVE' in os.environ and 'HOMEPATH' in os.environ:
