@@ -37,12 +37,21 @@ class oaiget(vtiters.StaticSchemaVT):
         return [('c1', 'text')]
 
     def open(self, *parsedArgs, **envars):
-        
-        def buildURL(baseurl, opts):
-            return '?'.join([ baseurl, '&'.join([x+'='+y for x,y in opts if y!=None]) ])
 
         import urllib2
         import re
+
+        def buildURL(baseurl, opts):
+            return '?'.join([ baseurl, '&'.join([x+'='+unicode(y) for x,y in opts if y!=None]) ])
+
+        def buildopener():
+            o = urllib2.build_opener()
+            o.addheaders = [
+             ('Accept', '*/*'),
+             ('Connection', 'Keep-Alive'),
+             ('Content-type', 'text/xml')
+            ]
+            return o
 
         opts= self.full_parse(parsedArgs)[1]
 
@@ -67,10 +76,12 @@ class oaiget(vtiters.StaticSchemaVT):
         firsttime=True
         url=buildURL(baseurl, opts+[('resumptionToken', resumptionToken)])
 
+        opener=buildopener()
+
         errorcount=0
         while True:
             try:
-                for i in urllib2.urlopen(url, timeout=1200):
+                for i in opener.open(url, timeout=1200):
                     if resumptionToken==None:
                         t=findrestoken.search(i)
                         if t:
@@ -87,6 +98,7 @@ class oaiget(vtiters.StaticSchemaVT):
                 if errorcount<10 and not firsttime:
                     time.sleep(2**errorcount)
                     errorcount+=1
+                    opener=buildopener()
                 else:
                     if lastResToken==None:
                         raise functions.OperatorError(__name__.rsplit('.')[-1], e)
