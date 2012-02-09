@@ -378,9 +378,9 @@ class variance:
         return self.variance
         
 
-class sdev:
+class stdev:
     """
-    .. function:: sdev(X,[type]) -> [sdev float]
+    .. function:: stdev(X,[type]) -> [stdev float]
 
     Computes standard deviation of a dataset X, i.e. the square root of its variance.
     Sample standard deviation is determined by default; population standard deviation can be
@@ -398,26 +398,26 @@ class sdev:
     ... 'text is ignored'
     ... 'none'
     ... ''')
-    >>> sql("select sdev(a) from table1")
-    sdev(a)
+    >>> sql("select stdev(a) from table1")
+    stdev(a)
     -------------
     6.92820323028
-    >>> sql("select sdev(a,'population') from table1")
-    sdev(a,'population')
-    --------------------
+    >>> sql("select stdev(a,'population') from table1")
+    stdev(a,'population')
+    ---------------------
     6.0
-    >>> sql("select sdev(a,'true') from table1")
-    sdev(a,'true')
-    --------------
+    >>> sql("select stdev(a,'true') from table1")
+    stdev(a,'true')
+    ---------------
     6.0
 
 .. doctest::
     :hide:
 
     >>> sql("delete from table1")
-    >>> sql("select sdev(a) from table1")
-    sdev(a)
-    -------
+    >>> sql("select stdev(a) from table1")
+    stdev(a)
+    --------
     None
     
     """
@@ -426,12 +426,10 @@ class sdev:
 
     def __init__(self):
         self.init=True
-        self.sample = []
-        self.tmpsum=0.0
-        self.counter=0
-        self.mean = 0.0
+        self.k=0
         self.population=False
-        self.stddev=0.0
+        self.A=0.0
+        self.Q=0.0
 
     def initargs(self, args):
         self.init=False
@@ -455,31 +453,29 @@ class sdev:
         if self.init==True:
             self.initargs(args)
         
-        if not(isinstance(args[0], basestring)) and args[0]:
-            self.tmpsum += args[0]
-            self.counter +=1
-            self.element = float(args[0])
-            self.sample.append(self.element)
+        if args[0]:
+            try:
+                x=float(args[0])
+            except:
+                return
+            self.k+=1
+            oldA=self.A
+            self.A=self.A + (x-self.A)/self.k
+            self.Q=self.Q + (x-oldA)*(x-self.A)
 
     def final(self):
-        if (not self.sample):
-            return
-        self.mean = self.tmpsum/self.counter
-        #variance computation, as in variance operator
-        x=0
-        for item in self.sample:
-            x += (item - self.mean)**2.0
+        if self.k==0:
+            return None
         try:
-            if (not self.population and self.counter>1):   # Divide sum of squares by N-1 (sample variance).
-                self.variance = x/(self.counter-1)
+            if (not self.population and self.k>1):   # Divide sum of squares by N-1 (sample variance).
+                stdev = self.Q/(self.k-1)
             else:                       # Divide sum of squares by N (population variance).
-                self.variance = x/self.counter
+                stdev = self.Q/self.k
         except:
-            self.variance = 0
+            stdev = 0.0
         
         #Determine the measure of the dispersion of the data set based on the variance.
-        self.stddev = math.sqrt(self.variance) # Take the square root of the variance.
-        return self.stddev
+        return math.sqrt(stdev)
 
 
 
@@ -899,7 +895,7 @@ class pearson:
     >>> sql("select pearson(value,pyfun('math.pow',2,value)) from range(1,41)")
     pearson(value,pyfun('math.pow',2,value))
     ----------------------------------------
-    0.456349821381
+    0.456349821382
     """
 
     registered=True #Value to define db operator
