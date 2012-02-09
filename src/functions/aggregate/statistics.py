@@ -426,10 +426,10 @@ class stdev:
 
     def __init__(self):
         self.init=True
-        self.k=0
         self.population=False
-        self.A=0.0
-        self.Q=0.0
+        self.n=0
+        self.mean=0.0
+        self.M2=0.0
 
     def initargs(self, args):
         self.init=False
@@ -453,24 +453,24 @@ class stdev:
         if self.init==True:
             self.initargs(args)
         
-        if args[0]:
-            try:
-                x=float(args[0])
-            except:
-                return
-            self.k+=1
-            oldA=self.A
-            self.A=self.A + (x-self.A)/self.k
-            self.Q=self.Q + (x-oldA)*(x-self.A)
+        try:
+            x=float(args[0])
+        except:
+            return
+        self.n+=1
+        delta=x-self.mean
+        self.mean=self.mean + delta / self.n
+        if self.n > 1:
+            self.M2=self.M2 + delta * (x - self.mean)
 
     def final(self):
-        if self.k==0:
+        if self.n==0:
             return None
         try:
-            if (not self.population and self.k>1):   # Divide sum of squares by N-1 (sample variance).
-                stdev = self.Q/(self.k-1)
+            if (not self.population and self.n>1):   # Divide sum of squares by N-1 (sample variance).
+                stdev = self.M2/(self.n-1)
             else:                       # Divide sum of squares by N (population variance).
-                stdev = self.Q/self.k
+                stdev = self.M2/self.n
         except:
             stdev = 0.0
         
