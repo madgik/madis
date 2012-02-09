@@ -239,6 +239,7 @@ def register(connection=None):
                 in os.listdir(os.path.join(abspath , relativepath))
                 if file.endswith(".py") and not file.startswith("_") ]
 
+    ## Register main functions of madis (functions)
     rowfiles = findmodules(functionspath, 'row')
     aggrfiles = findmodules(functionspath, 'aggregate')
     vtabfiles = findmodules(functionspath, 'vtable')
@@ -259,7 +260,7 @@ def register(connection=None):
 
     register_ops(vtable,connection)
 
-    # Register madis local functions
+    ## Register madis local functions (functionslocal)
     functionslocalpath=os.path.abspath(os.path.join(functionspath,'..','functionslocal'))
 
     flrowfiles = findmodules(functionslocalpath, 'row')
@@ -281,7 +282,7 @@ def register(connection=None):
     if len(flvtabfiles)!=0:
         register_ops(localvtable,connection)
 
-    # Register db local functions
+    ## Register db local functions (functions in db path)
     if variables.execdb!=oldexecdb:
         oldexecdb=variables.execdb
         dbpath=None
