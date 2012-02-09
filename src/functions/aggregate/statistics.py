@@ -474,7 +474,6 @@ class stdev:
         except:
             stdev = 0.0
         
-        #Determine the measure of the dispersion of the data set based on the variance.
         return math.sqrt(stdev)
 
 
