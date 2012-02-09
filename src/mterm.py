@@ -81,7 +81,7 @@ def reloadfunctions():
     tmp_settings=functions.settings
     tmp_vars=functions.variables
     connection.close()
-    lib.reimport.reimport(functions)
+    lib.reimport.reimport(functions, 'functionslocal')
     connection = createConnection(db)
     functions.settings=tmp_settings
     functions.variables=tmp_vars
