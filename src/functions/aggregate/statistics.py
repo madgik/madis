@@ -354,9 +354,9 @@ class variance:
             return
         self.n+=1
         delta=x-self.mean
-        self.mean=self.mean + delta / self.n
+        self.mean += delta / self.n
         if self.n > 1:
-            self.M2=self.M2 + delta * (x - self.mean)
+            self.M2 += delta * (x - self.mean)
 
     def final(self):
         if self.n==0:
@@ -453,9 +453,9 @@ class stdev:
             return
         self.n+=1
         delta=x-self.mean
-        self.mean=self.mean + delta / self.n
+        self.mean += delta / self.n
         if self.n > 1:
-            self.M2=self.M2 + delta * (x - self.mean)
+            self.M2 += delta * (x - self.mean)
 
     def final(self):
         if self.n==0:
