@@ -225,15 +225,15 @@ def mcomplete(textin,state):
     prefix=''
 
     localtables=[]
-    completitions=[]
+    completions=[]
 
     linebuffer=readline.get_line_buffer()
 
     beforecompl= linebuffer[0:readline.get_begidx()]
 
-    # Only complete '.xxx' completitions when space chars exist before completition
+    # Only complete '.xxx' completions when space chars exist before completion
     if re.match(r'\s*$', beforecompl):
-        completitions+=dotcompletitions
+        completions+=dotcompletions
     # If at the start of the line, show all tables
     if beforecompl=='' and text=='':
         localtables=alltables[:]
@@ -243,24 +243,24 @@ def mcomplete(textin,state):
             prefcharset=set( (x[0] for x in localtables) )
             if len(prefcharset)==1:
                 localtables+=[' ']
-        completitions=localtables
-    # If completition starts at a string boundary, complete from local dir
+        completions=localtables
+    # If completion starts at a string boundary, complete from local dir
     elif beforecompl!='' and beforecompl[-1] in ("'", '"'):
-        completitions=os.listdir(os.getcwdu())
-        hits=[x for x in completitions if x[:len(text)]==unicode(text)]
+        completions=os.listdir(os.getcwdu())
+        hits=[x for x in completions if x[:len(text)]==unicode(text)]
         if state<len(hits):
             return hits[state]
         else: return
     # Detect if in simplified 'from' or .schema
     elif re.search(r'(?i)(from\s(?:\s*[\w\d._$]+(?:\s*,\s*))*(?:\s*[\w\d._$]+)?$)|(^\s*\.schema)|(^\s*\.t)|(^\s*\.tables)', beforecompl, re.DOTALL| re.UNICODE):
         localtables=alltablescompl[:]
-        completitions=localtables
+        completions=localtables
     else:
         localtables=alltablescompl[:]
-        completitions+=lastcols+colscompl
-        completitions+=sqlandmtermstatements+allfuncs+localtables
+        completions+=lastcols+colscompl
+        completions+=sqlandmtermstatements+allfuncs+localtables
 
-    hits= [x.lower() for x in completitions if x.lower()[:len(text)]==unicode(text.lower())]
+    hits= [x.lower() for x in completions if x.lower()[:len(text)]==unicode(text.lower())]
 
     update_cols_from_tables_in_text(linebuffer)
 
@@ -486,7 +486,7 @@ if len(sys.argv)>2:
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ', 'distinct']
-dotcompletitions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ']
+dotcompletions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ', '.vacuum', '.quit']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
