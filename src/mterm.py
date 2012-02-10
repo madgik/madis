@@ -328,6 +328,9 @@ def mcomplete(textin,state):
     else:
         return
 
+def buildrawprinter(separator):
+    return writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
+
 def schemaprint(cols):
     global pipedinput
 
@@ -413,6 +416,8 @@ helpmessage=""".functions             Lists all functions
 .t TABLE               Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers
+.separator SEP         Change separator to SEP. For tabs use 'tsv' or '\t' as SEP.
+                       Separator is used only when NOT using colnums.
 .vacuum                Vacuum DB using a temp file in current path
 
 Use: FILE or CLIPBOARD function for importing data
@@ -463,7 +468,7 @@ else:
     
 functions.variables.flowname='main'
 
-rawprinter=writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
+rawprinter=buildrawprinter(separator)
 
 if len(sys.argv)>2:
         
@@ -535,11 +540,16 @@ while True:
         origstatement=statement
         statement=None
 
-        if command=='mode' and argument=='csv':
+        if command=='separator':
+            tmpseparator=separator
             if argument=='csv':
                 separator = ","
-            elif argument=='tabs':
+            elif argument in ('tsv','\\t','\t'):
                 separator = "\t"
+            else:
+                separator = argument
+            if separator!=tmpseparator:
+                rawprinter=buildrawprinter(separator)
 
         elif command=='explain':
             statement=re.sub("^\s*\.explain\s+", "explain query plan ", origstatement)
@@ -552,7 +562,7 @@ while True:
             else:
                 printterm("Not quoting output, coloured columns")
                 colnums=True
-            rawprinter=writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
+            rawprinter=buildrawprinter(separator)
 
         elif command=='beep':
             beeping^=True
