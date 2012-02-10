@@ -165,6 +165,7 @@ import collections
 import htmlentitydefs
 import json
 import cStringIO as StringIO
+import StringIO as unicodeStringIO
 import re
 
 try:
@@ -439,7 +440,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 xpath=[]
                 capture=False
 
-                for ev, el in etree.iterparse(StringIO.StringIO(xp), ("start", "end")):
+                for ev, el in etree.iterparse(unicodeStringIO.StringIO(xp), ("start", "end")):
                     if ev=="start":
                         if self.subtreeroot==None:
                             self.subtreeroot=el.tag
