@@ -416,8 +416,8 @@ helpmessage=""".functions             Lists all functions
 .t TABLE               Browse table
 .explain               Explain query plan
 .colnums               Toggle showing column numbers
-.separator SEP         Change separator to SEP. For tabs use 'tsv' or '\\t' as SEP.
-                       Separator is used only when NOT using colnums.
+.separator SEP         Change separator to SEP. For tabs use 'tsv' or '\\t' as SEP
+                       Separator is used only when NOT using colnums
 .vacuum                Vacuum DB using a temp file in current path
 
 Use: FILE or CLIPBOARD function for importing data
