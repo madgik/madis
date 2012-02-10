@@ -146,17 +146,17 @@ Examples:
     <BLANKLINE>
 
     >>> table4('''
-    ... '<a><b>row1val1</b</a>'
     ... '<a><b>row1val1</b></a>'
+    ... '<a><b>row1val2</b</a>'
     ... '<a><b np="np">row1val1</b></a>'
-    ... '<a><b>row1val1</b></a>'
-    ... '<a><b>row1val1</b</a>'
+    ... '<a><b>row1val3/b></a>'
+    ... '<a><b>row1val4</b></a>'
     ... ''')
     >>> sql("select * from (xmlparse strict:-1 '<a><b>val1</b><c><d>val2</d></c></a>' select * from table4)")
     C1
     ----------------------
-    <a><b>row1val1</b</a>
-    <a><b>row1val1</b</a>
+    <a><b>row1val2</b</a>
+    <a><b>row1val3/b></a>
 
 """
 import vtiters
@@ -498,6 +498,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 else:
                     self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
                 self.foundentities=False
+                self.xmlwithnonewlines=False
+                self.replacexmlversion=re.compile(r'\<\?xml.+?\?>', re.DOTALL| re.UNICODE)
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
@@ -520,10 +522,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                 if rline!='':
                     if not (rline.startswith('<?xml version=') or rline.startswith('<!') or (rline.find('>')!=-1 and rline.find('<')==-1)):
-                        if self.foundentities:
-                            self.lastline=self.forcedroottag+self.lastline
-                        else:
-                            self.lastline=self.header+self.lastline
+                        if not self.xmlwithnonewlines:
+                            if self.foundentities:
+                                self.lastline=self.forcedroottag+self.lastline
+                            else:
+                                self.lastline=self.header+self.lastline
                         if self.fast:
                             if self.fast==2:
                                 self.read=self.readtailfast2
@@ -544,12 +547,18 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                 self.lastline=ll
                                 self.foundentities=True
                             else:
-                                self.lastline='\n'
+                                if self.lastline.startswith('<?xml'):
+                                    self.lastline=self.replacexmlversion.sub('',line)
+                                if self.lastline.strip()!='':
+                                    self.xmlwithnonewlines=True
+                                    self.lastline=self.forcedroottag+self.lastline
 
                 return self.lastline.encode('utf-8')
 
             def readtail(self, n):
                 line= self.qiter.next()[0].encode('utf-8')
+                if line.startswith('<?xml'):
+                    line=self.replacexmlversion.sub('',line)
                 if not line.endswith('\n'):
                     line+='\n'
                 self.lastline=line
