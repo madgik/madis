@@ -103,7 +103,7 @@ class oaiget(vtiters.StaticSchemaVT):
                     if lastResToken==None:
                         raise functions.OperatorError(__name__.rsplit('.')[-1], e)
                     else:
-                        raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'Last resumptionToken was:\n'+str(lastResToken))
+                        raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'To continue use:\nresumptionToken:'+str(lastResToken))
 
 
 def Source():
