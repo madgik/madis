@@ -497,15 +497,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.header=self.forcedroottag
                 else:
                     self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
-                self.foundentities=False
-                self.xmlwithnonewlines=False
                 self.replacexmlversion=re.compile(r'\<\?xml.+?\?>', re.DOTALL| re.UNICODE)
+                self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
 
             def restart(self):
-                self.foundentities=False
                 self.read=self.readstart
 
             def readstart(self, n):
@@ -518,40 +516,29 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         return i+'\n'
 
                 self.lastline= readline()
-                rline=self.lastline.strip()
+                line=self.lastline.strip()
+                longline=line
 
-                if rline!='':
-                    if not (rline.startswith('<?xml version=') or rline.startswith('<!') or (rline.find('>')!=-1 and rline.find('<')==-1)):
-                        if not self.xmlwithnonewlines:
-                            if self.foundentities:
-                                self.lastline=self.forcedroottag+self.lastline
-                            else:
-                                self.lastline=self.header+self.lastline
-                        if self.fast:
-                            if self.fast==2:
-                                self.read=self.readtailfast2
-                            else:
-                                self.read=self.readtailfast
-                            tmpline=self.lastline
-                            self.lastline='[In fast mode there is no lastline information available]'
-                            return tmpline.encode('utf-8')
-                        else:
-                            self.read=self.readtail
+                while not self.finddatatag.search(line):
+                    line=readline()
+                    longline+=line
+
+                if longline.find('<!E')!=-1:
+                    # If xml entities exist in header
+                    self.lastline=self.finddatatag.sub(self.forcedroottag+r'\1', longline, 1)
+                else:
+                    self.lastline=self.finddatatag.sub(self.header+r'\1', longline, 1)
+
+                if self.fast:
+                    if self.fast==2:
+                        self.read=self.readtailfast2
                     else:
-                            line=self.lastline
-                            ll=line
-                            while line.find('>')==-1 or line.strip()=='':
-                                line=readline()
-                                ll+= line
-                            if self.foundentities or ll.find('<!E')!=-1:
-                                self.lastline=ll
-                                self.foundentities=True
-                            else:
-                                if self.lastline.startswith('<?xml'):
-                                    self.lastline=self.replacexmlversion.sub('',line)
-                                if self.lastline.strip()!='':
-                                    self.xmlwithnonewlines=True
-                                    self.lastline=self.forcedroottag+self.lastline
+                        self.read=self.readtailfast
+                    tmpline=self.lastline
+                    self.lastline='[In fast mode there is no lastline information available]'
+                    return tmpline.encode('utf-8')
+                else:
+                    self.read=self.readtail
 
                 return self.lastline.encode('utf-8')
 
