@@ -499,6 +499,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
                 self.replacexmlversion=re.compile(r'\<\?xml.+?\?>', re.DOTALL| re.UNICODE)
                 self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
+                self.deldoctype=re.compile(r'\<!DOCTYPE[^>]+?\>')
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
@@ -527,6 +528,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     # If xml entities exist in header
                     self.lastline=self.finddatatag.sub(self.forcedroottag+r'\1', longline, 1)
                 else:
+                    longline=self.deldoctype.sub('',longline)
                     self.lastline=self.finddatatag.sub(self.header+r'\1', longline, 1)
 
                 if self.fast:
