@@ -497,9 +497,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     self.header=self.forcedroottag
                 else:
                     self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
-                self.replacexmlversion=re.compile(r'\<\?xml.+?\?>', re.DOTALL| re.UNICODE)
+                self.replacexmlheaders=re.compile(r'\<\?xml.+?(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
-                self.deldoctype=re.compile(r'\<!DOCTYPE[^>]+?\>')
+                self.deldoctype=re.compile(r'\<!DOCTYPE[^>]+?\>', re.DOTALL| re.UNICODE)
 
             def unescape(self, text):
                 return self.unescapere.sub(self.fixup, text)
@@ -546,8 +546,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
             def readtail(self, n):
                 line= self.qiter.next()[0].encode('utf-8')
-                if line.startswith('<?xml'):
-                    line=self.replacexmlversion.sub('',line)
+                if line.startswith('<?'):
+                    if line.startswith('<?xml'):
+                        longline=line
+                        while not self.finddatatag.search(line):
+                            line= self.qiter.next()[0].encode('utf-8')
+                            longline+=line
+                        line=self.replacexmlheaders.sub(r'\1',longline,1)
                 if not line.endswith('\n'):
                     line+='\n'
                 self.lastline=line
