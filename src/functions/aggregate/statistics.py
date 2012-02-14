@@ -5,6 +5,7 @@ from lib import iso8601
 import re
 import datetime
 from lib.buffer import CompBuffer
+from fractions import Fraction
 
 
 __docformat__ = 'reStructuredText en'
@@ -323,8 +324,8 @@ class variance:
         self.init=True
         self.population=False
         self.n=0
-        self.mean=0.0
-        self.M2=0.0
+        self.mean=Fraction(0.0)
+        self.M2=Fraction(0.0)
 
     def initargs(self, args):
         self.init=False
@@ -349,7 +350,7 @@ class variance:
             self.initargs(args)
 
         try:
-            x=float(args[0])
+            x=Fraction(args[0])
         except:
             return
         self.n+=1
@@ -422,8 +423,8 @@ class stdev:
         self.init=True
         self.population=False
         self.n=0
-        self.mean=0.0
-        self.M2=0.0
+        self.mean=Fraction(0.0)
+        self.M2=Fraction(0.0)
 
     def initargs(self, args):
         self.init=False
@@ -448,7 +449,7 @@ class stdev:
             self.initargs(args)
         
         try:
-            x=float(args[0])
+            x=Fraction(args[0])
         except:
             return
         self.n+=1
