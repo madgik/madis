@@ -598,6 +598,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 resetrow=self.rowobj.resetrow
                 if self.subtreeroot==None:
                     lmatchtag=lambda x,y:True
+                    capture=True
                 else:
                     lmatchtag=matchtag
                 try:
@@ -621,10 +622,13 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                         addtorow(xpath, eltext)
                                 if lmatchtag(el.tag, self.subtreeroot):
                                     root.clear()
-                                    if self.subtreeroot!=None:
+                                    if self.subtreeroot==None:
+                                        if self.strict>=0 and len(self.rowobj.rowdata)!=0:
+                                            yield self.rowobj.row
+                                    else:
                                         capture=False
-                                    if self.strict>=0:
-                                        yield self.rowobj.row
+                                        if self.strict>=0:
+                                            yield self.rowobj.row
                                     resetrow()
 
                                 if len(xpath)>0:
