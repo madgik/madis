@@ -895,34 +895,31 @@ class pearson:
     sum_y=0
 
     def __init__(self):
-        self.a = []
-        self.b = []
+        self.sX=Fraction(0)
+        self.sX2=Fraction(0)
+        self.sY=Fraction(0)
+        self.sY2=Fraction(0)
+        self.sXY=Fraction(0)
+        self.n=0
 
     def step(self,*args):
-        x, y = [float(i) for i in args[:2]]
-        self.sum_x+=x
-        self.sum_y+=y
-        self.a+=[float(x)]
-        self.b+=[float(y)]
+        try:
+            x, y = [Fraction(i) for i in args[:2]]
+        except:
+            return
+        self.n+=1
+        self.sX+=x
+        self.sY+=y
+        self.sX2+=x*x
+        self.sY2+=y*y
+        self.sXY+=x*y
 
     def final(self):
-        sum_XX=0
-        sum_YY=0
-        sum_XY=0
-        n=len(self.a)
-        p=self.sum_x/n    #mean of x
-        q=self.sum_y/n    #mean of y
+        if self.n==0:
+            return None
 
-        for i in range(n):
-            X=self.a[i]-p
-            Y=self.b[i]-q
-            XX=math.pow(X,2)
-            YY=math.pow(Y,2)
-            sum_XX+=XX
-            sum_YY+=YY
-            XY=X*Y
-            sum_XY+=XY
-        return sum_XY/(math.sqrt(sum_XX*sum_YY))
+        return (self.n*self.sXY-self.sX*self.sY)/     \
+   (math.sqrt(self.n*self.sX2-self.sX*self.sX)*math.sqrt(self.n*self.sY2-self.sY*self.sY))
 
 
 if not ('.' in __name__):
