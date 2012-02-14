@@ -370,7 +370,7 @@ class variance:
         except:
             variance = 0.0
 
-        return variance
+        return float(variance)
         
 
 class stdev:
