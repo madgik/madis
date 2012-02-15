@@ -37,7 +37,7 @@ class peekable(object):
 
     def peek(self):
         tmp=self._iter.next()
-        self._iter=itertools.chain([tmp], self._iter)
+        self._iter=itertools.chain([tmp], self._srciter)
         self.next=self._iter.next
         return tmp
 
