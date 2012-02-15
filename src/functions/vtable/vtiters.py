@@ -52,8 +52,6 @@ class SchemaFromArgsVT(SimpleVT):
     def getschema(self,args):
         raise NotImplementedError
 
-
-
 FuncTypes={
 'static':1,
 'dynamic':2,
