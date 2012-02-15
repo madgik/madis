@@ -30,16 +30,15 @@ class peekable(object):
     def __init__(self, iterable):
         self._srciter = iter(iterable)
         self._iter = self._srciter
+        self.next=self._iter.next
 
     def __iter__(self):
         return self
 
-    def next(self):
-        return self._iter.next()
-
     def peek(self):
         tmp=self._iter.next()
         self._iter=itertools.chain([tmp], self._iter)
+        self.next=self._iter.next
         return tmp
 
 if not ('.' in __name__):
