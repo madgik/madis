@@ -15,8 +15,6 @@ from vtiterable import SourceVT
 import functions
 import struct
 import cPickle
-from lib.iterutils import peekable
-
 
 def deserialize(fileiter,hasnums):
     if not hasnums:
