@@ -490,7 +490,7 @@ if len(sys.argv)>2:
     sys.exit()
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
-    "attach database '", 'detach database ', 'distinct']
+    "attach database '", 'detach database ', 'distinct', 'exists ']
 dotcompletions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ', '.vacuum', '.quit']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
