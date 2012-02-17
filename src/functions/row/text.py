@@ -301,19 +301,10 @@ def utf8clean(*args):
     Ã©vezred
     """
 
-    def cleanchar(c):
-        try:
-            if unicodedata.category(c)[0]=='C':
-                return ''
-            else:
-                return c
-        except:
-            return ''
-
     o=''
     for i in args:
         if type(i) in (str,unicode):
-            o+=u''.join([cleanchar(c) for c in i])
+            o+=u''.join([c if unicodedata.category(c)[0]!='C' else '' for c in i])
         else:
             o+=unicode(append(i))
 
