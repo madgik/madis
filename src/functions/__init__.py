@@ -48,22 +48,19 @@ rowfuncs=lambda x:x
 oldexecdb=-1
 
 def mstr(s):
-    strs=''
-    unis=''
+    if s==None:
+        return None
+    res=None
     try:
-        strs=str(s)
+        res=unicode(s)
     except:
-        pass
-    try:
-        unis=unicode(s)
-    except:
-        pass
-    fs=''
-    if unis=='' and strs!='':
-        fs=strs
-    else:
-        fs=unis
-    o=repr(fs)
+        try:
+            res=str(s)
+        except:
+            pass
+    if res!=None:
+        return res
+    o=repr(res)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
     elif (o[0]=="'" and o[-1]=="'") or (o[0]=='"' and o[-1]=='"'):
