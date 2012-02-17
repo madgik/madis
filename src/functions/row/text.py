@@ -302,10 +302,13 @@ def utf8clean(*args):
     """
 
     def cleanchar(c):
-        if unicodedata.category(c)[0]=='C':
+        try:
+            if unicodedata.category(c)[0]=='C':
+                return ''
+            else:
+                return c
+        except:
             return ''
-        else:
-            return c
 
     o=''
     for i in args:
