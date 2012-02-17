@@ -54,10 +54,7 @@ def mstr(s):
     try:
         res=unicode(s)
     except:
-        try:
-            res=str(s)
-        except:
-            pass
+        pass
     if res!=None:
         return res
     o=repr(s)
