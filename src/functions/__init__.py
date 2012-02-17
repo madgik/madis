@@ -60,7 +60,7 @@ def mstr(s):
             pass
     if res!=None:
         return res
-    o=repr(res)
+    o=repr(s)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
     elif (o[0]=="'" and o[-1]=="'") or (o[0]=='"' and o[-1]=='"'):
