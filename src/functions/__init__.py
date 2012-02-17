@@ -51,7 +51,7 @@ def mstr(s):
     if s==None:
         return None
     try:
-        return unicode(s)
+        return unicode(s, 'utf-8', errors='replace')
     except:
         pass
     o=repr(s)
