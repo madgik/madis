@@ -277,6 +277,8 @@ def isvalidutf8(*args):
 isvalidutf8.registered=True
 
 
+characters_to_clean=re.compile(ur"""[^·∆(́−·¨¬…‐"•΄€„”“‘’´«»’ʹ–\w\[!-~\]]""", re.UNICODE)
+
 def utf8clean(*args):
 
     """
@@ -301,10 +303,17 @@ def utf8clean(*args):
     Ã©vezred
     """
 
+    def cleanchar(c):
+        c=c.group()[0]
+        if unicodedata.category(c)[0]=='C':
+            return u''
+        else:
+            return c
+
     o=''
     for i in args:
         if type(i) in (str,unicode):
-            o+=u''.join([c if unicodedata.category(c)[0]!='C' else '' for c in i])
+            o+=characters_to_clean.sub(cleanchar, i)
         else:
             o+=unicode(append(i))
 
