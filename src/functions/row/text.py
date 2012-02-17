@@ -238,11 +238,7 @@ def comprspaces(*args):
 comprspaces.registered=True
 
 
-# Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
-# like below. If you want to embed the UNICODE directive inside the
-# regular expression use:
-# (?u) like re.sub(ur'(?u)[\W\d]', ' ', o)
-query_regular_characters=re.compile(ur"""^[("„”“‘’´«»’ʹ–\w\s\[!-~\]]*$""", re.UNICODE)
+query_regular_characters=re.compile(ur"""^[·∆©(́−·¨¬…‐"•΄€„”“‘’´«»’ʹ–\w\s\[!-~\]]*$""", re.UNICODE)
 
 def isvalidutf8(*args):
 
@@ -266,8 +262,8 @@ def isvalidutf8(*args):
     --------------
     1
     1
-    0
-    0
+    1
+    1
     """
 
     for i in args:
@@ -279,6 +275,48 @@ def isvalidutf8(*args):
     return 1
 
 isvalidutf8.registered=True
+
+
+def utf8clean(*args):
+
+    """
+    .. function:: utf8clean(text) -> text
+
+    Removes control characters from input utf-8 text.
+
+    Examples:
+
+    >>> table1('''
+    ... test
+    ... δοκιμή!
+    ... sÃ©vignÃ
+    ... Ã©vezred
+    ... ''')
+    >>> sql("select utf8clean(a) from table1")
+    utf8clean(a)
+    -------------
+    test
+    δοκιμή!
+    sÃ©vignÃ
+    Ã©vezred
+    """
+
+    def cleanchar(c):
+        if unicodedata.category(c)[0]=='C':
+            return ''
+        else:
+            return c
+
+    o=''
+    for i in args:
+        if type(i) in (str,unicode):
+            o+=u''.join([cleanchar(c) for c in i])
+        else:
+            o+=unicode(append(i))
+
+    return o
+
+utf8clean.registered=True
 
 def regexpr(*args):
 
