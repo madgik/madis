@@ -622,7 +622,7 @@ while True:
                 for i in functions.functions:
                     if argument in functions.functions[i]:
                         printterm("Function "+ argument + ":")
-                        printterm(functions.functions[i][argument].__doc__)
+                        printterm(functions.mstr(functions.functions[i][argument].__doc__))
 
         elif command=="autoreload":
             automatic_reload=automatic_reload ^ True
