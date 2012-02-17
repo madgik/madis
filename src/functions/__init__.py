@@ -50,13 +50,10 @@ oldexecdb=-1
 def mstr(s):
     if s==None:
         return None
-    res=None
     try:
-        res=unicode(s)
+        return unicode(s)
     except:
         pass
-    if res!=None:
-        return res
     o=repr(s)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
