@@ -1,5 +1,6 @@
 # coding: utf-8
 from gzip import zlib
+import subprocess
 
 def gz(*args):
 
@@ -59,6 +60,43 @@ def ungz(*args):
         return args[0]
 
 ungz.registered=True
+
+def execprogram(*args):
+    """
+    .. function:: execprogram(stdin, command, parameters) -> text
+
+    Function *ungz* decompresses gzip blobs. If the input blobs aren't gzip
+    compressed, then it just returns them as they are.
+
+    Examples:
+
+    >>> table1('''
+    ... echo    test
+    ... exit    1
+    ... ''')
+    >>> sql("select execprogram(null, a, b) from table1")
+    execprogram(null, a, b)
+    -----------------------
+    test
+    test1
+
+    """
+
+    if len(args)<2:
+        raise functions.OperatorError('execprogram', "First parameter should be data to provide to program's STDIN, or null")
+
+    if args[0]==None:
+
+#        try:
+#        val=unicode(subprocess.check_output(args[1:]), 'utf-8', errors='replace')
+        val=subprocess.check_output([unicode(x) for x in args[1:]])
+#        except:
+#            return None
+
+        return val
+
+execprogram.registered=False
+
 
 if not ('.' in __name__):
     """
