@@ -129,7 +129,7 @@ import urlparse
 import functions
 from lib.iterutils import peekable
 from lib.ziputils import ZipIter
-
+import codecs
 
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
@@ -145,10 +145,6 @@ def nullify(iterlist):
             else:
                 nlst+=[el]
         yield nlst
-
-def directfile(f, encoding='utf-8'):
-    for line in f:
-        yield (unicode(line.rstrip("\n"), encoding), )
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
@@ -169,7 +165,7 @@ class FileCursor:
                 self.fileiter=ZipIter(filename,"r")
             elif not isurl:
                 pathname=filename.strip()
-                self.fileiter=open(filename)
+                self.fileiter=codecs.open(filename, encoding = self.encoding)
             else:
                 pathname=urlparse.urlparse(filename)[2]
                 req=urllib2.Request(filename,None,extraurlheaders)
@@ -186,11 +182,9 @@ class FileCursor:
 
             if gzipcompressed:
                 self.fileiter=gzip.GzipFile(fileobj=self.fileiter)
-            else:
-                self.fileiter=self.fileiter
+
         except Exception,e:
             raise functions.OperatorError(__name__.rsplit('.')[-1],e)
-
 
         if filename.endswith('.csv'):
             rest['dialect']=lib.inoutparsing.defaultcsv()
@@ -215,16 +209,16 @@ class FileCursor:
                     for i in xrange(1,len(sample)+1):
                         namelist.append("C"+str(i))
         else: #### Default read lines
-            self.iter=directfile(self.fileiter, encoding=self.encoding)
+            self.iter=self.fileiter
             namelist.append("C1")
             
     def __iter__(self):
         return self
     def next(self):
         try:
-            return self.iter.next()
-        except UnicodeDecodeError:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"File is not %s encoded" %(self.encoding))
+            return (self.iter.next(),)
+        except UnicodeDecodeError, e:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not %s encoded" %(self.encoding))
     def close(self):
         self.fileiter.close()
         
