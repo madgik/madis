@@ -277,7 +277,7 @@ def isvalidutf8(*args):
 isvalidutf8.registered=True
 
 
-characters_to_clean=re.compile(ur"""[^·∆(́−·¨¬…‐"•΄€„”“‘’´«»’ʹ–\w\[!-~\]]""", re.UNICODE)
+characters_to_clean=re.compile(ur"""[^\w!-~]""", re.UNICODE)
 
 def utf8clean(*args):
 
