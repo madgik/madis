@@ -34,7 +34,6 @@ def ifthenelse(*args):
         return args[1]
     else:
         if len(args)>2:
-            #print "Length is:%s Returning val %s" %(len(args),args[2])
             return args[2]
         return None
 
