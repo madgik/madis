@@ -110,6 +110,15 @@ def execprogram(*args):
 
     Function *execprogram* executes a shell command and returns its output. If the
     value of the first parameter is not *null*, it will be provided in program's Standard Input.
+    If the program doesn't return a *0* return code, then a madIS error will be raised, containing
+    the contents of the program's error stream.
+
+    Every one of the program's parameters must be provided as different parameters of the *execprogram* call
+    (see "cat -n" example below.
+
+.. note::
+    Function *execprogram* tries by default to convert the program's output to UTF-8. If the conversion
+    isn't succesfull, then it returns the output as a blob.
 
     Examples:
 
@@ -155,7 +164,7 @@ def execprogram(*args):
     except Exception,e:
         raise functions.OperatorError('execprogram', functions.mstr(e))
 
-    if len(outtext)==0 and p.returncode!=0:
+    if p.returncode!=0:
         raise functions.OperatorError('execprogram', functions.mstr(errtext))
 
     try:
