@@ -377,7 +377,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             opts=self.full_parse(parsedArgs)
 
             if 'root' in opts[1]:
-                self.subtreeroot=opts[1]['root']
+                self.subtreeroot=opts[1]['root'].lower()
 
             if 'namespace' in opts[1] or 'ns' in opts[1]:
                 self.namespace=True
@@ -446,7 +446,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             self.subtreeroot=el.tag
                         if capture:
                             xpath.append(el.tag)
-                        if matchtag(el.tag, self.subtreeroot) and not capture:
+                        if matchtag(el.tag.lower(), self.subtreeroot) and not capture:
                             capture=True
                         if capture and el.attrib!={}:
                             for k in el.attrib:
@@ -460,7 +460,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                             else:
                                 s.addtoschema(xpath)
                         if ev=="end":
-                            if el.tag==self.subtreeroot:
+                            if el.tag.lower()==self.subtreeroot:
                                 capture=False
                             if len(xpath)>0:
                                 xpath.pop()
@@ -610,7 +610,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                 addtorowall(xpath, '', el)
                                 xpath.append(el.tag.lower())
                             else:
-                                capture=lmatchtag(el.tag, self.subtreeroot)
+                                capture=lmatchtag(el.tag.lower(), self.subtreeroot)
                             if el.attrib!={} and capture:
                                 for k,v in el.attrib.iteritems():
                                     addtorow(xpath+[attribguard, k.lower()], v)
@@ -620,7 +620,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                                     eltext=el.text.strip()
                                     if eltext!='':
                                         addtorow(xpath, eltext)
-                                if lmatchtag(el.tag, self.subtreeroot):
+                                if lmatchtag(el.tag.lower(), self.subtreeroot):
                                     root.clear()
                                     if self.subtreeroot==None:
                                         if self.strict>=0 and len(self.rowobj.rowdata)!=0:
