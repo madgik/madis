@@ -106,19 +106,22 @@ failif.registered=True
 
 def execprogram(*args):
     """
-    .. function:: execprogram(stdin=None, program_name, parameters) -> text or blob
+    .. function:: execprogram(stdin=null, program_name, parameters, [raise_error]) -> text or blob
 
     Function *execprogram* executes a shell command and returns its output. If the
-    value of the first parameter is not *null*, it will be provided in program's Standard Input.
+    value of the first argument is not *null*, it will be provided in program's Standard Input.
     If the program doesn't return a *0* return code, then a madIS error will be raised, containing
     the contents of the program's error stream.
 
-    Every one of the program's parameters must be provided as different parameters of the *execprogram* call
-    (see "cat -n" example below.
+    If the last argument of *execprogram* is set to *null*, then all program errors will be returned as *null*
+    (see "cat non_existent_file" examples below).
+
+    Every one of the program's parameters must be provided as different arguments of the *execprogram* call
+    (see "cat -n" example below).
 
 .. note::
     Function *execprogram* tries by default to convert the program's output to UTF-8. If the conversion
-    isn't succesfull, then it returns the output as a blob.
+    isn't succesfull, then it returns the output as a binary blob.
 
     Examples:
 
@@ -147,6 +150,17 @@ def execprogram(*args):
     ...
     OperatorError: Madis SQLError:
     Operator EXECPROGRAM: OSError(2, 'No such file or directory')
+
+    >>> sql("select execprogram(null, 'cat', 'non_existent_file')") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator EXECPROGRAM: cat: non_existent_file: No such file or directory
+
+    >>> sql("select execprogram(null, 'cat', 'non_existent_file', null)") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    execprogram(null, 'cat', 'non_existent_file', null)
+    ---------------------------------------------------
+    None
     """
 
     if len(args)<2:
@@ -165,7 +179,10 @@ def execprogram(*args):
         raise functions.OperatorError('execprogram', functions.mstr(e))
 
     if p.returncode!=0:
-        raise functions.OperatorError('execprogram', functions.mstr(errtext))
+        if args[-1]==None:
+            return None
+        else:
+            raise functions.OperatorError('execprogram', functions.mstr(errtext).strip())
 
     try:
         outtext=unicode(outtext, 'utf-8')
