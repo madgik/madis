@@ -168,7 +168,7 @@ def execprogram(*args):
 
     outtext=errtext=''
     try:
-        p=subprocess.Popen([unicode(x) for x in args[1:]], stdin=subprocess.PIPE if args[0]!=None else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p=subprocess.Popen([unicode(x) for x in args[1:] if x!=None], stdin=subprocess.PIPE if args[0]!=None else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if args[0]==None:
             outtext, errtext=p.communicate()
         else:
