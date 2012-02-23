@@ -135,6 +135,17 @@ def execprogram(*args):
     test
     1
 
+    >>> sql("select execprogram(null, null, '-l')") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator EXECPROGRAM: Second parameter should be the name of the program to run
+
+    >>> sql("select execprogram(null, null, '-l', null)") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    execprogram(null, null, '-l', null)
+    -----------------------------------
+    None
+
     >>> sql("select execprogram('test', 'cat')")
     execprogram('test', 'cat')
     --------------------------
@@ -166,6 +177,16 @@ def execprogram(*args):
     if len(args)<2:
         raise functions.OperatorError('execprogram', "First parameter should be data to provide to program's STDIN, or null")
 
+    raise_error=False
+    if len(args)>2 and args[-1]==None:
+        raise_error=True
+
+    if args[1]==None:
+        if raise_error:
+            return None
+        else:
+            raise functions.OperatorError('execprogram', "Second parameter should be the name of the program to run")
+
     outtext=errtext=''
     try:
         p=subprocess.Popen([unicode(x) for x in args[1:] if x!=None], stdin=subprocess.PIPE if args[0]!=None else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -179,7 +200,7 @@ def execprogram(*args):
         raise functions.OperatorError('execprogram', functions.mstr(e))
 
     if p.returncode!=0:
-        if args[-1]==None:
+        if raise_error:
             return None
         else:
             raise functions.OperatorError('execprogram', functions.mstr(errtext).strip())
