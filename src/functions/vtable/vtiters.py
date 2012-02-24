@@ -18,15 +18,6 @@ import apsw
 from lib import argsparse ,schemaUtils
 from lib.iterutils import peekable
 
-
-#'getschema':{'type':'STATIC','func':func}
-#'getschema':{'type':'SAMPLE','func':func}
-#'getschema':{'type':'DYNAMIC','func':func}
-
-#SourceVT(parsefunction=default,iteratorfunc=xxx,getschemasettings=xxxx)
-
-
-###staticSchema?????
 class SimpleVT():
     def parse(self,*args):
         return args
@@ -38,7 +29,6 @@ class SimpleVT():
         pass
     def destroy(self):
         pass
-
 
 class SchemaFromSampleVT(SimpleVT):
     def getschema(self,samplerow):
