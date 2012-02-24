@@ -14,19 +14,20 @@ Examples::
 
 .. doctest::
 
-    >>> sql("pipe wc testing/colpref.csv")
-    output
-    ----------------------------------------
-      6495   7576 172060 testing/colpref.csv
+    >>> sql("pipe wc ./testing/colpref.csv")
+    C1
+    ---------------------------------
+     19  20 463 ./testing/colpref.csv
     <BLANKLINE>
 
 .. doctest::
     :hide:
     
-    >>> sql("pipe wc nonexistingfile")
+    >>> sql("pipe wc nonexistingfile") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator pipe: Command 'wc nonexistingfile' failed to execute because:
+    OperatorError: Madis SQLError:
+    Operator PIPE: Command 'wc nonexistingfile' failed to execute because:
     wc: nonexistingfile: No such file or directory
 """
 
@@ -65,7 +66,7 @@ class PipeVT:
         self.largs=largs
         self.envdict=envdict
         self.dictargs=dictargs
-        self.names=['output']
+        self.names=['C1']
         self.linesplit=True
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1]," needs command argument ")
