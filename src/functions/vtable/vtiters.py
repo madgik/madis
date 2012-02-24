@@ -69,7 +69,6 @@ def getTypeOfInstance(cls):
             except Exception:
                 return None
 
-
 # Decorator to extended a function by calling first another function with no arguments
 def echocall(func):
     def wrapper(*args, **kw):
@@ -82,7 +81,6 @@ def echocall(func):
 #            aftermsg="Table %s:After Calling %s.%s(%s)" %(Extra,obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
         return func(*args, **kw)
     return wrapper
-
 
 autostring='automatic_vtable:1'
 
@@ -199,8 +197,6 @@ class LTable: ####Init means setschema and execstatus
         del self.tblist[self.envars['tablename']]
         if self.tableObj.__class__.__dict__.has_key('destroy'):
             self.tableObj.destroy()
-
-
 
 # Represents a cursor
 class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... if has close
