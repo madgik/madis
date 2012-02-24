@@ -41,10 +41,7 @@ class examplevt(vtiters.StaticSchemaVT):
         return [('varname', 'text'), ('value', 'text')]
 
     def open(self, *parsedArgs, **envars):
-        i=0
-        for x in parsedArgs:
-            i=i+1
-            yield ['parsedarg'+str(i), str(x)]
+        yield ["parsedargs", unicode(parsedArgs)]
 
         for x,y in envars.iteritems():
             yield ["envar:"+x, str(y)]
