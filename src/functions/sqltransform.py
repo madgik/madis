@@ -138,9 +138,13 @@ class Transclass:
             strt=unicode(t).lower()
             if strt in self.vtables:
                 #print "FOUND INVERSION:", strt, fs
+                tindex=fs.index(t)
+                # Break if '.' exists before vtable
+                if tindex>0 and unicode(fs[tindex-1])=='.':
+                    break
                 op_for_inv=strt
                 try:
-                    rest=''.join([unicode(x) for x in fs[fs.index(t)+1:]])
+                    rest=''.join([unicode(x) for x in fs[tindex+1:]])
                 except:
                     rest=''
                 params, preposition, subq= break_inversion_subquery.match(rest).groups()
@@ -384,6 +388,9 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"select sesid, query from tac group by sesid having keywords('query')='lala' union select * from file('lala')"]
     sql+=[r"select * from (select 5 as a) where a=4 or (a=5 and a not in (select 3));"]
     sql+=[r"select * from a where ((a.r in (select c1 from f)));"]
+    sql+=[r"select upper(a.output) from a"]
+    sql+=[r"select upper(execute) from a"]
+    sql+=[r"exec select a.5 from (flow file 'lala')"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
