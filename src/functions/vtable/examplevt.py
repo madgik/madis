@@ -46,10 +46,8 @@ class examplevt(vtiters.StaticSchemaVT):
         for x,y in envars.iteritems():
             yield ["envar:"+x, str(y)]
 
-
 def Source():
     return vtiters.SourceCachefreeVT(examplevt)
-
 
 if not ('.' in __name__):
     """
