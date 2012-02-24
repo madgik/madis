@@ -216,7 +216,7 @@ class Cursor:
         self.eof=True
         self.pos=0
         
-    @echocall
+    @echocall #-- Commented out for speed reasons
     def Filter(self, indexnum, indexname, constraintargs):
         self.eof=False
         constraints,orderbys=self.table.consdict[indexname]
@@ -237,19 +237,19 @@ class Cursor:
         except:
             self.eof=True
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Eof(self):
         return self.eof
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Rowid(self):
         return self.pos
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Column(self, col):
         return self.row[col]
 
-    @echocall
+#    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
             self.row=self.resultrows.next()
