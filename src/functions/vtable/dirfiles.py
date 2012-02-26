@@ -1,8 +1,17 @@
 """
-.. function:: dirfiles()
+.. function:: dirfiles([rec:1], directory_name) -> path_filename, filename
+
+Returns the files name in a given directory. With the option 'rec:1' it returns
+the files under the provided directory and all its subdirectories.
+
+This function is very usefull when used with the *execprogram* function to execute
+an external command for every filename.
+
+.. note::
+    *Dirfiles* does not follow links.
 
 :Returned table schema:
-    Column C1 is absolute pathname
+    Column C1 is the full filename (path/filename)
     Column C2 is filename
 
 Examples:
@@ -12,6 +21,15 @@ Examples:
     -------
     file.py
     flow.py
+
+    >>> sql("select c2 from dirfiles(rec:1 '.') where c2 like 'c%.py'")    # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    c2
+    ------------
+    coltypes.py
+    clipout.py
+    cache.py
+    continue.py
+    clipboard.py
 
 """
 import os.path
@@ -63,7 +81,13 @@ class dirfiles(vtiters.StaticSchemaVT):
             for f in os.listdir(dirname):
                 fullpathf=expandedpath(f)
                 if os.path.isfile(fullpathf):
-                    yield (expandedpath(f), f)
+                    yield (fullpathf, f)
+        else:
+            for root, dirs, files in os.walk(dirname):
+                for f in files:
+                    fullpathf=expandedpath(os.path.join(root, f))
+                    if os.path.isfile(fullpathf):
+                        yield (fullpathf, f)
 
 def Source():
     return vtiters.SourceCachefreeVT(dirfiles)
