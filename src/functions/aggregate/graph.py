@@ -1,6 +1,5 @@
 __docformat__ = 'reStructuredText en'
 
-import lib.jopts as jopts
 import math
 import json
 from hashlib import md5
