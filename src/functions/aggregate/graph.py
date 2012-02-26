@@ -3,6 +3,7 @@ __docformat__ = 'reStructuredText en'
 import math
 import json
 from hashlib import md5
+from binascii import b2a_hqx
 
 def hashlist(t):
     return md5(chr(30).join(unicode(x) for x in t)).digest()
@@ -22,8 +23,8 @@ class graphpowerhash:
     ... ''')
     >>> sql("select graphpowerhash(null, a,b) from table1")
     graphpowerhash(null, a,b)
-    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    ["461b9cab7c9eb7f2447197046b9f8411","5e826a28aeeed67c88abe22e2281be77","6ad8822a3138898ece6d4915b0a1a4d3","92a94668fb647318476eec6b35e72ded","eeeb2d3b94154ee185c7e899e153c432"]
+    ------------------------------------------------------------------------------------------------------------------------------
+    [",m6pFc4eEFE+SDG++9fb``","1C&%ibj3lPB)E[GiaM3eK!","VMIk)Jmf)S&a2CN5EB3VTJ","e!Fr9@M![!!238r0rV#1iJ","if-#Cqpj,ebY3H'l'r9Fb3"]
 
     >>> table2('''
     ... 2   5
@@ -34,8 +35,8 @@ class graphpowerhash:
     ... ''')
     >>> sql("select graphpowerhash(null, a,b) from table2")
     graphpowerhash(null, a,b)
-    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    ["461b9cab7c9eb7f2447197046b9f8411","5e826a28aeeed67c88abe22e2281be77","6ad8822a3138898ece6d4915b0a1a4d3","92a94668fb647318476eec6b35e72ded","eeeb2d3b94154ee185c7e899e153c432"]
+    ------------------------------------------------------------------------------------------------------------------------------
+    [",m6pFc4eEFE+SDG++9fb``","1C&%ibj3lPB)E[GiaM3eK!","VMIk)Jmf)S&a2CN5EB3VTJ","e!Fr9@M![!!238r0rV#1iJ","if-#Cqpj,ebY3H'l'r9Fb3"]
     
     >>> table3('''
     ... 2   5
@@ -46,8 +47,8 @@ class graphpowerhash:
     ... ''')
     >>> sql("select graphpowerhash(null, a,b) from table3")
     graphpowerhash(null, a,b)
-    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    ["213a1fd70e934d1924cdc885037393cc","213a1fd70e934d1924cdc885037393cc","213a1fd70e934d1924cdc885037393cc","213a1fd70e934d1924cdc885037393cc","213a1fd70e934d1924cdc885037393cc"]
+    ------------------------------------------------------------------------------------------------------------------------------
+    ["fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ"]
 
     >>> sql("select hashmd5( (select graphpowerhash(null, a,b) from table1) )=hashmd5( (select graphpowerhash(null, a,b) from table2) ) as grapheq")
     grapheq
@@ -82,14 +83,14 @@ class graphpowerhash:
 
         if directed:
             if argslen>4:
-                edgedetailslr='1'+chr(30)+unicode(args[4])
-                edgedetailsrl='0'+chr(30)+unicode(args[4])
+                edgedetailslr='1'+chr(30)+str(args[4])
+                edgedetailsrl='0'+chr(30)+str(args[4])
             else:
                 edgedetailslr='1'
                 edgedetailsrl='0'
         else:
             if argslen>4:
-                edgedetailslr='1'+ chr(30)+unicode(args[4])
+                edgedetailslr='1'+ chr(30)+str(args[4])
                 edgedetailsrl=edgedetailslr
             else:
                 edgedetailslr='1'
@@ -97,24 +98,24 @@ class graphpowerhash:
 
         if args[1] not in self.nodes:
             if argslen>3:
-                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , args[3]]
+                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , str(args[3])]
             else:
-                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , u'']
+                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , '']
         else:
             self.nodes[args[1]][0].append( ( args[2],edgedetailslr ) )
 
 
         if args[2] not in self.nodes:
             if argslen>5:
-                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )], args[5]]
+                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )], str(args[5])]
             else:
-                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )] , u'']
+                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )] , '']
         else:
             self.nodes[args[2]][0].append( ( args[1],edgedetailsrl ) )
 
     def final(self):
         if self.steps==None:
-            self.steps=int(math.sqrt(len(self.nodes)))
+            self.steps=1+len(self.nodes)/2
 
         if self.steps==-1:
             self.steps=len(self.nodes)
@@ -124,15 +125,15 @@ class graphpowerhash:
         nhashes={}
 
         for n,v in self.nodes.iteritems():
-            nhashes[n]=md5(v[1]).hexdigest()
+            nhashes[n]=str(v[1])
 
         for s in xrange(self.steps):
             nhashes1={}
             for n, v in self.nodes.iteritems():
-                nhashes1[n]=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(30)+y for x,y in v[0]]))).hexdigest()
+                nhashes1[n]=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(30)+y for x,y in v[0]]))).digest()
             nhashes=nhashes1
 
-        return json.dumps(sorted(nhashes.values()), separators=(',',':'), ensure_ascii=False)
+        return json.dumps([b2a_hqx(x) for x in sorted(nhashes.values())], separators=(',',':'), ensure_ascii=False)
 
 if not ('.' in __name__):
     """
