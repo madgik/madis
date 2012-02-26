@@ -10,7 +10,7 @@ def hashlist(t):
 
 class graphpowerhash:
     """
-    .. function:: graphpowerhash(steps, node1, [undirected_edge], node2, [node1_details, edge_details, node2_details]) -> jpack of graph node hashes
+    .. function:: graphpowerhash(steps, [undirected_edge], node1, node2, [node1_details, edge_details, node2_details]) -> jpack of graph node hashes
 
     Example:
 
@@ -60,6 +60,11 @@ class graphpowerhash:
     -------
     0
 
+    >>> sql("select graphpowerhash(null, a, null) from (select * from table1 limit 1)")
+    graphpowerhash(null, a, null)
+    ----------------------------------
+    ["C5*Q,@C#E5&B5MC85L&43Q`b5b0*5J"]
+
     """
 
     registered=True
@@ -72,50 +77,53 @@ class graphpowerhash:
     def step(self, *args):
         directed=True
         argslen=len(args)
+        largs=args
 
-        if args[0]!=None:
-            self.steps=args[0]
+        if largs[0]!=None:
+            self.steps=largs[0]
 
-        if args[2]==None:
+        if largs[1]==None:
             directed=False
-            del(args[2])
+            largs=list(largs)
+            del(largs[1])
             argslen-=1
 
         if directed:
             if argslen>4:
-                edgedetailslr='1'+chr(30)+str(args[4])
-                edgedetailsrl='0'+chr(30)+str(args[4])
+                edgedetailslr='1'+chr(30)+str(largs[4])
+                edgedetailsrl='0'+chr(30)+str(largs[4])
             else:
                 edgedetailslr='1'
                 edgedetailsrl='0'
         else:
             if argslen>4:
-                edgedetailslr='1'+ chr(30)+str(args[4])
+                edgedetailslr='1'+ chr(30)+str(largs[4])
                 edgedetailsrl=edgedetailslr
             else:
                 edgedetailslr='1'
                 edgedetailsrl=edgedetailslr
 
-        if args[1] not in self.nodes:
+        if largs[1] not in self.nodes:
             if argslen>3:
-                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , str(args[3])]
+                self.nodes[largs[1]]=[ [( largs[2],edgedetailslr )] , str(largs[3])]
             else:
-                self.nodes[args[1]]=[ [( args[2],edgedetailslr )] , '']
+                self.nodes[largs[1]]=[ [( largs[2],edgedetailslr )] , '']
         else:
-            self.nodes[args[1]][0].append( ( args[2],edgedetailslr ) )
+            self.nodes[largs[1]][0].append( ( largs[2],edgedetailslr ) )
 
 
-        if args[2] not in self.nodes:
-            if argslen>5:
-                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )], str(args[5])]
+        if largs[2]!=None:
+            if largs[2] not in self.nodes:
+                if argslen>5:
+                    self.nodes[largs[2]]=[ [(largs[1],edgedetailsrl )], str(largs[5])]
+                else:
+                    self.nodes[largs[2]]=[ [(largs[1],edgedetailsrl )] , '']
             else:
-                self.nodes[args[2]]=[ [(args[1],edgedetailsrl )] , '']
-        else:
-            self.nodes[args[2]][0].append( ( args[1],edgedetailsrl ) )
+                self.nodes[largs[2]][0].append( ( largs[1],edgedetailsrl ) )
 
     def final(self):
         if self.steps==None:
-            self.steps=1+len(self.nodes)/2
+            self.steps=len(self.nodes)/2
 
         if self.steps==-1:
             self.steps=len(self.nodes)
@@ -125,7 +133,7 @@ class graphpowerhash:
         nhashes={}
 
         for n,v in self.nodes.iteritems():
-            nhashes[n]=str(v[1])
+            nhashes[n]=b2a_hqx(md5(str(v[1])).digest())
 
         for s in xrange(self.steps):
             nhashes1={}
