@@ -115,7 +115,12 @@ class graphpowerhash:
     def final(self):
         if self.steps==None:
             self.steps=int(math.sqrt(len(self.nodes)))
-            
+
+        if self.steps==-1:
+            self.steps=len(self.nodes)
+
+        self.steps=min(self.steps, len(self.nodes))
+
         nhashes={}
 
         for n,v in self.nodes.iteritems():
