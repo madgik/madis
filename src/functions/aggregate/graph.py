@@ -38,13 +38,14 @@ class graphpowerhash:
         Optional details, that are processed with the graph's structure. In essence these
         parameters define "tags" on the nodes and edges of the graph.
 
-.. note::
-    The graph power hash algorithm is an experimental algorithm (created by me, Lefteris Stamatogiannakis). I haven't
-    proved its correctness, so please use it with care.
+    .. note::
+        The graph power hash algorithm is an experimental algorithm (created by me, Lefteris Stamatogiannakis). I haven't
+        proved its correctness, so please use it with care. Due to its hash usage, there is a (very low probability)
+        that two different graphs could hash to the same power hash.
 
-    I would be glad if someone more knowledgable in graph theory than me, could prove it to be wrong (or correct). Also
-    while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
-    if anyone knows of a paper that describes anything close to this algorithm, i would be glad to be pointed to it.
+        I would be very very thankfull to anyone knowledgable in graph theory, who could prove it to be wrong (or correct).
+        Also while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
+        if anyone knows of a paper that describes anything close to this algorithm, i would be glad to be pointed towards it.
 
     
     Examples:
