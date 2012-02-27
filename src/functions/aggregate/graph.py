@@ -64,7 +64,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table1")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["H9QIfSVjX6RT/x/32Kcxkg","PoWLphNw6TxUil3VmMtXeA","VfSxS5Y3XiKV+CabsH2XHQ","rrLGbHg8DkES8bhNKbN9QA","wHwTkZ2uLDtxnUMqtaIoBQ"]
+    ["Ig+uvN60J4g+mejacH75dw","gE+8OeHfQxAq15wtGtyS6g","oXjiJYzUM6tCOH0/ehEVmA","v2XqX7X5oMdbEStvx4HvLw","950sqdjbGo1tl054M7wvew"]
 
 
     Above graph having its nodes renumbered (its powerhash is the same as above):
@@ -80,7 +80,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table2")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["H9QIfSVjX6RT/x/32Kcxkg","PoWLphNw6TxUil3VmMtXeA","VfSxS5Y3XiKV+CabsH2XHQ","rrLGbHg8DkES8bhNKbN9QA","wHwTkZ2uLDtxnUMqtaIoBQ"]
+    ["Ig+uvN60J4g+mejacH75dw","gE+8OeHfQxAq15wtGtyS6g","oXjiJYzUM6tCOH0/ehEVmA","v2XqX7X5oMdbEStvx4HvLw","950sqdjbGo1tl054M7wvew"]
 
 
     Above graph with a small change (its hash differs from above graphs):
@@ -96,7 +96,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table3")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["A4LPCs61OwqZwNO8Nhpgtg","C+JyRaUUSq50VBmFF6bTDg","rrLGbHg8DkES8bhNKbN9QA","wHwTkZ2uLDtxnUMqtaIoBQ","x/aHwL5b/J1kp7VnIUXjFg"]
+    ["N27WjFcsPqzmVivUSIUYlg","OEjF1D3yGLU+1+CxDHpQIw","v2XqX7X5oMdbEStvx4HvLw","yaZR4IivKGZfagNqt9shoQ","950sqdjbGo1tl054M7wvew"]
 
 
     Actual testing of equality or inequality of above graphs:
@@ -116,8 +116,8 @@ class graphpowerhash:
 
     >>> sql("select graphpowerhash(null, a, null) from (select * from table1 limit 1)")
     graphpowerhash(null, a, null)
-    --------------------------------------
-    ["ZThjcUIyZlNONzVOb3dyT0dSck53Zz09Cg"]
+    -----------------------------
+    ["e8cqB2fSN75NowrOGRrNwg"]
 
 
     Undirected version of table1's graph:
@@ -125,7 +125,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a,b) from table1")
     graphpowerhash(null, null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["COSM7uS7fo3Ed/7HWWR+YQ","FtwRgMdJfnNT7ASFUUOjrg","M/H66vwrvarGfY1w8K5MNQ","M/H66vwrvarGfY1w8K5MNQ","phZ+V0esCA2Ko88WWdUjxw"]
+    ["WYREQwUOK1htq/QTI6Wq7w","WYREQwUOK1htq/QTI6Wq7w","nWo2aDAJVfsPb9UuH2HXRA","p1nhVNSUyxrIp6vQE7Vilg","p7aipziOeUmtohJwcnKctg"]
 
 
     Same graph as above, but some of the edges have been reversed (the undirected powerhash matches the powerhash above):
@@ -141,7 +141,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a,b) from table4")
     graphpowerhash(null, null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["COSM7uS7fo3Ed/7HWWR+YQ","FtwRgMdJfnNT7ASFUUOjrg","M/H66vwrvarGfY1w8K5MNQ","M/H66vwrvarGfY1w8K5MNQ","phZ+V0esCA2Ko88WWdUjxw"]
+    ["WYREQwUOK1htq/QTI6Wq7w","WYREQwUOK1htq/QTI6Wq7w","nWo2aDAJVfsPb9UuH2HXRA","p1nhVNSUyxrIp6vQE7Vilg","p7aipziOeUmtohJwcnKctg"]
 
 
     Graph similarity, using the step parameter (value of step defines the diameter of the similar subgraphs that can be found):
@@ -169,7 +169,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a, b) from table5")
     graphpowerhash(null, null, a, b)
     ----------------------------------------------------------------------------
-    ["bGKfTizvbWHa0dwm/I0o3A","bGKfTizvbWHa0dwm/I0o3A","ib+7InK2s/mVeUDM6owETg"]
+    ["QHkdp5d8pig8qvDK0hLQyA","/jymWpn515W6nBnepJ1xdA","/jymWpn515W6nBnepJ1xdA"]
 
 
     Second with all details:
@@ -177,7 +177,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a, b, c, d, e) from table5")
     graphpowerhash(null, null, a, b, c, d, e)
     ----------------------------------------------------------------------------
-    ["u6DcfG+uNbT1wLy/nInKeA","3QUN3ktUN/oWzgV1CfLMKw","3QUN3ktUN/oWzgV1CfLMKw"]
+    ["GEdmxwM5dtEXdFjrocFCyw","GEdmxwM5dtEXdFjrocFCyw","gE00AbzxFhfDBksNSBR6QA"]
 
     >>>
 
@@ -248,7 +248,7 @@ class graphpowerhash:
         nhashes={}
 
         for n,v in self.nodes.iteritems():
-            nhashes[n]=b2a_base64(md5(str(v[1]+chr(30))).digest())
+            nhashes[n]=md5(str(v[1]+chr(30))).digest()
 
         if len(self.nodes)>1:
             for s in xrange(self.steps):
