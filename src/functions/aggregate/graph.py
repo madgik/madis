@@ -48,6 +48,11 @@ class graphpowerhash:
         Also while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
         if anyone knows of a paper that describes anything related to this algorithm, i would be glad to be pointed towards it.
 
+    .. note::
+        Right now the computational complexity (with steps=null) of the powerhash algorithm is O(n* (n/2) * average_node_degree).
+        I believe that the complexity can be lowered to O(n* (graph_diameter/2) * average_node_degree), but haven't yet
+        implemented the necessary changes.
+
     
     Examples:
 
