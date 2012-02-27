@@ -1,18 +1,55 @@
 __docformat__ = 'reStructuredText en'
 
-import math
 import json
 from hashlib import md5
-from binascii import b2a_hqx
-
-def hashlist(t):
-    return md5(chr(30).join(unicode(x) for x in t)).digest()
+from binascii import b2a_base64
 
 class graphpowerhash:
     """
     .. function:: graphpowerhash(steps, [undirected_edge], node1, node2, [node1_details, edge_details, node2_details]) -> jpack of graph node hashes
 
-    Example:
+    Graph power hashing is based on a power iteration algorithm that calculates hashes on every step.
+    The produced output, contains for every node in the input graph a hash that "describes" its "surroundings".
+
+    :'steps' parameter:
+        The *steps* option controls the number of steps that the power hashing will be executed. Another
+        way to conceptualize the *steps* parameter is to think of it as the radius of the graph arround
+        a particular node that the node's hash covers.
+
+        Steps parameter's possible value are:
+
+        - null (default). When steps=null, then steps is automatically set to number_of_nodes/2
+        - 0 . Steps is automatically set to number_of_nodes
+        - Positive integer value.
+
+    :'undirected_edge':
+
+        This option can only have the *null* value.
+
+        - Parameter absent. The graph is assumed to be directed.
+        - Parameter present and having a *null* value. The graph is assumed to be undirected
+
+    :node1, node2:
+
+        Node connections. If the graph contains only one node, then *node2* can be null.
+
+    :node and edge details:
+
+        Optional details, that are processed with the graph's structure. In essence these
+        parameters define "tags" on the nodes and edges of the graph.
+
+.. note::
+    The graph power hash algorithm is an experimental algorithm (created by me, Lefteris Stamatogiannakis). I haven't
+    proved its correctness, so please use it with care.
+
+    I would be glad if someone more knowledgable in graph theory than me, could prove it to be wrong (or correct). Also
+    while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
+    if anyone knows of a paper that describes anything close to this algorithm, i would be glad to be pointed to it.
+
+    
+    Examples:
+
+    Directed graph:
 
     >>> table1('''
     ... 1   2
@@ -21,10 +58,14 @@ class graphpowerhash:
     ... 4   5
     ... 5   3
     ... ''')
+
     >>> sql("select graphpowerhash(null, a,b) from table1")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    [",m6pFc4eEFE+SDG++9fb``","1C&%ibj3lPB)E[GiaM3eK!","VMIk)Jmf)S&a2CN5EB3VTJ","e!Fr9@M![!!238r0rV#1iJ","if-#Cqpj,ebY3H'l'r9Fb3"]
+    ["Hoyocy6vPSwDIvUntP+B/g","Lt+0nM+NjXmYg4aNriDGXg","SjzHJK0jMVbagJA2+ME1sg","ZfjiaeTxh/WwI9Yc+InSaQ","lA8JbzL4eluFoYxkFTOTZQ"]
+
+
+    Above graph having its nodes renumbered (its powerhash is the same as above):
 
     >>> table2('''
     ... 2   5
@@ -33,22 +74,30 @@ class graphpowerhash:
     ... 1   3
     ... 3   4
     ... ''')
+
     >>> sql("select graphpowerhash(null, a,b) from table2")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    [",m6pFc4eEFE+SDG++9fb``","1C&%ibj3lPB)E[GiaM3eK!","VMIk)Jmf)S&a2CN5EB3VTJ","e!Fr9@M![!!238r0rV#1iJ","if-#Cqpj,ebY3H'l'r9Fb3"]
-    
+    ["Hoyocy6vPSwDIvUntP+B/g","Lt+0nM+NjXmYg4aNriDGXg","SjzHJK0jMVbagJA2+ME1sg","ZfjiaeTxh/WwI9Yc+InSaQ","lA8JbzL4eluFoYxkFTOTZQ"]
+
+
+    Above graph with a small change (its hash differs from above graphs):
+
     >>> table3('''
     ... 2   5
     ... 5   4
     ... 4   1
     ... 1   3
-    ... 3   2
+    ... 3   5
     ... ''')
+
     >>> sql("select graphpowerhash(null, a,b) from table3")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ","fUGhcEl*M19afABBMG#BSJ"]
+    ["E/M80My9vCdBuwnb/rJ3uw","O21R7CLqx5wnvxJ2R1KwEA","ZfjiaeTxh/WwI9Yc+InSaQ","lA8JbzL4eluFoYxkFTOTZQ","uoBb6+9HHcROPOemI3emjQ"]
+
+
+    Actual testing of equality or inequality of above graphs:
 
     >>> sql("select hashmd5( (select graphpowerhash(null, a,b) from table1) )=hashmd5( (select graphpowerhash(null, a,b) from table2) ) as grapheq")
     grapheq
@@ -60,10 +109,75 @@ class graphpowerhash:
     -------
     0
 
+
+    Graph with only one node:
+
     >>> sql("select graphpowerhash(null, a, null) from (select * from table1 limit 1)")
     graphpowerhash(null, a, null)
     ----------------------------------
-    ["C5*Q,@C#E5&B5MC85L&43Q`b5b0*5J"]
+    ["MUIyTTJZOEFzZ1RwZ0FtWTdQaENmZw"]
+
+
+    Undirected version of table1's graph:
+
+    >>> sql("select graphpowerhash(null, null, a,b) from table1")
+    graphpowerhash(null, null, a,b)
+    ------------------------------------------------------------------------------------------------------------------------------
+    ["L8KlriCZAYHzQpGF9wVXtA","c+Fwg7r/3ihVAcXmNz6Ppw","xoSqOQ/GPZh1Rp2CVoUIfg","xoSqOQ/GPZh1Rp2CVoUIfg","9wy6SWVXsLOgIM/vSRZIQA"]
+
+
+    Same graph as above, but some of the edges have been reversed (the undirected powerhash matches the powerhash above):
+
+    >>> table4('''
+    ... 2   1
+    ... 2   3
+    ... 3   4
+    ... 4   5
+    ... 3   5
+    ... ''')
+
+    >>> sql("select graphpowerhash(null, null, a,b) from table4")
+    graphpowerhash(null, null, a,b)
+    ------------------------------------------------------------------------------------------------------------------------------
+    ["L8KlriCZAYHzQpGF9wVXtA","c+Fwg7r/3ihVAcXmNz6Ppw","xoSqOQ/GPZh1Rp2CVoUIfg","xoSqOQ/GPZh1Rp2CVoUIfg","9wy6SWVXsLOgIM/vSRZIQA"]
+
+
+    Graph similarity, using the step parameter (value of step defines the diameter of the similar subgraphs that can be found):
+
+    >>> sql("select jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )")
+    jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )
+    -----------------------------------------------------------------------------------------------------
+    0.0
+
+    >>> sql("select jaccard( (select graphpowerhash(2, a, b) from table1), (select graphpowerhash(2, a, b) from table3) )")
+    jaccard( (select graphpowerhash(2, a, b) from table1), (select graphpowerhash(2, a, b) from table3) )
+    -----------------------------------------------------------------------------------------------------
+    0.25
+
+
+    Powerhash of graph having details (using a chemical composition):
+    
+    >>> table5('''
+    ... 1   2   O   =   C
+    ... 2   3   C   =   O
+    ... ''')
+
+    First without details:
+
+    >>> sql("select graphpowerhash(null, null, a, b) from table5")
+    graphpowerhash(null, null, a, b)
+    ----------------------------------------------------------------------------
+    ["MLNYpPVkTI421cG07XmBqQ","mY0aPnjNFK21PFY+voIWdw","mY0aPnjNFK21PFY+voIWdw"]
+
+
+    Second with all details:
+
+    >>> sql("select graphpowerhash(null, null, a, b, c, d, e) from table5")
+    graphpowerhash(null, null, a, b, c, d, e)
+    ----------------------------------------------------------------------------
+    ["bIyG+CmpOg0L8gCvDqsGTw","bIyG+CmpOg0L8gCvDqsGTw","t5f1xn70HKCxY0bQs91EQA"]
+
+    >>>
 
     """
 
@@ -72,7 +186,6 @@ class graphpowerhash:
     def __init__(self):
         self.nodes={}
         self.steps=None
-        self.initialized=False
 
     def step(self, *args):
         directed=True
@@ -125,7 +238,7 @@ class graphpowerhash:
         if self.steps==None:
             self.steps=len(self.nodes)/2
 
-        if self.steps==-1:
+        if self.steps<=0:
             self.steps=len(self.nodes)
 
         self.steps=min(self.steps, len(self.nodes))
@@ -133,15 +246,16 @@ class graphpowerhash:
         nhashes={}
 
         for n,v in self.nodes.iteritems():
-            nhashes[n]=b2a_hqx(md5(str(v[1])).digest())
+            nhashes[n]=b2a_base64(md5(str(v[1])).digest())[0:-3]
 
-        for s in xrange(self.steps):
-            nhashes1={}
-            for n, v in self.nodes.iteritems():
-                nhashes1[n]=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(30)+y for x,y in v[0]]))).digest()
-            nhashes=nhashes1
+        if len(self.nodes)>1:
+            for s in xrange(self.steps):
+                nhashes1={}
+                for n, v in self.nodes.iteritems():
+                    nhashes1[n]=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(30)+y for x,y in v[0]]))).digest()
+                nhashes=nhashes1
 
-        return json.dumps([b2a_hqx(x) for x in sorted(nhashes.values())], separators=(',',':'), ensure_ascii=False)
+        return json.dumps([b2a_base64(x)[0:-3] for x in sorted(nhashes.values())], separators=(',',':'), ensure_ascii=False)
 
 if not ('.' in __name__):
     """
