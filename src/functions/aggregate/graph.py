@@ -46,7 +46,7 @@ class graphpowerhash:
 
         I would be very very thankfull to anyone knowledgable in graph theory, who could prove it to be wrong (or correct).
         Also while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
-        if anyone knows of a paper that describes anything close to this algorithm, i would be glad to be pointed towards it.
+        if anyone knows of a paper that describes anything related to this algorithm, i would be glad to be pointed towards it.
 
     
     Examples:
