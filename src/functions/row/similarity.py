@@ -1,5 +1,6 @@
 import setpath
 from lib.buffer import memunpack
+import lib.jopts as jopts
 import functions
 import math
 
@@ -65,12 +66,11 @@ def cosine(*args):
 cosine.registered=True
 
 
-def jaccard(*args):###not working with lists
+def jaccard(*args):
     """
+    .. function:: jaccard(jpack1,jpack2)
 
-    .. function:: jaccard(pack1,pack2)
-
-    Return jaccard similarity value of two packets ( vector-like object's created by :func:`~functions.aggregate.packing.pack` and :func:`~functions.aggregate.packing.vecpack` function).
+    Return jaccard similarity value of two jpacks.
 
     Example:
 
@@ -86,16 +86,13 @@ def jaccard(*args):###not working with lists
     ... user4   movie2 10
     ... ''')
 
-    User pack over movies (column b) are
-    calculated in the nested query *select a as userid, pack(b)  as pk from table1 group by a*
-    and it is self joined to produce pairs of distinct user packs, to be given as input to *jaccard* similarity.
-    NOTE that only column b is packed because *jaccard* operates on packs as sets, not weighted values, So packing
+    NOTE that only column b is jgrouped because *jaccard* operates on packs as sets, not weighted values, So packing
     also column c would not make any difference.
 
-    >>> sql(\"""select u1.userid,u2.userid, jaccard(u1.pk,u2.pk) as similarity
+    >>> sql(\"""select u1.userid,u2.userid, jaccard(u1.pk, u2.pk) as similarity
     ...     from
-    ...         (select a as userid, pack(b)  as pk from table1 group by a) as u1,
-    ...         (select a as userid, pack(b) as pk from table1 group by a) as u2
+    ...         (select a as userid, jgroup(b)  as pk from table1 group by a) as u1,
+    ...         (select a as userid, jgroup(b) as pk from table1 group by a) as u2
     ...     where u1.userid<u2.userid\""")
     userid | userid | similarity
     --------------------------------
@@ -110,14 +107,14 @@ def jaccard(*args):###not working with lists
     if len(args)!=2:
         raise functions.OperatorError("jaccard","operator takes exactly two arguments")
     try:
-        r=memunpack(args[0])
-        s=memunpack(args[1])
+        r=jopts.fromj(args[0])
+        s=jopts.fromj(args[1])
     except Exception,e:
         raise functions.OperatorError("jaccard"," Wrong format arguments: %s" %(e))
-    rset=set([key for key in r if r[key]!=0]) #set(r)
-    sset=set([key for key in s if s[key]!=0]) #set(s)#
+    rset=set([tuple(x) if type(x)==list else x for x in r])
+    sset=set([tuple(x) if type(x)==list else x for x in s])
 
-    return float(len( rset & sset ))/(float(len( rset | sset )))
+    return float(len( rset & sset ))/(len( rset | sset ))
 
 jaccard.registered=True
 
