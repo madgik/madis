@@ -8,8 +8,9 @@ class graphpowerhash:
     """
     .. function:: graphpowerhash(steps, [undirected_edge], node1, node2, [node1_details, edge_details, node2_details]) -> jpack of graph node hashes
 
-    Graph power hashing is based on a power iteration algorithm that calculates hashes on every step.
-    The produced output, contains for every node in the input graph a hash that "describes" its "surroundings".
+    Graph power hashing is based on a `power iteration algorithm <http://en.wikipedia.org/wiki/Power_iteration>`_
+    that calculates hashes on every processing step. The produced output, contains for every node in the input graph
+    a hash that "describes" its "surroundings".
 
     :'steps' parameter:
         The *steps* option controls the number of steps that the power hashing will be executed. Another
