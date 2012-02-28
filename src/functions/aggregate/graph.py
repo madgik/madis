@@ -3,6 +3,7 @@ __docformat__ = 'reStructuredText en'
 import json
 from hashlib import md5
 from binascii import b2a_base64
+import math
 
 class graphpowerhash:
     """
@@ -246,20 +247,27 @@ class graphpowerhash:
     def final(self):
         ncount=len(self.nodes)
 
+        if ncount==1:
+            self.steps=1
+
         if self.steps==None:
             # Calculate approximate worse case diameter
             degreeseq=set()
             mindegree=ncount
             maxdegree=0
+            invdegree=0.0
 
             for n,v in self.nodes.iteritems():
                 ndegree=len(v[0])
                 mindegree=min(mindegree, ndegree)
                 maxdegree=max(maxdegree, ndegree)
                 degreeseq.add(ndegree)
+                invdegree+=1.0/ndegree
 
-            # Last worse case bounds are from Simon Mukwembi "A note on diameter and the degree sequence of a graph"
             self.steps=int(min(ncount, ncount-max(2, maxdegree) + 2,
+            # P. Dankelmann "Diameter and inverse degree"
+            (3*invdegree+3)*math.log(ncount)/math.log(math.log(ncount)),
+            # Simon Mukwembi "A note on diameter and the degree sequence of a graph"
             1+3*(ncount - len(degreeseq)+1)/float((mindegree+1)), ncount - len(degreeseq)+2))/2
 
         if self.steps<0:
