@@ -21,7 +21,8 @@ class graphpowerhash:
 
         - null (default). When steps=null, then steps is automatically set to number_of_nodes/2
         - Positive integer value.
-        - For negative integers, steps is set to number_of_nodes / absolute_value(steps)
+        - -1 . Steps is set to number_of_nodes
+        - Negative integers, steps is set to number_of_nodes / absolute_value(steps)
 
     :'undirected_edge':
 
