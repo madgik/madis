@@ -256,7 +256,7 @@ class graphpowerhash:
                 mindegree=min(mindegree, ndegree)
                 degreeseq.add(ndegree)
 
-            self.steps=min(ncount, 1+3*(ncount - len(degreeseq)+1)/(mindegree+1))/2
+            self.steps=min(ncount, 1+3*(ncount - len(degreeseq)+1)/(mindegree+1), ncount - len(degreeseq)+1)/2
 
         if self.steps<0:
             self.steps=ncount/abs(self.steps)
