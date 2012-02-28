@@ -51,10 +51,10 @@ class graphpowerhash:
 
     .. note::
         The computational complexity of the powerhash algorithm is O(n * steps * average_node_degree). The optimal value for
-        the hash to fully cover the graph, is to set the steps parameter to diameter_of_graph / 2. 
+        the hash to fully cover the graph, is to set the steps parameter to *graph_radius*.
         
-        Right now for steps=null, we take the worse case scenario of diameter_of_graph = n (number of nodes), 
-        so the computational complexity becomes O(n * (n/2) * average_node_degree).
+        Right now for steps=null, we take the worse upper bound of *graph_radius* = min(node_count , Mukwembi upper bound) / 2,
+        so the computational complexity becomes O(n * ~(n/2) * average_node_degree).
 
     Examples:
 
@@ -151,7 +151,7 @@ class graphpowerhash:
     ["WYREQwUOK1htq/QTI6Wq7w","WYREQwUOK1htq/QTI6Wq7w","nWo2aDAJVfsPb9UuH2HXRA","p1nhVNSUyxrIp6vQE7Vilg","p7aipziOeUmtohJwcnKctg"]
 
 
-    Graph similarity, using the step parameter (value of step defines the diameter of the similar subgraphs that can be found):
+    Graph similarity, using the step parameter (value of step defines the radius of the similar subgraphs that can be found):
 
     >>> sql("select jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )")
     jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )
@@ -244,14 +244,22 @@ class graphpowerhash:
                 self.nodes[largs[2]][0].append( ( largs[1],edgedetailsrl ) )
 
     def final(self):
+        ncount=len(self.nodes)
 
         if self.steps==None:
-            self.steps=len(self.nodes)/2
+            # Calculate approximate worse case diameter
+            degreeseq=set()
+            mindegree=ncount
+
+            for n,v in self.nodes.iteritems():
+                ndegree=len(v[0])
+                mindegree=min(mindegree, ndegree)
+                degreeseq.add(ndegree)
+
+            self.steps=min(ncount, 1+3*(ncount - len(degreeseq)+1)/(mindegree+1))/2
 
         if self.steps<0:
-            self.steps=len(self.nodes)/abs(self.steps)
-
-        self.steps=min(self.steps, len(self.nodes))
+            self.steps=ncount/abs(self.steps)
 
         nhashes={}
 
