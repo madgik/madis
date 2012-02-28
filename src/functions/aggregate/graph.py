@@ -53,7 +53,7 @@ class graphpowerhash:
         The computational complexity of the powerhash algorithm is O(n * steps * average_node_degree). The optimal value for
         the hash to fully cover the graph, is to set the steps parameter to *graph_radius*.
         
-        Right now for steps=null, we take the worse upper bound of *graph_radius* = min(node_count , Mukwembi upper bound) / 2,
+        Right now for steps=null, we take the worse upper bound of *graph_radius* = diameter_approximation / 2,
         so the computational complexity becomes O(n * ~(n/2) * average_node_degree).
 
     Examples:
@@ -250,13 +250,17 @@ class graphpowerhash:
             # Calculate approximate worse case diameter
             degreeseq=set()
             mindegree=ncount
+            maxdegree=0
 
             for n,v in self.nodes.iteritems():
                 ndegree=len(v[0])
                 mindegree=min(mindegree, ndegree)
+                maxdegree=max(maxdegree, ndegree)
                 degreeseq.add(ndegree)
 
-            self.steps=min(ncount, 1+3*(ncount - len(degreeseq)+1)/(mindegree+1), ncount - len(degreeseq)+2)/2
+            # Last worse case bounds are from Simon Mukwembi "A note on diameter and the degree sequence of a graph"
+            self.steps=int(min(ncount, ncount-max(2, maxdegree) + 2,
+            1+3*(ncount - len(degreeseq)+1)/float((mindegree+1)), ncount - len(degreeseq)+2))/2
 
         if self.steps<0:
             self.steps=ncount/abs(self.steps)
