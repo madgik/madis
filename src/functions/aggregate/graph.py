@@ -53,7 +53,7 @@ class graphpowerhash:
         the hash to fully cover the graph, is to set the steps parameter to diameter_of_graph / 2. 
         
         Right now for steps=null, we take the worse case scenario of diameter_of_graph = n (number of nodes), 
-        so the computational complexity becomes O(n * (n/2) * average_node_degree)
+        so the computational complexity becomes O(n * (n/2) * average_node_degree).
 
     Examples:
 
