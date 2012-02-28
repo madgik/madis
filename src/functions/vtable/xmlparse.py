@@ -53,6 +53,27 @@ Examples:
     ... 'row2val1</b><c><d>row2val</d></c>'
     ... '</a>'
     ... ''')
+
+    >>> sql("select * from (xmlparse select * from table1)") # doctest: +NORMALIZE_WHITESPACE
+    C1
+    -------------------
+    {"a/b":"row1val1"}
+    {"a/b":"row1val1b"}
+    {"a/b":"row1val1c"}
+    {"a/b":"row2val1"}
+    {"a/c/d":"row2val"}
+
+    >>> sql("select jgroupunion(c1) from (xmlparse select * from table1)") # doctest: +NORMALIZE_WHITESPACE
+    jgroupunion(c1)
+    ---------------
+    ["a/b","a/c/d"]
+
+    >>> sql('''select * from (xmlparse '["a/b","a/c/d"]' select * from table1)''') # doctest: +NORMALIZE_WHITESPACE
+    b                            | c_d
+    --------------------------------------
+    row1val1        row1val1b        row1val1c |
+    row2val1                     | row2val
+
     >>> sql("select * from (xmlparse '<a><b>val1</b><b>val1</b><c><d>val2</d></c></a>' select * from table1)") # doctest: +NORMALIZE_WHITESPACE
     b        | b1                  | c_d
     ----------------------------------------
