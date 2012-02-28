@@ -20,8 +20,8 @@ class graphpowerhash:
         Steps parameter's possible value are:
 
         - null (default). When steps=null, then steps is automatically set to number_of_nodes/2
-        - 0 . Steps is automatically set to number_of_nodes
         - Positive integer value.
+        - For negative integers, steps is set to number_of_nodes / absolute_value(steps)
 
     :'undirected_edge':
 
@@ -49,11 +49,12 @@ class graphpowerhash:
         if anyone knows of a paper that describes anything related to this algorithm, i would be glad to be pointed towards it.
 
     .. note::
-        Right now the computational complexity (with steps=null) of the powerhash algorithm is O(n* (n/2) * average_node_degree).
-        I believe that the complexity can be lowered to O(n* (graph_diameter/2) * average_node_degree), but haven't yet
-        implemented the necessary changes.
+        The computational complexity of the powerhash algorithm is O(n * steps * average_node_degree). The optimal value for
+        the hash to fully cover the graph, is to set the steps parameter to diameter_of_graph / 2. 
+        
+        Right now for steps=null, we take the worse case scenario of diameter_of_graph = n (number of nodes), 
+        so the computational complexity becomes O(n * (n/2) * average_node_degree)
 
-    
     Examples:
 
     Directed graph:
@@ -242,11 +243,12 @@ class graphpowerhash:
                 self.nodes[largs[2]][0].append( ( largs[1],edgedetailsrl ) )
 
     def final(self):
+
         if self.steps==None:
             self.steps=len(self.nodes)/2
 
-        if self.steps<=0:
-            self.steps=len(self.nodes)
+        if self.steps<0:
+            self.steps=len(self.nodes)/abs(self.steps)
 
         self.steps=min(self.steps, len(self.nodes))
 
