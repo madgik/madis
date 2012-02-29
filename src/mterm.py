@@ -588,7 +588,7 @@ while True:
                 statement='select * from '+argument+' limit 2;'
 
         elif command=='vacuum':
-            statement="PRAGMA temp_store_directory = '.';VACUUM;printtePRAGMA temp_store_directory = '';"
+            statement="PRAGMA temp_store_directory = '.';VACUUM;PRAGMA temp_store_directory = '';"
           
         elif command=='schema':
             if not argument:
