@@ -278,7 +278,7 @@ class graphpowerhash:
         for n,v in self.nodes.iteritems():
             nhashes[n]=md5(str(v[1]+chr(30))).digest()
 
-        if len(self.nodes)>1:
+        if ncount>1:
             for s in xrange(self.steps):
                 nhashes1={}
                 for n, v in self.nodes.iteritems():
