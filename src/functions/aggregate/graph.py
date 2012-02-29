@@ -283,9 +283,20 @@ class graphpowerhash:
         if ncount>1:
             for s in xrange(self.steps):
                 nhashes1={}
+                nhashcount={}
                 for n, v in self.nodes.iteritems():
-                    nhashes1[n]=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(29)+y for x,y in v[0]]))).digest()
+                    nhash=md5(v[1]+chr(30)+chr(30).join(sorted([nhashes[x]+chr(29)+y for x,y in v[0]]))).digest()
+                    nhashes1[n]=nhash
+                    if nhash in nhashcount:
+                        nhashcount[nhash]+=1
+                    else:
+                        nhashcount[nhash]=1
                 nhashes=nhashes1
+
+                if len(nhashcount)>0:
+                    distincthash=min([x for x,y in nhashcount.iteritems() if y==1])
+
+                # TODO Find new upper bound of diameter via calculating Spanning Tree starting from distincthash
 
         return json.dumps([b2a_base64(x)[0:-3] for x in sorted(nhashes.values())], separators=(',',':'), ensure_ascii=False)
 
