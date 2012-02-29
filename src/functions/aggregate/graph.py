@@ -264,7 +264,9 @@ class graphpowerhash:
                 degreeseq.add(ndegree)
                 invdegree+=1.0/ndegree
 
-            self.steps=int(min(ncount, ncount-max(2, maxdegree) + 2,
+            self.steps=int(min(
+            # Obvious upper bound
+            ncount-max(2, maxdegree) + 2,
             # P. Dankelmann "Diameter and inverse degree"
             (3*invdegree+3)*math.log(ncount)/math.log(math.log(ncount)),
             # Simon Mukwembi "A note on diameter and the degree sequence of a graph"
