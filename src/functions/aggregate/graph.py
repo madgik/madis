@@ -15,7 +15,7 @@ class graphpowerhash:
 
     :'steps' parameter:
         The *steps* option controls the number of steps that the power hashing will be executed. Another
-        way to conceptualize the *steps* parameter is to think of it as the radius of the graph arround
+        way to conceptualize the *steps* parameter is to think of it as the radius of the graph around
         a particular node that the node's hash covers.
 
         Steps parameter's possible value are:
@@ -52,10 +52,10 @@ class graphpowerhash:
 
     .. note::
         The computational complexity of the powerhash algorithm is O(n * steps * average_node_degree). The optimal value for
-        the hash to fully cover the graph, is to set the steps parameter to *graph_radius*.
+        the hash to fully cover the graph, is to set the steps parameter to *graph_diameter* / 2.
         
-        Right now for steps=null, we take the worse upper bound of *graph_radius* = diameter_approximation / 2,
-        so the computational complexity becomes O(n * ~(n/2) * average_node_degree).
+        Right now for steps=null, we take the worse upper bound of n / 2, so the computational complexity becomes
+        O(n * ~(n/2) * average_node_degree).
 
     Examples:
 
