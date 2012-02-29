@@ -72,7 +72,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table1")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["Ig+uvN60J4g+mejacH75dw","gE+8OeHfQxAq15wtGtyS6g","oXjiJYzUM6tCOH0/ehEVmA","v2XqX7X5oMdbEStvx4HvLw","950sqdjbGo1tl054M7wvew"]
+    ["OaNj+OtIZPqcwjc3QVvKpg","Um7OU79ApcRNA2TKrdcBcA","ZyQT/AoKyjIkwWMNvceK2A","3vaHWSLU/H32HvHTVBkpUQ","+3uZjYUMSXwyZs7HFHKNVg"]
 
 
     Above graph having its nodes renumbered (its powerhash is the same as above):
@@ -88,7 +88,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table2")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["Ig+uvN60J4g+mejacH75dw","gE+8OeHfQxAq15wtGtyS6g","oXjiJYzUM6tCOH0/ehEVmA","v2XqX7X5oMdbEStvx4HvLw","950sqdjbGo1tl054M7wvew"]
+    ["OaNj+OtIZPqcwjc3QVvKpg","Um7OU79ApcRNA2TKrdcBcA","ZyQT/AoKyjIkwWMNvceK2A","3vaHWSLU/H32HvHTVBkpUQ","+3uZjYUMSXwyZs7HFHKNVg"]
 
 
     Above graph with a small change (its hash differs from above graphs):
@@ -104,7 +104,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a,b) from table3")
     graphpowerhash(null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["N27WjFcsPqzmVivUSIUYlg","OEjF1D3yGLU+1+CxDHpQIw","v2XqX7X5oMdbEStvx4HvLw","yaZR4IivKGZfagNqt9shoQ","950sqdjbGo1tl054M7wvew"]
+    ["APq1eISun1GpYjgUhiMrLA","NPPh9FLzC5cUedxldXV77Q","VVZ93zo6gePuMeRf6f00Zg","df/4yDABlitCTfOGut0NvA","lqo+lY4fcjqujlgsYr+3Yw"]
 
 
     Actual testing of equality or inequality of above graphs:
@@ -125,7 +125,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, a, null) from (select * from table1 limit 1)")
     graphpowerhash(null, a, null)
     -----------------------------
-    ["e8cqB2fSN75NowrOGRrNwg"]
+    ["TOiuilAk4RLkg01tIwyvcg"]
 
 
     Undirected version of table1's graph:
@@ -133,7 +133,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a,b) from table1")
     graphpowerhash(null, null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["WYREQwUOK1htq/QTI6Wq7w","WYREQwUOK1htq/QTI6Wq7w","nWo2aDAJVfsPb9UuH2HXRA","p1nhVNSUyxrIp6vQE7Vilg","p7aipziOeUmtohJwcnKctg"]
+    ["JudlYSkYV7rFHjk94abY/A","W88IN4kgDSeVX9kaY36SJg","W88IN4kgDSeVX9kaY36SJg","6ez9ee0N2ogdvKJVQ8VKWA","7gz+LT/LtsyFc+GxMUlL8g"]
 
 
     Same graph as above, but some of the edges have been reversed (the undirected powerhash matches the powerhash above):
@@ -149,19 +149,19 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a,b) from table4")
     graphpowerhash(null, null, a,b)
     ------------------------------------------------------------------------------------------------------------------------------
-    ["WYREQwUOK1htq/QTI6Wq7w","WYREQwUOK1htq/QTI6Wq7w","nWo2aDAJVfsPb9UuH2HXRA","p1nhVNSUyxrIp6vQE7Vilg","p7aipziOeUmtohJwcnKctg"]
+    ["JudlYSkYV7rFHjk94abY/A","W88IN4kgDSeVX9kaY36SJg","W88IN4kgDSeVX9kaY36SJg","6ez9ee0N2ogdvKJVQ8VKWA","7gz+LT/LtsyFc+GxMUlL8g"]
 
 
     Graph similarity, using the step parameter (value of step defines the radius of the similar subgraphs that can be found):
 
-    >>> sql("select jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )")
-    jaccard( (select graphpowerhash(4, a, b) from table1), (select graphpowerhash(4, a, b) from table3) )
-    -----------------------------------------------------------------------------------------------------
+    >>> sql("select jaccard( (select graphpowerhash(3, a, b) from table1), (select graphpowerhash(3, a, b) from table3) ) as jacsim")
+    jacsim
+    ------
     0.0
 
-    >>> sql("select jaccard( (select graphpowerhash(2, a, b) from table1), (select graphpowerhash(2, a, b) from table3) )")
-    jaccard( (select graphpowerhash(2, a, b) from table1), (select graphpowerhash(2, a, b) from table3) )
-    -----------------------------------------------------------------------------------------------------
+    >>> sql("select jaccard( (select graphpowerhash(1, a, b) from table1), (select graphpowerhash(1, a, b) from table3) ) as jacsim")
+    jacsim
+    ------
     0.25
 
 
@@ -177,7 +177,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a, b) from table5")
     graphpowerhash(null, null, a, b)
     ----------------------------------------------------------------------------
-    ["QHkdp5d8pig8qvDK0hLQyA","/jymWpn515W6nBnepJ1xdA","/jymWpn515W6nBnepJ1xdA"]
+    ["Rw3sDN24TI7YARBNOOmYSg","9m5wcZf9iUxDwgzQkzu6Ag","9m5wcZf9iUxDwgzQkzu6Ag"]
 
 
     Second with all details:
@@ -185,7 +185,7 @@ class graphpowerhash:
     >>> sql("select graphpowerhash(null, null, a, b, c, d, e) from table5")
     graphpowerhash(null, null, a, b, c, d, e)
     ----------------------------------------------------------------------------
-    ["GEdmxwM5dtEXdFjrocFCyw","GEdmxwM5dtEXdFjrocFCyw","gE00AbzxFhfDBksNSBR6QA"]
+    ["CPebw+eZYzw5bWgx47/tkg","CPebw+eZYzw5bWgx47/tkg","WNn4aDDBKcoMMi+nrz5JEA"]
 
     >>>
 
@@ -246,6 +246,9 @@ class graphpowerhash:
 
     def final(self):
         ncount=len(self.nodes)
+
+        for n,v in self.nodes.iteritems():
+            v[1]=str(len(v[0]))+chr(31)+v[1]
 
         if ncount==1:
             self.steps=1
