@@ -58,6 +58,8 @@ def ungz(*args):
 
     try:
         return zlib.decompress(args[0])
+    except KeyboardInterrupt:
+        raise
     except:
         return args[0]
 
@@ -207,6 +209,8 @@ def execprogram(*args):
 
     try:
         outtext=unicode(outtext, 'utf-8')
+    except KeyboardInterrupt:
+        raise
     except:
         return buffer(outtext)
 

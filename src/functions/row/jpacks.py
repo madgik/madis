@@ -440,6 +440,8 @@ def jdictvals(*args):
         for i in args[1:]:
             try:
                 vals.append(d[i])
+            except KeyboardInterrupt:
+                raise
             except:
                 vals.append(None)
         
@@ -482,6 +484,8 @@ def jdictsplit(*args):
         for i in args[1:]:
             try:
                 vals.append(jopts.toj(d[i]))
+            except KeyboardInterrupt:
+                raise    
             except:
                 vals.append(None)
         yield vals
@@ -538,6 +542,8 @@ def jsplice(*args):
     if largs==2:
         try:
             return jopts.toj(fj[args[1]])
+        except KeyboardInterrupt:
+            raise
         except:
             return None
 
@@ -545,6 +551,8 @@ def jsplice(*args):
     for i in xrange(1,largs,2):
         try:
             outj+=fj[args[i]:args[i+1]]
+        except KeyboardInterrupt:
+            raise           
         except:
             pass
 

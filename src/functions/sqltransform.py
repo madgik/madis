@@ -145,6 +145,8 @@ class Transclass:
                 op_for_inv=strt
                 try:
                     rest=''.join([unicode(x) for x in fs[tindex+1:]])
+                except KeyboardInterrupt:
+                    raise
                 except:
                     rest=''
                 params, preposition, subq= break_inversion_subquery.match(rest).groups()

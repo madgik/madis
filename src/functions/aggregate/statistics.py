@@ -351,6 +351,8 @@ class variance:
 
         try:
             x=Fraction(args[0])
+        except KeyboardInterrupt:
+            raise
         except:
             return
         self.n+=1
@@ -450,6 +452,8 @@ class stdev:
         
         try:
             x=Fraction(args[0])
+        except KeyboardInterrupt:
+            raise          
         except:
             return
         self.n+=1
@@ -905,6 +909,8 @@ class pearson:
     def step(self,*args):
         try:
             x, y = [Fraction(i) for i in args[:2]]
+        except KeyboardInterrupt:
+            raise
         except:
             return
         self.n+=1

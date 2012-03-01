@@ -109,6 +109,8 @@ class diavgeiaget(vtiters.StaticSchemaVT):
                 lastfromv=fromv
                 count=total=fromv=None
                 firsttime=False
+            except KeyboardInterrupt:
+                raise
             except Exception,e:
                 if errorcount<10 and not firsttime:
                     time.sleep(2**errorcount)

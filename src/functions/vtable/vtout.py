@@ -66,7 +66,7 @@ class doall(object):
                 raise functions.MadisError(e)
         finally:            
             try:
-                c.close()                
+                c.close()
             except:
                 pass
         return ret
@@ -107,7 +107,7 @@ def maincode(args,boolargs,nonstringargs,needsescape,notsplit,db,func,retalways,
     try:
         largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     if 'query' not in kargs:
         raise functions.OperatorError(func.__globals__['__name__'].rsplit('.')[-1],"needs query argument ")
     query=kargs['query']

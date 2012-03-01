@@ -234,6 +234,8 @@ class Cursor:
         
         try:
             self.row=self.resultrows.next()
+        except KeyboardInterrupt:
+            raise
         except:
             self.eof=True
 
@@ -253,6 +255,8 @@ class Cursor:
     def Next(self):
         try:
             self.row=self.resultrows.next()
+        except KeyboardInterrupt:
+            raise         
         except:
             self.eof=True
     

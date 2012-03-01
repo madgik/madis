@@ -52,6 +52,8 @@ def mstr(s):
         return None
     try:
         return unicode(s, 'utf-8', errors='replace')
+    except KeyboardInterrupt:
+        raise
     except:
         pass
     o=repr(s)

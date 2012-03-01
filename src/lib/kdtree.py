@@ -28,6 +28,8 @@ def kdtree(data,cols=None):
     if not cols:
         try:
             cols=range(len(data[0]))
+        except KeyboardInterrupt:
+            raise           
         except:
             cols=[0]
     k = len(cols)

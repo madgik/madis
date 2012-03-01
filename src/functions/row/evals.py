@@ -101,6 +101,8 @@ def pyfun(*args):
         f=__import__(fsplit[0])
         for i in fsplit[1:]:
             f=f.__dict__[i]
+    except KeyboardInterrupt:
+        raise
     except:
         try:
             f=__import__('libexternal'+'.'+fsplit[0])

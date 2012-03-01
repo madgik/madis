@@ -112,6 +112,8 @@ class ExpCursor:
                     if self.types[i]=="GUESS":
                         try:
                             self.types[i]=getElementSqliteType(exampleline[i])
+                        except KeyboardInterrupt:
+                            raise          
                         except:
                             self.types[i]='text'
             except StopIteration: #if StopIteration but names are discovered, meaning that Compbuffers where empty return schema                
@@ -200,6 +202,8 @@ class ExpCursor:
                         yield list(row[:i])+list(el)+list(l)
                 try:
                     del(self.connection.openiters[iobj[0]])
+                except KeyboardInterrupt:
+                    raise
                 except:
                     pass
                 return
