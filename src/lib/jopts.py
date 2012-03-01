@@ -108,6 +108,8 @@ def fromj(*jargs):
                 try:
                     fj+=json.loads(j)
                     continue
+                except KeyboardInterrupt:
+                    raise
                 except:
                     fj+= [j]
                     continue
@@ -115,6 +117,8 @@ def fromj(*jargs):
                 try:
                     fj+=list(json.loads(j, object_pairs_hook=collections.OrderedDict))
                     continue
+                except KeyboardInterrupt:
+                    raise
                 except:
                     fj+= [j]
                     continue
@@ -139,6 +143,8 @@ def elemfromj(*jargs):
                 try:
                     fj+=[json.loads(j)]
                     continue
+                except KeyboardInterrupt:
+                    raise
                 except:
                     fj+= [j]
                     continue

@@ -118,6 +118,8 @@ class freqitemsets:
                     try:
                         self.threshold=int(v[1])
                         self.startingthreshold=self.threshold
+                    except KeyboardInterrupt:
+                        raise               
                     except:
                         raise functions.OperatorError("FreqItemsets",'No integer value given for threshold')
                 if v[0]=='noautothres':

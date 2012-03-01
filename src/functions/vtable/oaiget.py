@@ -94,6 +94,8 @@ class oaiget(vtiters.StaticSchemaVT):
                 lastResToken=resumptionToken
                 resumptionToken=None
                 firsttime=False
+            except KeyboardInterrupt:
+                raise           
             except Exception,e:
                 if errorcount<10 and not firsttime:
                     time.sleep(2**errorcount)

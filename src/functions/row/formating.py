@@ -255,7 +255,7 @@ def strjoin(*args):
             largs=[]
             kargs=dict()
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     if len(largs)>0:
         raise functions.OperatorError("strjoin","Unknown argument %s" %(''.join(largs)))
     if 'dialect' not in kargs:
@@ -264,7 +264,7 @@ def strjoin(*args):
     try:
         csvprinter=writer(f,**kargs)
     except Exception,e:
-            raise functions.MadisError(e)
+        raise functions.MadisError(e)
     csvprinter.writerow(sargs)
     f.seek(0)
     s=f.read()

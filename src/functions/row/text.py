@@ -453,6 +453,8 @@ def unitosuni(*args):
         return None
     try:
         return repr(unicode(args[0])).replace('\\x','\\u00')[2:-1]
+    except KeyboardInterrupt:
+        raise
     except Exception:
         return args[0]
 
@@ -490,6 +492,8 @@ def sunitouni(*args):
     kk="u'%s'" %(unicode(args[0]).replace("'","\\'"))
     try:
         return eval(kk)
+    except KeyboardInterrupt:
+        raise
     except Exception:
         return args[0]
 
@@ -539,6 +543,8 @@ def reencode(*args):
     try:
         a=unicode(us.encode('iso-8859-1'),'utf-8')
         return a
+    except KeyboardInterrupt:
+        raise
     except Exception:
         try:
             a=unicode(us.encode('windows-1252'),'utf-8')
