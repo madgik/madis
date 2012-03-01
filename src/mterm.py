@@ -390,8 +390,11 @@ def printrow(row):
             d=Style.BRIGHT+'null'+Style.RESET_ALL
         try:
             sys.stdout.write(d)
+        except KeyboardInterrupt:
+            raise
         except:
             sys.stdout.write(repr(d))
+
         i1+=1
     sys.stdout.write('\n')
 
@@ -703,6 +706,7 @@ while True:
                 update_tablelist()
 
         except KeyboardInterrupt:
+            print
             schemaprint(newcols)
             printterm("KeyboardInterrupt exception: Query execution stopped")
             continue
