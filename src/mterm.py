@@ -401,7 +401,8 @@ def printterm(*args):
     if not pipedinput:
         print(','.join([unicode(x) for x in args]))
 
-mtermdetails="mTerm - version 0.9"
+VERSION='1.0'
+mtermdetails="mTerm - version "+VERSION
 intromessage="""Enter ".help" for instructions
 Enter SQL statements terminated with a ";" """
 
