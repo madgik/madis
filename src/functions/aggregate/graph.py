@@ -187,8 +187,6 @@ class graphpowerhash:
     ----------------------------------------------------------------------------
     ["CPebw+eZYzw5bWgx47/tkg","CPebw+eZYzw5bWgx47/tkg","WNn4aDDBKcoMMi+nrz5JEA"]
 
-    >>>
-
     """
 
     registered=True
