@@ -12,9 +12,9 @@ Formatting options:
 .. toadd html        In html mode table is formatted as an html table TODO ????
 
 :mode:
-    - tsv       Default. Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in *tsv*.
+    - plain     *Default*. The columns are concatened and written together.
+    - tsv       Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in *tsv*.
     - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in *csv*.
-    - plain     The columns are concatened and written together. *Plain* mode is autoselected when the filename ends in *txt*.
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
 
@@ -92,7 +92,7 @@ def autotype(f, extlist):
         ext=ext[1:]
         if ext in extlist:
             return extlist[ext]
-    return 'tsv'
+    return 'plain'
 
 def outputData(diter,*args,**formatArgs):
     ### Parameter handling ###
@@ -107,7 +107,7 @@ def outputData(diter,*args,**formatArgs):
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'txt':'plain', 'xml':'plain', 'dot':'plain'})
+        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv'})
         
     if 'header' not in formatArgs:
         header=False
@@ -135,6 +135,7 @@ def outputData(diter,*args,**formatArgs):
     del formatArgs['compression']
     try:
         if formatArgs['mode']=='csv':
+            print "!!!!!!!!!!!!"
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
             for row,headers in diter:
