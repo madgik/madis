@@ -444,7 +444,7 @@ class graphtodot:
         
         for n,v in self.nodes.iteritems():
             if v[1]!=None:
-                dot+=unicode(n)+' [label="'+unicode(v[1].replace('"',"'"))+'"];\n'
+                dot+=unicode(n)+' [label="'+unicode(v[1]).replace('"',"'")+'"];\n'
             for e in v[0]:
                 dot+=unicode(n)+ ' '
                 if self.directed:
@@ -453,7 +453,7 @@ class graphtodot:
                     dot+='-- '
                 dot+=unicode(e[0])
                 if e[1]!=None:
-                    dot+=u' [label="'+unicode(e[1].replace('"',"'"))+'"]'
+                    dot+=u' [label="'+unicode(e[1]).replace('"',"'")+'"]'
                 dot+=u';\n'
 
         dot+='}'
