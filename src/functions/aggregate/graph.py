@@ -303,6 +303,163 @@ class graphpowerhash:
 
         return json.dumps([b2a_base64(x)[0:-3] for x in sorted(nhashes.values())], separators=(',',':'), ensure_ascii=False)
 
+class graphtodot:
+    """
+    .. function:: graphtodot(graphname, [undirected_edge], node1, node2, [node1_details, edge_details, node2_details]) -> graphviz dot graph
+
+    Returns the *Graphviz* DOT representation of the input graph.
+
+    Examples:
+
+    Directed graph:
+
+    >>> table1('''
+    ... 1   2
+    ... 2   3
+    ... 3   4
+    ... 4   5
+    ... 5   3
+    ... ''')
+
+    >>> sql("select graphtodot(null, a,b) from table1")
+    graphtodot(null, a,b)
+    ----------------------------------------------------
+    digraph  {
+    1 -> 2;
+    2 -> 3;
+    3 -> 4;
+    4 -> 5;
+    5 -> 3;
+    }
+
+    Undirected graph:
+
+    >>> table2('''
+    ... 2   5
+    ... 5   4
+    ... 4   1
+    ... 1   3
+    ... 3   4
+    ... ''')
+
+    >>> sql("select graphtodot(null, null, a,b) from table2")
+    graphtodot(null, null, a,b)
+    --------------------------------------------------
+    graph  {
+    1 -- 3;
+    2 -- 5;
+    3 -- 4;
+    4 -- 1;
+    5 -- 4;
+    }
+
+    Graph with details:
+
+    >>> table5('''
+    ... 1   2   O   =   C
+    ... 2   3   C   =   O
+    ... ''')
+
+    >>> sql("select graphtodot('chem_comp_1', null, a, b, c, d, e) from table5")
+    graphtodot('chem_comp_1', null, a, b, c, d, e)
+    ----------------------------------------------------------------------------------------------------------
+    graph chem_comp_1 {
+    1 [label="O"];
+    1 -- 2 [label="="];
+    2 [label="C"];
+    2 -- 3 [label="="];
+    3 [label="O"];
+    }
+
+    """
+
+    registered=True
+
+    def __init__(self):
+        self.nodes={}
+        self.steps=None
+        self.graphname=None
+        self.directed=True
+
+    def step(self, *args):
+        directed=True
+        argslen=len(args)
+        largs=args
+
+        if largs[0]!=None:
+            self.graphname=largs[0]
+
+        if largs[1]==None:
+            self.directed=False
+            largs=list(largs)
+            del(largs[1])
+            argslen-=1
+
+        if self.directed:
+            if argslen>4:
+                edgedetailslr=unicode(largs[4])
+            else:
+                edgedetailslr=None
+        else:
+            if argslen>4:
+                edgedetailslr=unicode(largs[4])
+            else:
+                edgedetailslr=None
+
+        if largs[1] not in self.nodes:
+            if argslen>3:
+                self.nodes[largs[1]]=[ [( largs[2],edgedetailslr )] , largs[3]]
+            else:
+                self.nodes[largs[1]]=[ [( largs[2],edgedetailslr )] , None]
+        else:
+            self.nodes[largs[1]][0].append( ( largs[2],edgedetailslr ) )
+
+
+        if largs[2]!=None:
+            if largs[2] not in self.nodes:
+                if argslen>5:
+                    self.nodes[largs[2]]=[ [], largs[5]]
+                else:
+                    self.nodes[largs[2]]=[ [] , None]
+
+    def final(self):
+        if self.graphname==None:
+            self.graphname=''
+
+        if type(self.graphname) in (int, float):
+            self.graphname=u'g'+unicode(self.graphname)
+        else:
+            self.graphname=unicode(self.graphname)
+        
+        dot=u''
+        if self.directed:
+            dot=u'di'
+
+        if self.graphname==None:
+            self.graphname='""'
+
+        dot+=u'graph '+self.graphname+u' {\n'
+
+        digraph=False
+        
+        for n,v in self.nodes.iteritems():
+            if v[1]!=None:
+                dot+=unicode(n)+' [label="'+unicode(v[1])+'"];\n'
+            for e in v[0]:
+                dot+=unicode(n)+ ' '
+                if self.directed:
+                    dot+='-> '
+                else:
+                    dot+='-- '
+                dot+=unicode(e[0])
+                if e[1]!=None:
+                    dot+=u' [label="'+unicode(e[1])+'"]'
+                dot+=u';\n'
+
+        dot+='}'
+
+        return dot
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
