@@ -179,7 +179,6 @@ class graphpowerhash:
     ----------------------------------------------------------------------------
     ["Rw3sDN24TI7YARBNOOmYSg","9m5wcZf9iUxDwgzQkzu6Ag","9m5wcZf9iUxDwgzQkzu6Ag"]
 
-
     Second with all details:
 
     >>> sql("select graphpowerhash(null, null, a, b, c, d, e) from table5")
