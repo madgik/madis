@@ -107,7 +107,7 @@ def outputData(diter,*args,**formatArgs):
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'txt':'plain', 'xml':'plain'})
+        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'txt':'plain', 'xml':'plain', 'dot':'plain'})
         
     if 'header' not in formatArgs:
         header=False
