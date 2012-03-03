@@ -80,7 +80,7 @@ class showgroup:
 
     >>> sql("select showgroup(a,b) from table1") # doctest: +NORMALIZE_WHITESPACE
     showgroup(a,b)
-    ---------------------
+    --------------------
     <BLANKLINE>
     1        2
     2        3
@@ -91,7 +91,7 @@ class showgroup:
 
     >>> sql("select showgroup(b) as gr from table1 group by a")
     gr
-    -----
+    ----
     <BLANKLINE>
     2
     4
@@ -112,10 +112,7 @@ class showgroup:
         self.rows.append(args)
 
     def final(self):
-        v='\n'
-        for r in self.rows:
-            v+='\t'.join([unicode(x) for x in r])+'\n'
-        return v
+        return '\n'+'\n'.join(['\t'.join([unicode(x) for x in r]) for r in self.rows])
 
 if not ('.' in __name__):
     """
