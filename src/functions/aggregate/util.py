@@ -1,8 +1,8 @@
 __docformat__ = 'reStructuredText en'
 
-class expandgroup:
+class expandgroups:
     """
-    .. function:: expandgroup(args) -> args
+    .. function:: expandgroups(args) -> args
 
     Expands the contents of groups. Usefull for debugging group related queries.
 
@@ -18,7 +18,7 @@ class expandgroup:
     ... 3   3
     ... ''')
 
-    >>> sql("select expandgroup(a,b) from table1")
+    >>> sql("select expandgroups(a,b) from table1")
     C1 | C2
     -------
     1  | 2
@@ -27,7 +27,7 @@ class expandgroup:
     2  | 5
     3  | 3
 
-    >>> sql("select expandgroup(a,b) as gr from table1")
+    >>> sql("select expandgroups(a,b) as gr from table1")
     gr1 | gr2
     ---------
     1   | 2
@@ -36,7 +36,7 @@ class expandgroup:
     2   | 5
     3   | 3
 
-    >>> sql("select a,expandgroup(b) as gr from table1 group by a")
+    >>> sql("select a,expandgroups(b) as gr from table1 group by a")
     a | gr
     ------
     1 | 2
@@ -60,9 +60,9 @@ class expandgroup:
         for r in self.rows:
             yield r
 
-class showgroup:
+class showgroups:
     """
-    .. function:: showgroup(args) -> string
+    .. function:: showgroups(args) -> string
 
     Shows the contents of groups. Usefull for debugging group related queries.
 
@@ -78,8 +78,8 @@ class showgroup:
     ... 3   3
     ... ''')
 
-    >>> sql("select showgroup(a,b) from table1") # doctest: +NORMALIZE_WHITESPACE
-    showgroup(a,b)
+    >>> sql("select showgroups(a,b) from table1") # doctest: +NORMALIZE_WHITESPACE
+    showgroups(a,b)
     --------------------
     <BLANKLINE>
     1        2
@@ -89,7 +89,7 @@ class showgroup:
     3        3
 
 
-    >>> sql("select showgroup(b) as gr from table1 group by a")
+    >>> sql("select showgroups(b) as gr from table1 group by a")
     gr
     ----
     <BLANKLINE>
