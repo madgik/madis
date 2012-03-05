@@ -161,6 +161,7 @@ class FileCursor:
             if el not in csvkeywordparams:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Invalid parameter %s" %(el))
 
+        pathname=None
         gzipcompressed=False
         try:
             if compression and compressiontype=='zip':
@@ -176,7 +177,7 @@ class FileCursor:
                     gzipcompressed=True
                 self.fileiter=hreq
 
-            if pathname.endswith('.gz') or pathname.endswith('.gzip'):
+            if pathname!=None and ( pathname.endswith('.gz') or pathname.endswith('.gzip') ):
                 gzipcompressed=True
 
             if compression and compressiontype=='gz':
