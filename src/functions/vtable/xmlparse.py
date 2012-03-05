@@ -580,18 +580,22 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return line
 
             def readtailfast(self, n):
-                buffer=StringIO.StringIO()
+                buffer=''
                 try:
-                    while buffer.tell()<n:
+                    while len(buffer)<n:
                         line= self.qiter.next()[0]
-                        if line.endswith('\n'):
-                            buffer.write(line)
-                        else:
-                            buffer.writelines((line,'\n'))
+                        if line.startswith('<?'):
+                            if line.startswith('<?xml'):
+                                longline=line
+                                while not self.finddatatag.search(line):
+                                    line= self.qiter.next()[0]
+                                    longline+=line
+                                line=self.replacexmlheaders.sub(r'\1',longline,1)
+                        buffer+=line
                 except StopIteration:
-                    if buffer.tell()==0:
+                    if len(buffer)==0:
                         raise StopIteration
-                return buffer.getvalue().encode('utf-8')
+                return buffer.encode('utf-8')
 
             def readtailfast2(self, n):
                 buffer=StringIO.StringIO()
