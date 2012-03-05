@@ -255,20 +255,16 @@ class graphpowerhash:
             degreeseq=set()
             mindegree=ncount
             maxdegree=0
-            invdegree=0.0
 
             for n,v in self.nodes.iteritems():
                 ndegree=len(v[0])
                 mindegree=min(mindegree, ndegree)
                 maxdegree=max(maxdegree, ndegree)
                 degreeseq.add(ndegree)
-                invdegree+=1.0/ndegree
 
             self.steps=int(min(
             # Obvious upper bound
             ncount-max(2, maxdegree) + 2,
-            # P. Dankelmann "Diameter and inverse degree"
-            (3*invdegree+3)*math.log(ncount)/math.log(math.log(ncount)),
             # Simon Mukwembi "A note on diameter and the degree sequence of a graph"
             1+3*(ncount - len(degreeseq)+1)/float((mindegree+1)), ncount - len(degreeseq)+2))/2
 
