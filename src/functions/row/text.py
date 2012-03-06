@@ -3,7 +3,7 @@ import re
 import functions
 import unicodedata
 import hashlib
-
+import zlib
 from lib import jopts
 
 # Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
@@ -626,6 +626,114 @@ def hashmd5(*args):
         return hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest()
 
 hashmd5.registered=True
+
+def hashmd5(*args):
+    """
+    .. function:: hashmd5(args) -> string
+
+    Returns an MD5 hash of args. Numbers are converted to text before hashing is
+    performed.
+
+    Examples:
+
+    >>> sql("select hashmd5(65)")
+    hashmd5(65)
+    --------------------------------
+    fc490ca45c00b1249bbe3554a4fdf6fb
+    >>> sql("select hashmd5(6,5)")
+    hashmd5(6,5)
+    --------------------------------
+    f0d95c20cde50e3ca03cab53f986b6c3
+    >>> sql("select hashmd5(5)")
+    hashmd5(5)
+    --------------------------------
+    e4da3b7fbbce2345d7772b0674a318d5
+    >>> sql("select hashmd5('5')")
+    hashmd5('5')
+    --------------------------------
+    7000aaf68ca7a93da0af3d03850571c2
+    """
+
+    if len(args)==1:
+        return hashlib.md5(repr(args[0])).hexdigest()
+    else:
+        return hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest()
+
+hashmd5.registered=True
+
+def hashmd5mod(*args):
+    """
+    .. function:: hashmd5mod(args, divisor) -> int
+
+    Returns the *modulo* with divisor number of the MD5 hash of args.
+    Numbers are converted to text before hashing is performed.
+
+    Examples:
+
+    >>> sql("select hashmd5mod(65, 3)")
+    hashmd5mod(65, 3)
+    -----------------
+    0
+
+    >>> sql("select hashmd5mod(6,5, 4)")
+    hashmd5mod(6,5, 4)
+    ------------------
+    2
+
+    >>> sql("select hashmd5mod(5, 5)")
+    hashmd5mod(5, 5)
+    ----------------
+    3
+    
+    >>> sql("select hashmd5mod('5', 5)")
+    hashmd5mod('5', 5)
+    ------------------
+    4
+    """
+
+    if len(args)==2:
+        return int(hashlib.md5(repr(args[0])).hexdigest(),16) % args[-1]
+    else:
+        return int(hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest(),16) % args[-1]
+
+hashmd5mod.registered=True
+
+def crc32(*args):
+    """
+    .. function:: crc32(args) -> int
+
+    Returns the CRC32 of args. Numbers are converted to text before hashing is
+    performed.
+
+    Examples:
+
+    >>> sql("select crc32(65)")
+    crc32(65)
+    ----------
+    2658551721
+
+    >>> sql("select crc32(6,5)")
+    crc32(6,5)
+    ----------
+    498629140
+
+    >>> sql("select crc32(5)")
+    crc32(5)
+    ----------
+    2226203566
+
+    >>> sql("select crc32('5')")
+    crc32('5')
+    ----------
+    1201448970
+    """
+
+    if len(args)==2:
+        return zlib.crc32(repr(args[0])) & 0xffffffff
+    else:
+        return zlib.crc32(chr(30).join([repr(x) for x in args])) & 0xffffffff
+
+crc32.registered=True
 
 if not ('.' in __name__):
     """
