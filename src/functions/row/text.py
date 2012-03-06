@@ -627,40 +627,6 @@ def hashmd5(*args):
 
 hashmd5.registered=True
 
-def hashmd5(*args):
-    """
-    .. function:: hashmd5(args) -> string
-
-    Returns an MD5 hash of args. Numbers are converted to text before hashing is
-    performed.
-
-    Examples:
-
-    >>> sql("select hashmd5(65)")
-    hashmd5(65)
-    --------------------------------
-    fc490ca45c00b1249bbe3554a4fdf6fb
-    >>> sql("select hashmd5(6,5)")
-    hashmd5(6,5)
-    --------------------------------
-    f0d95c20cde50e3ca03cab53f986b6c3
-    >>> sql("select hashmd5(5)")
-    hashmd5(5)
-    --------------------------------
-    e4da3b7fbbce2345d7772b0674a318d5
-    >>> sql("select hashmd5('5')")
-    hashmd5('5')
-    --------------------------------
-    7000aaf68ca7a93da0af3d03850571c2
-    """
-
-    if len(args)==1:
-        return hashlib.md5(repr(args[0])).hexdigest()
-    else:
-        return hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest()
-
-hashmd5.registered=True
-
 def hashmd5mod(*args):
     """
     .. function:: hashmd5mod(args, divisor) -> int
