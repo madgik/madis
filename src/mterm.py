@@ -398,11 +398,17 @@ def printrow(row):
         i1+=1
     sys.stdout.write('\n')
 
-def printterm(*args):
+def printterm(*args, **kwargs):
     global pipedinput
 
+    msg=','.join([unicode(x) for x in args])
+
     if not pipedinput:
-        print(','.join([unicode(x) for x in args]))
+        print(msg)
+    elif 'exit' in kwargs:
+        sys.exit(msg)
+
+
 
 VERSION='1.0'
 mtermdetails="mTerm - version "+VERSION
@@ -708,10 +714,11 @@ while True:
         except KeyboardInterrupt:
             print
             schemaprint(newcols)
-            printterm("KeyboardInterrupt exception: Query execution stopped")
+            printterm("KeyboardInterrupt exception: Query execution stopped", exit=True)
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
             emsg=unicode(e)
+            printterm(functions.mstr(emsg), exit=True)
             try:
                 if u'Error:' in emsg:
                     emsgsplit=emsg.split(u':')
@@ -722,7 +729,7 @@ while True:
                 print e
             continue
         except Exception, e:
-            print "Unknown error:"+functions.mstr(e)
+            printterm("Unknown error:"+functions.mstr(e), exit=True)
             #raise
         finally:
             colorama.deinit()
