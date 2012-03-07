@@ -62,7 +62,7 @@ class mtermoutput(csv.Dialect):
         self.lineterminator='\n'
 
 def createConnection(db):
-    connection = functions.Connection(db)
+    connection = functions.Connection(db, flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
     functions.register(connection)
     connection.enableloadextension(True)
     return connection
