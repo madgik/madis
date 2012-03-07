@@ -15,6 +15,9 @@ Formatting options:
     - plain     *Default*. The columns are concatened and written together.
     - tsv       Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in *tsv*.
     - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in *csv*.
+    - db        Writes data in a sqlite db. *DB* mode is autoselected when the filename ends in *db*.
+                If split:1 option is also provided, the output is multiplexed into multiple databases according to
+                first input table column.
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
 
@@ -49,6 +52,7 @@ Examples:
     Mark  | 7   | 3
     Lila  | 74  | 1
 """
+import os.path
 
 import setpath
 from vtout import SourceNtoOne
@@ -59,6 +63,7 @@ import functions
 from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
+import apsw
 registered=True
 
 def fileit(p,append=False):
@@ -103,11 +108,12 @@ def outputData(diter,*args,**formatArgs):
         where=formatArgs['file']
     else:
         raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
+
     if 'file' in formatArgs:
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv'})
+        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'db':'db'})
         
     if 'header' not in formatArgs:
         header=False
@@ -125,17 +131,18 @@ def outputData(diter,*args,**formatArgs):
         append=formatArgs['append']
         del formatArgs['append']
 
-    type2ext={'csv':'csv', 'tsv':'xls', 'plain':'txt'}
+    type2ext={'csv':'csv', 'tsv':'xls', 'plain':'txt', 'db':'db'}
 
     where=autoext(where, formatArgs['mode'], type2ext)
+    filename, ext=os.path.splitext(os.path.basename(where))
 
-    fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
+    if formatArgs['mode']!='db':
+        fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
     del formatArgs['compressiontype']
     del formatArgs['compression']
     try:
         if formatArgs['mode']=='csv':
-            print "!!!!!!!!!!!!"
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
             for row,headers in diter:
@@ -159,14 +166,48 @@ def outputData(diter,*args,**formatArgs):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
         elif formatArgs['mode']=='plain':
             for row,headers in diter:
-                fileIter.write(((''.join(row))+'\n').encode('utf-8'))
+                fileIter.write(((''.join([unicode(x) for x in row]))+'\n').encode('utf-8'))
+        elif formatArgs['mode']=='db':
+            def createdb(where, tname, schema):
+                c=apsw.Connection(where)
+                cursor=c.cursor()
+                list(cursor.execute('pragma page_size=16384;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;'))
+                list(cursor.execute('create table '+tname+' (`'+'`,`'.join(x[0] for x in schema)+'`); begin;'))
+                insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
+                return c, cursor, insertquery
+
+            tablename=filename
+            if 'tablename' in formatArgs:
+                tablename=formatArgs['tablename']
+
+            if 'split' in formatArgs:
+                splitkeys={}
+                fullpath=os.path.split(where)[0]
+                for row, headers in diter:
+                    key=unicode(row[0])
+                    if key not in splitkeys:
+                        splitkeys[key]=createdb(os.path.join(fullpath, filename+'.'+key+ext), tablename, headers[1:])
+                    c, cursor, insertquery=splitkeys[key]
+                    cursor.execute(insertquery, row[1:])
+                for c, cursor,i in splitkeys.values():
+                    cursor.execute('commit')
+                    c.close()
+            else:
+                row, headers=diter.next()
+                c, cursor, insertquery=createdb(where, tablename, headers)
+                cursor.execute(insertquery, row)
+                for row,headers in diter:
+                    cursor.execute(insertquery, row)
+                list(cursor.execute('commit'))
+                c.close()
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Unknown mode value")
 
     except StopIteration,e:
         pass
 
-    fileIter.close()
+    if formatArgs['mode']!='db':
+        fileIter.close()
 
 
 boolargs=lib.inoutparsing.boolargs+['append','header','compression']
