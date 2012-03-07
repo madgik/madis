@@ -215,7 +215,10 @@ def register(connection=None):
     global firstimport, oldexecdb
 
     if connection==None:
-        connection=Connection(':memory:', flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
+        if 'SQLITE_OPEN_URI' in apsw.__dict__:
+            connection=Connection(':memory:', flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
+        else:
+            connection=Connection(':memory:')
 
     connection.registered=True
 
