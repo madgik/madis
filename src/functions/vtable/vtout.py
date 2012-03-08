@@ -59,8 +59,8 @@ class doall(object):
             if self.returnalways:
                 return False
             else:
-                import traceback
                 if functions.settings['tracing']:
+                    import traceback
                     print "---Deep Execution traceback--"
                     print traceback.print_exc()
                 raise functions.MadisError(e)
