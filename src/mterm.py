@@ -408,9 +408,10 @@ def printterm(*args, **kwargs):
 
     if not pipedinput:
         print(msg)
-    elif 'exit' in kwargs:
-        sys.exit(msg)
 
+def exitwitherror(*args):
+    msg=','.join([unicode(x) for x in args])
+    sys.exit(msg)
 
 
 VERSION='1.0'
@@ -721,7 +722,8 @@ while True:
             continue
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
             emsg=unicode(e)
-            printterm(functions.mstr(emsg), exit=True)
+            if pipedinput:
+                exitwitherror(functions.mstr(emsg))
             try:
                 if u'Error:' in emsg:
                     emsgsplit=emsg.split(u':')
@@ -732,7 +734,10 @@ while True:
                 print e
             continue
         except Exception, e:
-            printterm("Unknown error:"+functions.mstr(e), exit=True)
+            msg="Unknown error:"+functions.mstr(e)
+            if pipedinput:
+                exitwitherror(functions.mstr(msg))
+            print msg
             #raise
         finally:
             colorama.deinit()
