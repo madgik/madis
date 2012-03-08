@@ -51,11 +51,21 @@ def mstr(s):
     if s==None:
         return None
     try:
-        return unicode(s, 'utf-8', errors='replace')
+        return unicode(s)
     except KeyboardInterrupt:
         raise
     except:
-        pass
+        try:
+            return unicode(s, 'utf-8', errors='replace')
+        except KeyboardInterrupt:
+            raise
+        except:
+            try:
+                return str(s)
+            except KeyboardInterrupt:
+                raise
+            except:
+                pass
     o=repr(s)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
@@ -176,7 +186,7 @@ class Cursor(object):
                     if not checkhassetschema(svts[1],i) or i[0] in s:
                         raise
             return self.executetrace(s,bindings)
-        except Exception:
+        except Exception, e:
             if settings['tracing']:
                 print traceback.print_exc()
             try: #avoid masking exception in recover statements
