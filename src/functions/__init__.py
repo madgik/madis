@@ -56,6 +56,7 @@ def mstr(s):
     except KeyboardInterrupt:
         raise
     except:
+        # Parse exceptions that cannot be converted by unicode above
         try:
             return str(s)
         except KeyboardInterrupt:
