@@ -72,8 +72,9 @@ class doall(object):
         return ret
 
 def diter(iter,func):
+    funcval=func()
     for i in iter:
-        yield i,func()
+        yield i,funcval
 
 class SourceNtoOne:
     def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):
