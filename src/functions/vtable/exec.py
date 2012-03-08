@@ -194,7 +194,6 @@ def execflow(diter,connection,*args,**kargs):
             if query.startswith(ignoreflag):
                 catchexception=True
                 query=query[len(ignoreflag):]
-                
             try:
                 for i in c.execute(query):
                     pass
@@ -209,8 +208,6 @@ def execflow(diter,connection,*args,**kargs):
                         c.close()
                         c=con.cursor()
                         c.execute('rollback')
-                    except KeyboardInterrupt:
-                        raise
                     except:
                         pass
                     raise e
@@ -231,8 +228,6 @@ def execflow(diter,connection,*args,**kargs):
     finally:
         try:
             con.close()
-        except KeyboardInterrupt:
-            raise  
         except:
             pass
         after=datetime.datetime.now()
