@@ -50,22 +50,19 @@ oldexecdb=-1
 def mstr(s):
     if s==None:
         return None
+
     try:
-        return unicode(s)
+        return unicode(s, 'utf-8', errors='replace')
     except KeyboardInterrupt:
         raise
     except:
         try:
-            return unicode(s, 'utf-8', errors='replace')
+            return str(s)
         except KeyboardInterrupt:
             raise
         except:
-            try:
-                return str(s)
-            except KeyboardInterrupt:
-                raise
-            except:
-                pass
+            pass
+        
     o=repr(s)
     if (o[0:2]=="u'" and o[-1]=="'") or (o[0:2]=='u"' and o[-1]=='"'):
         o=o[2:-1]
