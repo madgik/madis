@@ -196,8 +196,7 @@ def outputData(diter,*args,**formatArgs):
                 row, headers=diter.next()
                 c, cursor, insertquery=createdb(where, tablename, headers)
                 cursor.execute(insertquery, row)
-                for row,headers in diter:
-                    cursor.execute(insertquery, row)
+                cursor.executemany(insertquery, (x[0] for x in diter))
                 list(cursor.execute('commit'))
                 c.close()
         else:
