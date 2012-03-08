@@ -62,12 +62,15 @@ class mtermoutput(csv.Dialect):
         self.lineterminator='\n'
 
 def createConnection(db):
-    if 'SQLITE_OPEN_URI' in apsw.__dict__:
-        connection = functions.Connection(db, flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
-    else:
-        connection = functions.Connection(db)
-    functions.register(connection)
-    connection.enableloadextension(True)
+    try:
+        if 'SQLITE_OPEN_URI' in apsw.__dict__:
+            connection = functions.Connection(db, flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
+        else:
+            connection = functions.Connection(db)
+        functions.register(connection)
+        connection.enableloadextension(True)
+    except Exception, e:
+        exitwitherror(e)
     return connection
 
 def reloadfunctions():
