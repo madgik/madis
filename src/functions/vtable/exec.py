@@ -245,8 +245,6 @@ def execflow(diter,connection,*args,**kargs):
         functions.variables=oldvars
         if newpath:
             os.chdir(path)
-    pass
-
 
 def Source():
     return SourceNtoOne(execflow,connectionhandler=True)
