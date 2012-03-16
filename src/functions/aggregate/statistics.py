@@ -476,11 +476,10 @@ class stdev:
         return math.sqrt(variance)
 
 
-
 class rangef:
 
     """
-     .. function:: rangef(X) -> [rangef float]
+    .. function:: rangef(X) -> [rangef float]
 
     Computes the numerical range for a dataset X, substracting the minimum value from the maximum value.
     Textal and NULL data entries are simply ignored.
@@ -534,6 +533,7 @@ class rangef:
             return
         self.range=max(self.sample) - min(self.sample)
         return self.range
+
 
 class amean:
     """
@@ -595,6 +595,7 @@ class amean:
         if (not self.sample):
             return
         return self.sum/self.counter
+
 
 class wamean:
     """
@@ -659,6 +660,7 @@ class wamean:
         if (self.counter==0):
             return
         return self.sum/self.counter
+
 
 class gmean:
     """
@@ -785,6 +787,7 @@ class gmean:
 
 re_now=re.compile('now:(?P<now>.*)')
 
+
 class frecency:
     """
     .. function:: frecency(actiondate[,points[,now:date]])
@@ -870,11 +873,10 @@ class frecency:
         return self.frecency
 
 
-
 class pearson:
 
     """
-     .. function:: pearson(X,Y) -> float
+    .. function:: pearson(X,Y) -> float
 
     Computes the pearson coefficient of X and Y datasets
 
