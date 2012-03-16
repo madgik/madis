@@ -13,8 +13,10 @@ class graphpowerhash:
     that calculates hashes on every processing step. The produced output, contains for every node in the input graph
     a hash that "describes" its "surroundings".
 
-    :'steps' parameter:
-        The *steps* option controls the number of steps that the power hashing will be executed. Another
+    Parameters:
+
+    :steps:
+        The *steps* option controls the number of steps that the power hashing will be executed for. Another
         way to conceptualize the *steps* parameter is to think of it as the radius of the graph around
         a particular node that the node's hash covers.
 
@@ -25,16 +27,16 @@ class graphpowerhash:
         - -1 . Steps is set to number_of_nodes
         - Negative integers, steps is set to number_of_nodes / absolute_value(steps)
 
-    :'undirected_edge':
+    :undirected_edge':
 
         This option can only have the *null* value.
 
         - Parameter absent. The graph is assumed to be directed.
         - Parameter present and having a *null* value. The graph is assumed to be undirected
 
-    :node1, node2:
+    :node1,node2:
 
-        Node connections. If the graph contains only one node, then *node2* can be null.
+        Node1 connects to Node2. If node1 doesn't connect to any node, then *node2*'s value should be null.
 
     :node and edge details:
 
@@ -42,13 +44,12 @@ class graphpowerhash:
         parameters define "tags" on the nodes and edges of the graph.
 
     .. note::
-        The graph power hash algorithm is an experimental algorithm (created by me, Lefteris Stamatogiannakis). I haven't
+        The graph power hash algorithm is an experimental algorithm created by me, Lefteris Stamatogiannakis. I haven't
         proved its correctness, so please use it with care. Due to its hash usage, there is a (very low probability)
         that two different graphs could hash to the same power hash.
 
         I would be very very thankfull to anyone knowledgable in graph theory, who could prove it to be wrong (or correct).
-        Also while i've searched in the related bibliography, i couldn't find anything close to power hash algorithm. Nevertheless
-        if anyone knows of a paper that describes anything related to this algorithm, i would be glad to be pointed towards it.
+        If the reader knows of a paper that describes another algorithm similar to this algorithm, i would be glad to be pointed towards it.
 
     .. note::
         The computational complexity of the powerhash algorithm is O(n * steps * average_node_degree). The optimal value for
@@ -265,8 +266,8 @@ class graphpowerhash:
                 invdegree+=1.0/ndegree
 
             self.steps=int(min(
-            # Obvious upper bound
-            ncount-max(2, maxdegree) + 2,
+            # Obvious upper bounds
+            ncount, ncount-max(2, maxdegree) + 2,
             # P. Dankelmann "Diameter and inverse degree"
             (3*invdegree+3)*math.log(ncount)/math.log(math.log(ncount)) if ncount>16 else ncount,
             # Simon Mukwembi "A note on diameter and the degree sequence of a graph"
