@@ -13,12 +13,14 @@ Formatting options:
 
 :mode:
     - plain     *Default*. The columns are concatened and written together.
-    - tsv       Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in *tsv*.
-    - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in *csv*.
-    - db        Writes data in a SQLite DB. *DB* mode is autoselected when the filename ends in *db*.
-                If split:1 option is also provided, the output is multiplexed into multiple databases according to
-                first input table column. If pagesize:xxxxx option is givev, set new DB page sizes to parameter given,
-                if not inherit page size from parent DB.
+    - tsv       Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in ".tsv".
+    - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in ".csv".
+    - db        Writes data in a SQLite DB. *DB* mode is autoselected when the filename ends in ".db".
+
+                - If split:1 option is also provided, the output is multiplexed into multiple databases according to first input table column.
+
+                - If pagesize:xxxxx option is given, set new DBs page size to parameter given, if not inherit page size from parent DB.
+
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
 
