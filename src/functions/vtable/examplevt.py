@@ -1,7 +1,7 @@
 """
 .. function:: examplevt(arguments)
 
-    A minimal example of a virtual table. Returns all the arguments passed to it.
+A minimal example of a virtual table. Returns all the arguments passed to it.
 
 :Returned table schema:
     Column names start from C1... , all column types are text
