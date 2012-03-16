@@ -69,8 +69,8 @@ def failif(*args):
     """
     .. function:: failif(condition [, messsage])
 
-        If condition is true, raises an error. If message is provided, the message is included in
-        raised error.
+    If condition is true, raises an error. If message is provided, the message is included in
+    raised error.
 
     Examples:
 
@@ -111,7 +111,8 @@ def execprogram(*args):
     .. function:: execprogram(stdin=null, program_name, parameters, [raise_error]) -> text or blob
 
     Function *execprogram* executes a shell command and returns its output. If the
-    value of the first argument is not *null*, it will be provided in program's Standard Input.
+    value of the first argument is not *null*, the arguments value will be pushed in program's Standard Input.
+
     If the program doesn't return a *0* return code, then a madIS error will be raised, containing
     the contents of the program's error stream.
 
@@ -121,9 +122,9 @@ def execprogram(*args):
     Every one of the program's parameters must be provided as different arguments of the *execprogram* call
     (see "cat -n" example below).
 
-.. note::
-    Function *execprogram* tries by default to convert the program's output to UTF-8. If the conversion
-    isn't succesfull, then it returns the output as a binary blob.
+    .. note::
+        Function *execprogram* tries by default to convert the program's output to UTF-8. If the conversion
+        isn't succesfull, then it returns the output as a binary blob.
 
     Examples:
 

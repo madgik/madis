@@ -1,7 +1,7 @@
 """
 .. function:: clipboard()
 
-    Returns the contents of the system's clipboard. If the clipboard's contents are guessed to be a table, then it automatically splits the contents in its output.
+Returns the contents of the system's clipboard. If the clipboard's contents are guessed to be a table, then it automatically splits the contents in its output.
 
 :Returned table schema:
     Column names start from C1... , all column types are text

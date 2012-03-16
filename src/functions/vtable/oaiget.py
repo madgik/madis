@@ -1,11 +1,11 @@
 """
 .. function:: oaiget(url, verb, metadataPrefix,...)
 
-    Fetches data from an OAIPMH service, using resumption tokens to fetch large datasets.
+Fetches data from an OAIPMH service, using resumption tokens to fetch large datasets.
 
-    - If no *verb* is provided then *verb* is assumed to be 'ListRecords'.
-    - If no *metadataPrefix* is provided then *verb* is assumed to be 'ListMetadataFormats', which will list
-      all metadata formats.
+- If no *verb* is provided then *verb* is assumed to be 'ListRecords'.
+- If no *metadataPrefix* is provided then *verb* is assumed to be 'ListMetadataFormats', which will list
+  all metadata formats.
 
 :Returned table schema:
     Column C1 as text
