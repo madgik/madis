@@ -17,14 +17,16 @@ def gendoc(funtype, toplevelonly=False):
 
     if not toplevelonly:
         for i,v in functions.functions[funtype].iteritems():
-            if v.__module__ not in docs:
-                docs[v.__module__]=[]
-            docs[v.__module__].append(i)
+            if not v.__name__.startswith('functionslocal'):
+                if v.__module__ not in docs:
+                    docs[v.__module__]=[]
+                docs[v.__module__].append(i)
     else:
         for i,v in functions.functions[funtype].iteritems():
-            tstr='functions.vtable.'+i
-            if tstr not in docs:
-                docs[tstr]=True
+            if not v.__name__.startswith('functionslocal'):
+                tstr='functions.vtable.'+i
+                if tstr not in docs:
+                    docs[tstr]=True
 
     for i,v in sorted(docs.items()):
         modulestr='.. module:: functions.'+funtype+'.'+i.split('.')[2]+'\n\n'
