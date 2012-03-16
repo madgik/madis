@@ -36,7 +36,6 @@ Contents:
    row
    aggregate
    vtable
-   modules
    people
    copyright
    thanks
