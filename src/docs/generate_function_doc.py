@@ -36,29 +36,23 @@ def gendoc(funtype, toplevelonly=False):
         file.write(modstr+'\n')
         file.write('-'*len(modstr)+'\n\n')
         file.write(modulestr)
-      #  file.write('.. module:: '+i+'\n\n')
         file.write('')
         
         if not toplevelonly:
             for i1 in sorted(v):
 
                 tmpstr='**'+i1+' function**'
-                #tmpstr+='\n'+len(tmpstr)*'-'+'\n'
-                file.write(tmpstr)#'.. function:: '+i+'.'+i1+'\n\n')
+                file.write(tmpstr)
                 if not functions.functions[funtype][i1].__doc__:
                     file.write('\n\n')
                 else:
                     file.write(str(functions.functions[funtype][i1].__doc__)+'\n\n')
         else:
-            #print i,v
             if not functions.functions[funtype][i.split('.')[-1]].__doc__:
                 file.write('\n\n')
             else:
                 file.write(str(functions.functions[funtype][i.split('.')[-1]].__doc__)+'\n\n')
                 
-
-
-
 gendoc('row')
 gendoc('aggregate')
 gendoc('vtable', True)
