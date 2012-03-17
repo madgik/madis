@@ -267,7 +267,7 @@ class graphpowerhash:
 
             self.steps=int(min(
             # Obvious upper bounds
-            ncount, ncount-max(2, maxdegree) + 2,
+            ncount-max(2, maxdegree) + 2,
             # P. Dankelmann "Diameter and inverse degree"
             (3*invdegree+3)*math.log(ncount)/math.log(math.log(ncount)) if ncount>16 else ncount,
             # Simon Mukwembi "A note on diameter and the degree sequence of a graph"
