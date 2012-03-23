@@ -76,29 +76,6 @@ class Transclass:
 
         fs=[x for x in expand_tokens(s)]
 
-        # TODO Delete convert external parenthesis in the future
-        # Convert external parenthesis
-#        for t in fs:
-#            if t.ttype==Token.Keyword.DML:
-#                break
-#            if unicode(t).lower() in ('in', 'exists'):
-#                break
-#            if type(t) is sqlparse.sql.Parenthesis:
-#                subq=find_parenthesis.match(unicode(t))
-#                if subq!=None:
-#                    subq=subq.groups()[0]
-#                    if not re.search(ur'(?i)(select\s|'+'|'.join([x+r'\s' for x in self.vtables])+'|'+'|'.join(x+r'\s' for x in self.row_functions)+')',unicode(s), re.UNICODE):
-#                        break
-#                    t.tokens=sqlparse.parse(subq)[0].tokens
-#                    out_vtables+=self.rectransform(t)[1]
-#                    if re.match(ur'(?i)\s*select\s', unicode(t), re.UNICODE):
-#                        exts='SELECT * FROM ('+unicode(t)+')'
-#                        t.tokens=sqlparse.parse(exts)[0].tokens
-#                    else:
-#                        exts='('+unicode(t)+')'
-#                        t.tokens=sqlparse.parse(exts)[0].tokens
-
-
         # Process internal parenthesis
         for t in fs:
             if type(t) is sqlparse.sql.Parenthesis:
