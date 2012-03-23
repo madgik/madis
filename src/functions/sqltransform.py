@@ -7,9 +7,12 @@ import re
 from sqlparse.tokens import *
 import zlib
 import functions
+from collections import OrderedDict
 
 break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)\s*$""", re.DOTALL| re.UNICODE)
 find_parenthesis=re.compile(r"""\s*\((.*)\)\s*$""", re.DOTALL| re.UNICODE)
+viewdetector=re.compile(r'(?i)\s*create\s+(?:temp|temporary)\s+view\s+', re.DOTALL| re.UNICODE)
+
 
 # delete reserved SQL keywords that collide with our vtables
 if __name__ != "__main__":
@@ -37,9 +40,15 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
         st1=sqlparse.parse(strs)
         if len(st1)>0:
             sqp=trans.rectransform(st1[0])
-            s_out+=unicode(sqp[0])
+            strs=unicode(sqp[0])
+            s_out+=strs
             s_out+=';'
-            out_vtables+=sqp[1]
+
+            # Detect create temp view and mark its vtables as permanent
+            if viewdetector.match(strs):
+                out_vtables+=[x+(False,) for x in sqp[1]]
+            else:
+                out_vtables+=sqp[1]
     return (s_out, vt_distinct(out_vtables), sqp[2])
 
 class Transclass:
@@ -271,13 +280,15 @@ def expand_tokens(inpt):
             yield token
 
 def vt_distinct(vt):
-    vtout=[]
-    vtnames={}
+    vtout=OrderedDict()
     for i in vt:
-        if i[0] not in vtnames:
-            vtnames[i[0]]=True
-            vtout+=[i]
-    return vtout
+        if i[0] not in vtout:
+            vtout[i[0]]=i
+        else:
+            if len(vtout[i[0]])<len(i):
+                vtout[i[0]]=i
+
+    return vtout.values()
 
 if __name__ == "__main__":
 
@@ -373,6 +384,7 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"select upper(execute) from a"]
     sql+=[r"exec select a.5 from (flow file 'lala')"]
     sql+=[r"select max( (select 5))"]
+    sql+=[r"cache select 5; create temp view as cache select 7; cache select 7"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
