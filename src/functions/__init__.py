@@ -13,6 +13,7 @@ import re
 import sys
 from lib import simplequeryparse
 import compiler.consts
+from collections import OrderedDict
 try:
     from inspect import isgeneratorfunction
 except ImportError:
@@ -131,7 +132,7 @@ class Cursor(object):
     def __init__(self,w):
         self.__wrapped=w
         self.__vtables=[]
-        self.__permanentvtables={}
+        self.__permanentvtables=OrderedDict()
         self.__initialised=True
         
     def __getattr__(self, attr):
@@ -170,23 +171,23 @@ class Cursor(object):
                 self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
                 self.__vtables=[]
             for i in svts[1]:
+                createvirtualsql=None
                 if re.match(r'\s*$',i[2])==None:
                     sep=','
                 else:
                     sep=''
+                createvirtualsql='create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
                 try:
                     try:
-                        self.executetrace('create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")")
+                        self.executetrace(createvirtualsql)
                     except Exception, e:
-                        self.__permanentvtables[i[0]]=True
+                        self.__permanentvtables[i[0]]=createvirtualsql
                         if settings['tracing'] or (not mstr(e).endswith("already exists")):
                             raise(e)
 
                     if len(i)==4:
-                        self.__permanentvtables[i[0]]=True
-                    else:
-                        if i[0] not in self.__permanentvtables:
-                            self.__vtables.append(i[0])
+                        self.__permanentvtables[i[0]]=createvirtualsql
+                    self.__vtables.append(i[0])
                 except DynamicSchemaWithEmptyResultError:                    
                     if not checkhassetschema(svts[1],i) or i[0] in s:
                         raise
@@ -213,6 +214,10 @@ class Cursor(object):
         if self.__vtables!=[]:
             self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
             self.__vtables=[]
+
+
+#        for t, v in self.__permanentvtables:
+#            self.executetrace(v)
 
 
 class Connection(apsw.Connection):
