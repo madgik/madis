@@ -176,7 +176,12 @@ def outputData(diter, connection, *args,**formatArgs):
                 c=apsw.Connection(where)
                 cursor=c.cursor()
                 list(cursor.execute('pragma page_size='+str(page_size)+';pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;'))
-                list(cursor.execute('create table '+tname+' (`'+'`,`'.join(x[0] for x in schema)+'`); begin;'))
+                create_schema='create table '+tname+' ('
+                create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
+                for colname, coltype in schema[1:]:
+                    create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
+                create_schema+='); begin;'
+                list(cursor.execute(create_schema))
                 insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
                 return c, cursor, insertquery
 
