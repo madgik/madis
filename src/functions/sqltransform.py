@@ -285,7 +285,7 @@ def vt_distinct(vt):
         if i[0] not in vtout:
             vtout[i[0]]=i
         else:
-            if len(vtout[i[0]])<len(i):
+            if not vtout[i[0]][-1]==False:
                 vtout[i[0]]=i
 
     return vtout.values()
