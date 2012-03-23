@@ -13,7 +13,6 @@ import re
 import sys
 from lib import simplequeryparse
 import compiler.consts
-from collections import OrderedDict
 try:
     from inspect import isgeneratorfunction
 except ImportError:
@@ -132,7 +131,7 @@ class Cursor(object):
     def __init__(self,w):
         self.__wrapped=w
         self.__vtables=[]
-        self.__permanentvtables=OrderedDict()
+        self.__permanentvtables={}
         self.__initialised=True
         
     def __getattr__(self, attr):
@@ -182,6 +181,7 @@ class Cursor(object):
                         self.__permanentvtables[i[0]]=True
                         if settings['tracing'] or (not mstr(e).endswith("already exists")):
                             raise(e)
+
                     if len(i)==4:
                         self.__permanentvtables[i[0]]=True
                     else:
