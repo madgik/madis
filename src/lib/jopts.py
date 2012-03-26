@@ -58,7 +58,11 @@ u'[]'
 """
 
 import json
-import collections
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections import OrderedDict
 
 def toj(l):
     if l==None:

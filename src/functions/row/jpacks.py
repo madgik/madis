@@ -1,8 +1,12 @@
 import lib.jopts as jopts
 import json
 import operator
-import collections
 import itertools
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections import OrderedDict
 
 def jpack(*args):
 
@@ -377,15 +381,15 @@ def jdictkeys(*args):
         i=args[0]
         try:
             if i[0]=='{' and i[-1]=='}':
-                keys=[x for x in json.loads(i, object_pairs_hook=collections.OrderedDict).iterkeys()]
+                keys=[x for x in json.loads(i, object_pairs_hook=OrderedDict).iterkeys()]
         except TypeError,e:
             pass
     else:
-        keys=collections.OrderedDict()
+        keys=OrderedDict()
         for i in args:
             try:
                 if i[0]=='{' and i[-1]=='}':
-                    keys.update([(x,None) for x in json.loads(i, object_pairs_hook=collections.OrderedDict).iterkeys()])
+                    keys.update([(x,None) for x in json.loads(i, object_pairs_hook=OrderedDict).iterkeys()])
             except TypeError,e:
                 pass
         keys=list(keys)

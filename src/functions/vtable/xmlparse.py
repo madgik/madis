@@ -182,12 +182,16 @@ Examples:
 """
 import vtiters
 import functions
-import collections
 import htmlentitydefs
 import json
 import cStringIO as StringIO
 import StringIO as unicodeStringIO
 import re
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections import OrderedDict
 
 try:
     import xml.etree.cElementTree as etree
@@ -286,7 +290,7 @@ class rowobj():
 
 class jdictrowobj():
     def __init__(self, ns, subtreeroot=None):
-        self.rowdata=collections.OrderedDict()
+        self.rowdata=OrderedDict()
         self.namespace=ns
         if subtreeroot!=None:
             self.root=[subtreeroot]
@@ -316,7 +320,7 @@ class jdictrowobj():
         return [json.dumps(self.rowdata, separators=(',',':'), ensure_ascii=False)]
 
     def resetrow(self):
-        self.rowdata=collections.OrderedDict()
+        self.rowdata=OrderedDict()
 
 class schemaobj():
     def __init__(self):
@@ -427,7 +431,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                 return [('C1', 'text')]
 
             try:
-                jxp=json.loads(xp, object_pairs_hook=collections.OrderedDict)
+                jxp=json.loads(xp, object_pairs_hook=OrderedDict)
             except ValueError:
                 jxp=None
 
@@ -439,14 +443,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if path[0]==self.subtreeroot:
                         path=path[1:]
                     s.addtoschema(path)
-            elif type(jxp) is collections.OrderedDict:
+            elif type(jxp) is OrderedDict:
                 for k,v in jxp.iteritems():
                     path=k.split('/')
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
                         path=path[1:]
-                    if type(v) in (list, collections.OrderedDict):
+                    if type(v) in (list, OrderedDict):
                         for i in v:
                             if i in ('*', '$'):
                                 s.addtoschema(path+['*'])

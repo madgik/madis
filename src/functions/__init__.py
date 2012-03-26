@@ -13,7 +13,12 @@ import re
 import sys
 from lib import simplequeryparse
 import compiler.consts
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections import OrderedDict
+
 try:
     from inspect import isgeneratorfunction
 except ImportError:
