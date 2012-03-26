@@ -393,16 +393,10 @@ class graphtodot:
             del(largs[1])
             argslen-=1
 
-        if self.directed:
-            if argslen>4:
-                edgedetailslr=unicode(largs[4])
-            else:
-                edgedetailslr=None
+        if argslen>4:
+            edgedetailslr=unicode(largs[4])
         else:
-            if argslen>4:
-                edgedetailslr=unicode(largs[4])
-            else:
-                edgedetailslr=None
+            edgedetailslr=None
 
         if largs[1] not in self.nodes:
             if argslen>3:
@@ -457,6 +451,105 @@ class graphtodot:
         dot+='}'
 
         return dot
+
+class graphtotgf:
+    """
+    .. function:: graphtotgf(node1, node2, [node1_details, edge_details, node2_details]) -> TGF graph
+
+    Returns the TGF representation of the input graph.
+
+    Examples:
+
+    >>> table1('''
+    ... 1   2
+    ... 2   3
+    ... 3   4
+    ... 4   5
+    ... 5   3
+    ... ''')
+
+    >>> sql("select graphtotgf(a,b) from table1")  # doctest: +NORMALIZE_WHITESPACE
+    graphtotgf(a,b)
+    ------------------------------------------
+    1
+    2
+    3
+    4
+    5
+    #
+    1 2
+    2 3
+    3 4
+    4 5
+    5 3
+
+    Graph with details:
+
+    >>> table5('''
+    ... 1   2   O   =   C
+    ... 2   3   C   =   O
+    ... ''')
+
+    >>> sql("select graphtotgf(a, b, c, d, e) from table5")
+    graphtotgf(a, b, c, d, e)
+    --------------------------
+    1 O
+    2 C
+    3 O
+    #
+    1 2 =
+    2 3 =
+
+    """
+
+    registered=True
+
+    def __init__(self):
+        self.nodes={}
+        self.steps=None
+        self.directed=True
+
+    def step(self, *args):
+        argslen=len(args)
+        largs=args
+
+        if argslen>3:
+            edgedetailslr=unicode(largs[3])
+        else:
+            edgedetailslr=None
+
+        if largs[0] not in self.nodes:
+            if argslen>2:
+                self.nodes[largs[0]]=[ [( largs[1],edgedetailslr )] , largs[2]]
+            else:
+                self.nodes[largs[0]]=[ [( largs[1],edgedetailslr )] , None]
+        else:
+            self.nodes[largs[0]][0].append( ( largs[1],edgedetailslr ) )
+
+
+        if largs[1]!=None:
+            if largs[1] not in self.nodes:
+                if argslen>4:
+                    self.nodes[largs[1]]=[ [], largs[4]]
+                else:
+                    self.nodes[largs[1]]=[ [] , None]
+
+    def final(self):
+        tgf=''
+
+        def clearname(n):
+            return unicode(n).replace(' ','_').replace('"',"'")
+
+        for n,v in self.nodes.iteritems():
+            tgf+=clearname(n) + ' ' + (clearname(v[1]) if v[1]!=None else '') +'\n'
+
+        tgf+='#\n'
+           
+        for n,v in self.nodes.iteritems():
+            for e in v[0]:
+                tgf+=clearname(n)+ ' ' + clearname(e[0])+ ' '+ (clearname(e[1]) if e[1]!=None else '') + '\n'
+
+        return tgf
 
 if not ('.' in __name__):
     """
