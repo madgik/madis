@@ -118,7 +118,7 @@ def outputData(diter, connection, *args,**formatArgs):
 
     if 'mode' not in formatArgs:
         formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'db':'db'})
-        
+
     if 'header' not in formatArgs:
         header=False
     else:
@@ -220,7 +220,7 @@ def outputData(diter, connection, *args,**formatArgs):
     except StopIteration,e:
         pass
 
-    if formatArgs['mode']!='db':
+    if 'mode' not in formatArgs or ('mode' in formatArgs and formatArgs['mode']!='db'):
         fileIter.close()
 
 
