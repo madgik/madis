@@ -176,7 +176,7 @@ def outputData(diter, connection, *args,**formatArgs):
             def createdb(where, tname, schema, page_size=16384):
                 c=apsw.Connection(where)
                 cursor=c.cursor()
-                list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=8;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;'))
+                list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;'))
                 create_schema='create table '+tname+' ('
                 create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
                 for colname, coltype in schema[1:]:
