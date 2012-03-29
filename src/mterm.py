@@ -18,11 +18,24 @@ import re
 import apsw
 import functions
 
-# Workaround for absence of a real readline module in win32
-if sys.platform == 'win32':
-    import pyreadline as readline
+pipedinput=not sys.stdin.isatty()
+
+if pipedinput:
+    # If we get piped input use dummy readline
+    readline=lambda x:x
+    readline.remove_history_item=lambda x:x
+    readline.read_history_file=lambda x:x
+    readline.write_history_file=lambda x:x
+    readline.set_completer=lambda x:x
+    readline.add_history=lambda x:x
+    readline.parse_and_bind=lambda x:x
+    readline.set_completer_delims=lambda x:x
 else:
-    import readline
+    # Workaround for absence of a real readline module in win32
+    if sys.platform == 'win32':
+        import pyreadline as readline
+    else:
+        import readline
 
 import datetime
 import lib.reimport
@@ -32,7 +45,6 @@ import os
 from lib.dsv import writer
 import csv
 
-pipedinput=not sys.stdin.isatty()
 
 try:
     if pipedinput:
