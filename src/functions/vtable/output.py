@@ -68,6 +68,8 @@ from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
 import apsw
+from collections import defaultdict
+
 registered=True
 
 def fileit(p,append=False):
@@ -196,12 +198,12 @@ def outputData(diter, connection, *args,**formatArgs):
                 tablename=formatArgs['tablename']
 
             if 'split' in formatArgs:
-                splitkeys={}
                 fullpath=os.path.split(where)[0]
-                for row, headers in diter:
+                def cdb():
+                    return createdb(os.path.join(fullpath, filename+'.'+key+ext), tablename, headers[1:], page_size)
+                splitkeys=defaultdict(cdb)
+                for row,headers in diter:
                     key=unicode(row[0])
-                    if key not in splitkeys:
-                        splitkeys[key]=createdb(os.path.join(fullpath, filename+'.'+key+ext), tablename, headers[1:], page_size)
                     c, cursor, insertquery=splitkeys[key]
                     cursor.execute(insertquery, row[1:])
                 for c, cursor,i in splitkeys.values():
