@@ -32,13 +32,13 @@ if pipedinput:
     readline.set_completer_delims=lambda x:x
 else:
     # Workaround for absence of a real readline module in win32
+    import lib.reimport
     if sys.platform == 'win32':
         import pyreadline as readline
     else:
         import readline
 
 import datetime
-import lib.reimport
 import locale
 import os
 
