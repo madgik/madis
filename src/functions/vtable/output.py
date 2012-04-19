@@ -68,6 +68,7 @@ from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
 import apsw
+
 registered=True
 
 def fileit(p,append=False):
