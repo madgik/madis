@@ -99,7 +99,10 @@ def reloadfunctions():
     tmp_settings=functions.settings
     tmp_vars=functions.variables
     connection.close()
-    lib.reimport.reimport(functions, 'functionslocal')
+    try:
+        lib.reimport.reimport(functions, 'functionslocal')
+    except ValueError:
+        pass
     connection = createConnection(db)
     functions.settings=tmp_settings
     functions.variables=tmp_vars
