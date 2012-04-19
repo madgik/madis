@@ -199,14 +199,19 @@ def outputData(diter, connection, *args,**formatArgs):
                 splitkeys={}
                 fullpath=os.path.split(where)[0]
                 for row, headers in diter:
-                    key=unicode(row[0])
+                    key=row[0]
                     if key not in splitkeys:
-                        splitkeys[key]=createdb(os.path.join(fullpath, filename+'.'+key+ext), tablename, headers[1:], page_size)
+                        unikey = unicode(key)
+                        splitkeys[unikey]=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, headers[1:], page_size)
+                        # Case for number as key
+                        if unikey != key:
+                            splitkeys[key] = (None,) + splitkeys[unikey][1:]
                     c, cursor, insertquery=splitkeys[key]
                     cursor.execute(insertquery, row[1:])
                 for c, cursor,i in splitkeys.values():
-                    cursor.execute('commit')
-                    c.close()
+                    if c != None:
+                        cursor.execute('commit')
+                        c.close()
             else:
                 row, headers=diter.next()
                 c, cursor, insertquery=createdb(where, tablename, headers, page_size)
