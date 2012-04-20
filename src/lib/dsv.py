@@ -64,7 +64,7 @@ class reader:
             else:
                 self.delimiter = ','
             del kwds['fast']
-            self.f = codecs.getreader('utf-8')(tsvfile)
+            self.f = tsvfile
 
         if not hasheader:
             self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
@@ -73,7 +73,7 @@ class reader:
 
     def __iter__(self):
         if self.fast:
-            return (r.rstrip('\n').split(self.delimiter) for r in self.f)
+            return (unicode(r.rstrip('\n'), 'utf-8').split(self.delimiter) for r in self.f)
         else:
             return self.reader
 
