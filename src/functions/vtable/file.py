@@ -12,6 +12,10 @@ recognized with the corresponding dialect).
 
 Formatting options:
 
+:fast:
+
+    Default is 0 (false). Fast option shortcircuits accurate splitting of lines into values. It uses the delimiter option to split lines
+
 :encoding:
 
     A standar encoding name. (`List of encodings <http://docs.python.org/library/codecs.html#standard-encodings>`_)
@@ -132,7 +136,7 @@ from lib.ziputils import ZipIter
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
 
-csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect'])
+csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
 def nullify(iterlist):
     for lst in iterlist:
@@ -156,6 +160,9 @@ class FileCursor:
             self.encoding=rest['encoding']
             del rest['encoding']
 
+        if 'fast' in rest:
+            self.fast = True
+
         self.nonames=first
         for el in rest:
             if el not in csvkeywordparams:
@@ -168,7 +175,7 @@ class FileCursor:
                 self.fileiter=ZipIter(filename,"r")
             elif not isurl:
                 pathname=filename.strip()
-                self.fileiter=open(filename)
+                self.fileiter=open(filename,"r", buffering=1000000)
             else:
                 pathname=urlparse.urlparse(filename)[2]
                 req=urllib2.Request(filename,None,extraurlheaders)
@@ -214,14 +221,19 @@ class FileCursor:
         else: #### Default read lines
             self.iter=directfile(self.fileiter, encoding=self.encoding)
             namelist.append("C1")
-            
+
     def __iter__(self):
-        return self
+        if self.fast:
+            return self.iter
+        else:
+            return self
+    
     def next(self):
         try:
             return self.iter.next()
         except UnicodeDecodeError, e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not %s encoded" %(self.encoding))
+
     def close(self):
         self.fileiter.close()
         

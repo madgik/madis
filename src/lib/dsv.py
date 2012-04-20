@@ -56,17 +56,28 @@ class reader:
     """
     def __init__(self,tsvfile,hasheader=False,dialect=SQLITE_DIALECT,encoding="utf-8",**kwds):
         self.hasheader=hasheader
+        self.fast = False
+        if 'fast' in kwds:
+            self.fast = True
+            if 'delimiter' in kwds:
+                self.delimiter = kwds['delimiter']
+            else:
+                self.delimiter = ','
+            del kwds['fast']
+            self.f = codecs.getreader('utf-8')(tsvfile)
+
         if not hasheader:
             self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
         else:
             self.reader=UnicodeDictReader(tsvfile,dialect,encoding,**kwds)
-    def next(self):
-        return self.reader.next()
+
     def __iter__(self):
-        return self
+        if self.fast:
+            return (r.rstrip('\n').split(self.delimiter) for r in self.f)
+        else:
+            return self.reader
+
     def fieldnames(self):
-        if self.hasheader:
-            return self.reader.fieldnames()
         return None
 
 class UTF8Recoder:
@@ -75,9 +86,14 @@ class UTF8Recoder:
     """
     def __init__(self, f, encoding):
         self.reader = codecs.getreader(encoding)(f)
+        self.encoding = encoding
 
     def __iter__(self):
-        return self
+        # For default case shortcircuit self
+        if self.encoding.upper() == 'UTF-8':
+            return self.reader
+        else:
+            return self
 
     def next(self):
         return self.reader.next().encode("utf-8")
@@ -98,18 +114,21 @@ class UnicodeReader:
             self.big=kwds['delimiter']
             kwds['delimiter']=self.mdel
             self.reader = csv.reader(Onedel(f,self.big,self.mdel), dialect=dialect, **kwds)
+            self.next = self.nextwithreplace
         else:
             self.reader = csv.reader(f, dialect=dialect, **kwds)
 
     def next(self):
-        row = self.reader.next()
-        if self.replace: ##delimiter was more than one character (temporal replacements must be reversed)
-            return [unicode(s.replace(self.mdel,self.big), "utf-8") for s in row]
-        else:
-            return [unicode(s, "utf-8") for s in row]
+        return [unicode(s, "utf-8") for s in self.reader.next()]
+
+    def nextwithreplace(self):
+        return [unicode(s.replace(self.mdel,self.big), "utf-8") for s in self.reader.next()]
 
     def __iter__(self):
         return self
+
+    def fieldnames(self):
+        return None
 
 class UnicodeDictReader:
     """
@@ -135,6 +154,7 @@ class UnicodeDictReader:
         if not self.fields:
             row = self.reader.next()
             self.fields=[unicode(s, "utf-8") for s in row]
+            
     def next(self):
         if not self.fields:
             self.__readheader()
@@ -148,6 +168,7 @@ class UnicodeDictReader:
                 rowdict[field]=unicode(cell, "utf-8")
         
         return rowdict
+
     def fieldnames(self):
         if not self.fields:
             self.__readheader()
