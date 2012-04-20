@@ -60,11 +60,11 @@ class reader:
         if 'fast' in kwds:
             self.fast = True
             if 'delimiter' in kwds:
-                self.delimiter = kwds['delimiter']
+                delimiter = kwds['delimiter']
             else:
-                self.delimiter = ','
+                delimiter = ','
             del kwds['fast']
-            self.f = tsvfile
+            self.iterl = (unicode((r[:-1] if r[-1] == '\n' else r), 'utf-8').split(delimiter) for r in tsvfile)
 
         if not hasheader:
             self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
@@ -73,7 +73,7 @@ class reader:
 
     def __iter__(self):
         if self.fast:
-            return (unicode(r.rstrip('\n'), 'utf-8').split(self.delimiter) for r in self.f)
+            return self.iterl
         else:
             return self.reader
 
