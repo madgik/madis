@@ -180,6 +180,7 @@ class Cursor:
         self.row=None
         self.tablename=table.tablename
         self.firsttime=True
+        self.pos=0
         
     @echocall
     def Filter(self, *args):
@@ -200,7 +201,7 @@ class Cursor:
         return self.pos+1
 
 #    @echocall #-- Commented out for speed reasons
-    def Column(self, col):
+    def ColumnStop(self, col):
         try:
             return self.row[col]
         except IndexError:
@@ -209,9 +210,11 @@ class Cursor:
 #    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
-            self.row=self.iter.next()
-            self.pos+=1
+#            self.row=self.iter.next()
+#            self.pos+=1
+            self.Column=self.iter.next().__getitem__
         except StopIteration:
+            self.Column=self.ColumnStop
             self.row=None
             self.eof=True
 
