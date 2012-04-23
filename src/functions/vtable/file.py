@@ -140,13 +140,7 @@ csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','q
 
 def nullify(iterlist):
     for lst in iterlist:
-        nlst=[]
-        for el in lst:
-            if el.upper()=='NULL':
-                nlst+=[None]
-            else:
-                nlst+=[el]
-        yield nlst
+        yield [x if x.upper()!='NULL' else None for x in lst]
 
 def directfile(f, encoding='utf-8'):
     for line in f:
@@ -205,10 +199,16 @@ class FileCursor:
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
             if first and not hasheader:
-                self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
+                if self.fast:
+                    self.iter=peekable(reader(self.fileiter,encoding=self.encoding,**rest))
+                else:
+                    self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                 sample=self.iter.peek()
             else: ###not first or header
-                self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
+                if self.fast:
+                    self.iter=reader(self.fileiter, encoding=self.encoding, **rest)
+                else:
+                    self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                 if hasheader:
                     sample=self.iter.next()
             if first:
