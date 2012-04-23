@@ -33,6 +33,7 @@ import setpath
 from lib import argsparse
 import functions
 import logging
+import itertools
 
 class doall(object):
     def __init__(self,query,connection,func,returnalways,passconnection,*args,**kargs):
@@ -45,7 +46,7 @@ class doall(object):
         self.passconnection=passconnection
     def run(self):        
         c=self.connection.cursor()
-        
+
         try:
             if self.passconnection:
                 self.func(diter(c.execute(self.query),c.getdescription),self.connection,*self.args,**self.kargs)
@@ -73,8 +74,7 @@ class doall(object):
 
 def diter(iter,func):
     funcval=func()
-    for i in iter:
-        yield i,funcval
+    return itertools.izip(iter, itertools.repeat(funcval))
 
 class SourceNtoOne:
     def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):
