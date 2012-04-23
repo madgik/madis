@@ -200,18 +200,29 @@ def outputData(diter, connection, *args,**formatArgs):
             if 'split' in formatArgs:
                 fullpath=os.path.split(where)[0]
                 def cdb():
+                    global insertqueryw
                     unikey = unicode(key)
-                    splitkeys[unikey]=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, headers[1:], page_size)
+                    t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, headers[1:], page_size)
+                    splitkeys[unikey]=t[1].execute
+                    insertqueryw = t[2]
+                    dbcon[key]=t[0], t[1]
                     # Case for number as key
                     if unikey != key:
-                        splitkeys[key] = (None,) + splitkeys[unikey][1:]
+                        splitkeys[key] = splitkeys[unikey]
                     return splitkeys[key]
+                dbcon = {}
                 splitkeys=defaultdict(cdb)
+
+                row, headers = diter.next()
+                key=row[0]
+                cexec = splitkeys[key]
+                cexec(insertqueryw, row[1:])
+                # Copy to local var
+                insquery = insertqueryw
                 for row, headers in diter:
                     key=row[0]
-                    c, cursor, insertquery=splitkeys[key]
-                    cursor.execute(insertquery, row[1:])
-                for c, cursor,i in splitkeys.values():
+                    splitkeys[key](insquery, row[1:])
+                for c, cursor in dbcon.values():
                     if c != None:
                         cursor.execute('commit')
                         c.close()
