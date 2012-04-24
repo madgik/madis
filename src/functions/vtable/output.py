@@ -231,7 +231,7 @@ def outputData(diter, connection, *args, **formatArgs):
                 except ValueError:
                     maxparts = 1
 
-                if maxparts != 1:
+                if maxparts > 1:
                     for i in xrange(0, maxparts):
                         if i not in splitkeys:
                             key = i
