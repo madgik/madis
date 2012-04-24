@@ -73,7 +73,11 @@ class doall(object):
         return ret
 
 def diter(iter,func):
-    funcval=func()
+    try:
+        funcval=func()
+    except functions.ExecutionCompleteError:
+        raise functions.DynamicSchemaWithEmptyResultError("got empty input")
+
     return itertools.izip(iter, itertools.repeat(funcval))
 
 class SourceNtoOne:
