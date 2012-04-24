@@ -25,10 +25,10 @@ Formatting options:
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
     - gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.
 
-    If *mode* is not *csv* any given csv formatting options are ignored
+    If *mode* is not *csv* any given csv formatting options are ignored.
 
 :append:
-    t/f If true the output is append in the file, ignored in compression mode
+    t/f If true the output is append in the file, ignored in compression mode.
 
 :split:
     (number) It splits the input into many db files. Splitting only works when writting to a *db*. Splitting is done by using the first column of
