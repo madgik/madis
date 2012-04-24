@@ -105,7 +105,7 @@ def autotype(f, extlist):
             return extlist[ext]
     return 'plain'
 
-def outputData(diter, connection, *args,**formatArgs):
+def outputData(diter, connection, *args, **formatArgs):
     ### Parameter handling ###
     where=None
     if len(args)>0:
@@ -210,6 +210,7 @@ def outputData(diter, connection, *args,**formatArgs):
                     if unikey != key:
                         splitkeys[key] = splitkeys[unikey]
                     return splitkeys[key]
+                
                 dbcon = {}
                 splitkeys=defaultdict(cdb)
 
@@ -222,6 +223,20 @@ def outputData(diter, connection, *args,**formatArgs):
                 for row, headers in diter:
                     key=row[0]
                     splitkeys[key](insquery, row[1:])
+
+                # Create other parts
+                maxparts = 1
+                try:
+                    maxparts = int(formatArgs['split'])
+                except ValueError:
+                    maxparts = 1
+
+                if maxparts != 1:
+                    for i in xrange(0, maxparts):
+                        if i not in splitkeys:
+                            key = i
+                            tmp = splitkeys[key]
+
                 for c, cursor in dbcon.values():
                     if c != None:
                         cursor.execute('commit')
@@ -243,7 +258,7 @@ def outputData(diter, connection, *args,**formatArgs):
         fileIter.close()
 
 
-boolargs=lib.inoutparsing.boolargs+['append','header','compression', 'split']
+boolargs=lib.inoutparsing.boolargs+['append','header','compression']
 
 
 def Source():

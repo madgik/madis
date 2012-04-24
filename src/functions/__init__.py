@@ -53,6 +53,8 @@ rowfuncs=lambda x:x
 
 oldexecdb=-1
 
+ExecutionCompleteError = apsw.ExecutionCompleteError
+
 def mstr(s):
     if s==None:
         return None
