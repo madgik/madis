@@ -1,6 +1,7 @@
 import re
 from unicodeops import unistr
 
+
 def parse(args,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None):
     if boolargs==None:
         boolargs=[]
@@ -14,6 +15,7 @@ def parse(args,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None):
     listargs, keyargs= parametrize(*[unquote(unistr(a)) for a in args],**{'escapelists':needsescape,'notsplit':notsplit})
     keyargsdict=translate(keyargs,boolargs,nonstringargs)
     return listargs, keyargsdict
+
 
 def unescape(arg):
     arg=unistr(arg)
@@ -48,8 +50,6 @@ def translate(dictargs,boolargs,nonstringargs):
     return dictargs
 
 
-
-
 def unquote(p):
     if p.startswith("'") and p.endswith("'"):
         return p[1:-1].replace("''","'")
@@ -57,8 +57,8 @@ def unquote(p):
         return p[1:-1].replace('""','"')
     return p
 
-re_params=re.compile(ur'^(?!\w:\\\w)(\w+):(.*)')
 
+re_params=re.compile(ur'^(?!\w:\\\w)(\w+):(.*)')
 
 def parametrize(*args,**kargs):
     ps=[]
