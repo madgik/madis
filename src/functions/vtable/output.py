@@ -18,7 +18,7 @@ Formatting options:
     - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in ".csv".
     - db        Writes data in a SQLite DB. *DB* mode is autoselected when the filename ends in ".db".
 
-                - If split:1 option is also provided, the output is multiplexed into multiple databases according to first input table column.
+                - If *split* option is also provided, the output is multiplexed into multiple databases according to first input table column.
 
                 - If pagesize:xxxxx option is given, set new DBs page size to parameter given, if not inherit page size from parent DB.
 
@@ -29,6 +29,12 @@ Formatting options:
 
 :append:
     t/f If true the output is append in the file, ignored in compression mode
+
+:split:
+    (number) It splits the input into many db files. Splitting only works when writting to a *db*. Splitting is done by using the first column of
+    the input and it outputs all columns except the first one, in the db files. If the *split* argument is greater than *1* then the output will
+    always be splitted to the defined number of db files. If the split argument is 1 or lower, then the output will only contain the parts of which
+    a key were found on the first column of the input data.
 
 Detailed description of additional output formating options can be found in :func:`~functions.vtable.file.file` function description.
 
