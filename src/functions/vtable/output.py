@@ -189,7 +189,7 @@ def outputData(diter, connection, *args, **formatArgs):
                 create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
                 for colname, coltype in schema[1:]:
                     create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
-                create_schema+='); begin;'
+                create_schema+='); begin exclusive;'
                 list(cursor.execute(create_schema))
                 insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
                 return c, cursor, insertquery
