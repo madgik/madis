@@ -184,7 +184,7 @@ def outputData(diter, connection, *args, **formatArgs):
             def createdb(where, tname, schema, page_size=16384):
                 c=apsw.Connection(where)
                 cursor=c.cursor()
-                list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
+                list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-300;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
                 create_schema='create table '+tname+' ('
                 create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
                 for colname, coltype in schema[1:]:
@@ -226,9 +226,20 @@ def outputData(diter, connection, *args, **formatArgs):
                 cexec(insertqueryw, row[1:])
                 # Copy to local var
                 insquery = insertqueryw
+                towrite=0
                 for row, headers in diter:
                     key=row[0]
-                    splitkeys[key](insquery, row[1:])
+                    rowpart=row[1:]
+                    towrite+=sum((len(x) if type(x) in (str, unicode) else 5 for x in rowpart))
+                    splitkeys[key](insquery, rowpart)
+                    if towrite>128000:
+                        splitkeys[key]('commit')
+#                        splitkeys[key]('pragma cache_size=0')
+#                        splitkeys[key]('pragma cache_size=-1000')
+                        splitkeys[key]('PRAGMA shrink_memory')
+                        splitkeys[key]('begin exclusive')
+                        towrite=0
+
 
                 # Create other parts
                 maxparts = 1
