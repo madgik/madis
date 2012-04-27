@@ -3,6 +3,9 @@
 
 Returns the contents of the system's clipboard. If the clipboard's contents are guessed to be a table, then it automatically splits the contents in its output.
 
+:h:
+    if the 'h' option is provided to *clipboard()* function, the first row of the clipboard's data is regarded as the schema of the data.
+
 :Returned table schema:
     Column names start from C1... , all column types are text
 
@@ -28,7 +31,7 @@ class clipboard(vtiters.SchemaFromSampleVT):
     def getschema(self,samplerow):
         return self.schema
 
-    def open(self, **envars):
+    def open(self, *parsedArgs, **envars):
         import lib.pyperclip as clip
         data=clip.getcb()
 
@@ -58,8 +61,21 @@ class clipboard(vtiters.SchemaFromSampleVT):
                         break
 
         if hasschema:
-            self.schema=[('C'+str(i),'text') for i in xrange(1,count+2)]
             data=[i.split('\t') for i in data]
+            self.schema = None
+            header = False
+
+            # Check for header directive
+            for i in parsedArgs:
+                if i.startswith('h'):
+                    header = True
+
+            if header and len(data)>0:
+                self.schema = [(c,'text') for c in data[0]]
+                data = data[1:]
+            else:
+                self.schema=[('C'+str(i),'text') for i in xrange(1,count+2)]
+
         else:
             data=[[r] for r in data]
 
