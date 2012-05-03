@@ -219,8 +219,11 @@ class Cursor:
             self.eof=True
 
     @echocall
-    def Close(self):         
-        self.iter.close()
+    def Close(self):
+        try:
+            self.iter.close()
+        except AttributeError:
+            pass
 
 def unify(slist):
     if len(set(slist))==len(slist):
