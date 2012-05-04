@@ -211,7 +211,7 @@ def outputData(diter, connection, *args, **formatArgs):
                     t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, headers[1:], page_size)
                     splitkeys[unikey]=t[1].execute
                     insertqueryw = t[2]
-                    dbcon[key]=[t[0], t[1], 0]
+                    dbcon[key]=t[0], t[1]
                     # Case for number as key
                     if unikey != key:
                         splitkeys[key] = splitkeys[unikey]
@@ -228,17 +228,7 @@ def outputData(diter, connection, *args, **formatArgs):
                 insquery = insertqueryw
                 for row, headers in diter:
                     key=row[0]
-                    rowpart=row[1:]
-                    splitkeys[key](insquery, rowpart)
-                    dbcon[key][2]+=sum((len(x) if type(x) in (str, unicode) else 5 for x in rowpart))
-                    if dbcon[key][2]>500000:
-                        splitkeys[key]('commit')
-#                        splitkeys[key]('pragma cache_size=0')
-#                        splitkeys[key]('pragma cache_size=-1000')
-                        splitkeys[key]('PRAGMA shrink_memory')
-                        splitkeys[key]('begin exclusive')
-                        dbcon[key][2]=0
-
+                    splitkeys[key](insquery, row[1:])
 
                 # Create other parts
                 maxparts = 1
@@ -253,7 +243,7 @@ def outputData(diter, connection, *args, **formatArgs):
                             key = i
                             tmp = splitkeys[key]
 
-                for c, cursor, _ in dbcon.values():
+                for c, cursor in dbcon.values():
                     if c != None:
                         cursor.execute('commit')
                         c.close()
