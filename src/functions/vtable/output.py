@@ -38,9 +38,9 @@ Formatting options:
     gz/zip Selects between the two compression types.
 
 :split:
-    (number) It splits the input into many db files. Splitting only works when writting to a *db*. Splitting is done by using the first column of
-    the input and it outputs all columns except the first one, in the db files. If the *split* argument is greater than *1* then the output will
-    always be splitted to the defined number of db files. If the split argument is 1 or lower, then the output will only contain the parts of which
+    (number) It splits the input into many *db* or *json* files. Splitting only works when writting to a *db* or *JSON*. Splitting is done by using the first column of
+    the input and it outputs all columns except the first one. If the *split* argument is greater than *1* then the output will
+    always be splitted to the defined number of files. If the split argument is 1 or lower, then the output will only contain the parts of which
     a key were found on the first column of the input data.
 
 Detailed description of additional output formating options can be found in :func:`~functions.vtable.file.file` function description.
@@ -155,8 +155,9 @@ def outputData(diter, connection, *args, **formatArgs):
 
     where=autoext(where, formatArgs['mode'], type2ext)
     filename, ext=os.path.splitext(os.path.basename(where))
+    fullpath=os.path.split(where)[0]
 
-    if formatArgs['mode']!='db':
+    if not (formatArgs['mode'] == 'db' or (formatArgs['mode']=='json' and 'split' in formatArgs)):
         fileIter=getoutput(where,append,formatArgs['compression'],formatArgs['compressiontype'])
 
     del formatArgs['compressiontype']
@@ -165,12 +166,50 @@ def outputData(diter, connection, *args, **formatArgs):
         if formatArgs['mode']=='json':
             del formatArgs['mode']
             je = json.JSONEncoder(separators = (',',':'), ensure_ascii = True, check_circular = False).encode
-            row, header = diter.next()
-            fileIter.write( je( {'schema':header} ) + '\n')
-            fileIter.write( je( row ) + '\n')
 
-            for row,_ in diter:
-                print >> fileIter, je(row)
+            if 'split' in formatArgs:
+                def cjs():
+                    unikey = unicode(key)
+                    t=open(os.path.join(fullpath, filename+'.'+unikey+ext), 'w')
+                    print >> t, je( {'schema':header[1:]} )
+                    splitkeys[unikey]=t
+                    jsfiles[key]=t
+                    # Case for number as key
+                    if unikey != key:
+                        splitkeys[key] = splitkeys[unikey]
+                    return splitkeys[key]
+
+                jsfiles = {}
+                splitkeys=defaultdict(cjs)
+
+                # Copy to local var
+                for row, header in diter:
+                    key=row[0]
+                    print >> splitkeys[key], je(row[1:])
+
+                # Create other parts
+                maxparts = 1
+                try:
+                    maxparts = int(formatArgs['split'])
+                except ValueError:
+                    maxparts = 1
+
+                if maxparts > 1:
+                    for i in xrange(0, maxparts):
+                        if i not in splitkeys:
+                            key = i
+                            tmp = splitkeys[key]
+
+                for f in jsfiles.values():
+                    if f != None:
+                        f.close()
+            else:
+                row, header = diter.next()
+                fileIter.write( je( {'schema':header} ) + '\n')
+                fileIter.write( je( row ) + '\n')
+
+                for row,_ in diter:
+                    print >> fileIter, je(row)
         elif formatArgs['mode']=='csv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
@@ -197,7 +236,6 @@ def outputData(diter, connection, *args, **formatArgs):
             for row,headers in diter:
                 fileIter.write(((''.join([unicode(x) for x in row]))+'\n').encode('utf-8'))
         elif formatArgs['mode']=='db':
-
             def createdb(where, tname, schema, page_size=16384):
                 c=apsw.Connection(where)
                 cursor=c.cursor()
@@ -221,7 +259,6 @@ def outputData(diter, connection, *args, **formatArgs):
                 tablename=formatArgs['tablename']
 
             if 'split' in formatArgs:
-                fullpath=os.path.split(where)[0]
                 def cdb():
                     global insertqueryw
                     unikey = unicode(key)
@@ -277,9 +314,10 @@ def outputData(diter, connection, *args, **formatArgs):
     except StopIteration,e:
         pass
 
-    if 'mode' not in formatArgs or ('mode' in formatArgs and formatArgs['mode']!='db'):
+    try:
         fileIter.close()
-
+    except NameError:
+        pass
 
 boolargs=lib.inoutparsing.boolargs+['append','header','compression']
 
