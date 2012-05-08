@@ -158,13 +158,13 @@ def outputData(diter, connection, *args, **formatArgs):
     try:
         if formatArgs['mode']=='json':
             del formatArgs['mode']
-            je = json.JSONEncoder(separators = (',',':'), ensure_ascii = False, check_circular = False).encode
+            je = json.JSONEncoder(separators = (',',':'), ensure_ascii = True, check_circular = False).encode
             row, header = diter.next()
-            fileIter.write( je( {'schema':header} ).encode('utf-8') + '\n')
-            fileIter.write( je( row ).encode('utf-8') + '\n')
+            fileIter.write( je( {'schema':header} ) + '\n')
+            fileIter.write( je( row ) + '\n')
 
             for row,_ in diter:
-                print >> fileIter, je(row).encode()
+                print >> fileIter, je(row)
         elif formatArgs['mode']=='csv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
