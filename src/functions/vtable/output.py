@@ -31,6 +31,12 @@ Formatting options:
 :append:
     t/f If true the output is append in the file, ignored in compression mode.
 
+:compression:
+    t/f If true the output will be compressed. Default compressor type is *gz*.
+
+:compressiontype:
+    gz/zip Selects between the two compression types.
+
 :split:
     (number) It splits the input into many db files. Splitting only works when writting to a *db*. Splitting is done by using the first column of
     the input and it outputs all columns except the first one, in the db files. If the *split* argument is greater than *1* then the output will
@@ -93,7 +99,7 @@ def getoutput(p,append,compress,comptype):
         it=ZipIter(source,"w")
     elif compress and ( comptype=='gzip' or comptype=='gz'):
             itt=fileit(source+'.gz')
-            it=gzip.GzipFile(mode="w",fileobj=itt)
+            it=gzip.GzipFile(mode="w", compresslevel=6, fileobj=itt)
     else:
         it=fileit(source,append)
     return it
@@ -138,7 +144,7 @@ def outputData(diter, connection, *args, **formatArgs):
     if 'compression' not in formatArgs:
        formatArgs['compression']=False
     if 'compressiontype' not in formatArgs:
-        formatArgs['compressiontype']='zip'
+        formatArgs['compressiontype']='gz'
 
     append=False
     if 'append' in formatArgs:
