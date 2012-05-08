@@ -16,6 +16,7 @@ Formatting options:
     - plain     *Default*. The columns are concatened and written together.
     - tsv       Writes data in a tab separated format. *TSV* mode is autoselected when the filename ends in ".tsv".
     - csv       Writes data in a comma separated format. *CSV* mode is autoselected when the filename ends in ".csv".
+    - json      Writes data in a line separated JSON format. Header is always added. *JSON* mode is autoselected when the filename ends in ".JSON".
     - db        Writes data in a SQLite DB. *DB* mode is autoselected when the filename ends in ".db".
 
                 - If *split* option is also provided, the output is multiplexed into multiple databases according to first input table column.
@@ -75,13 +76,14 @@ import lib.inoutparsing
 import os
 import apsw
 from collections import defaultdict
+import json
 
 registered=True
 
 def fileit(p,append=False):
     if append:
-        return open(p,"a")
-    return open(p,"w")
+        return open(p, "a", buffering=100000)
+    return open(p, "w" , buffering=100000)
 
 def getoutput(p,append,compress,comptype):
     source=p
@@ -125,7 +127,7 @@ def outputData(diter, connection, *args, **formatArgs):
         del formatArgs['file']
 
     if 'mode' not in formatArgs:
-        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'db':'db'})
+        formatArgs['mode']=autotype(where, {'csv':'csv', 'tsv':'tsv', 'xls':'tsv', 'db':'db', 'json':'json'})
 
     if 'header' not in formatArgs:
         header=False
@@ -143,7 +145,7 @@ def outputData(diter, connection, *args, **formatArgs):
         append=formatArgs['append']
         del formatArgs['append']
 
-    type2ext={'csv':'csv', 'tsv':'xls', 'plain':'txt', 'db':'db'}
+    type2ext={'csv':'csv', 'tsv':'xls', 'plain':'txt', 'db':'db', 'json':'json'}
 
     where=autoext(where, formatArgs['mode'], type2ext)
     filename, ext=os.path.splitext(os.path.basename(where))
@@ -154,7 +156,16 @@ def outputData(diter, connection, *args, **formatArgs):
     del formatArgs['compressiontype']
     del formatArgs['compression']
     try:
-        if formatArgs['mode']=='csv':
+        if formatArgs['mode']=='json':
+            del formatArgs['mode']
+            je = json.JSONEncoder(separators = (',',':'), ensure_ascii = False, check_circular = False).encode
+            row, header = diter.next()
+            fileIter.write( je( {'schema':header} ).encode('utf-8') + '\n')
+            fileIter.write( je( row ).encode('utf-8') + '\n')
+
+            for row,_ in diter:
+                print >> fileIter, je(row).encode()
+        elif formatArgs['mode']=='csv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
             for row,headers in diter:
