@@ -135,6 +135,8 @@ from lib.iterutils import peekable
 from lib.ziputils import ZipIter
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
+import itertools
+import json
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
@@ -149,6 +151,7 @@ def directfile(f, encoding='utf-8'):
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
         self.encoding='utf-8'
+        self.fast = False
         
         if 'encoding' in rest:
             self.encoding=rest['encoding']
@@ -164,6 +167,7 @@ class FileCursor:
 
         pathname=None
         gzipcompressed=False
+        
         try:
             if compression and compressiontype=='zip':
                 self.fileiter=ZipIter(filename,"r")
@@ -185,6 +189,10 @@ class FileCursor:
                 gzipcompressed=True
 
             if gzipcompressed:
+                if filename.endswith('.gz'):
+                    filename = filename[:-3]
+                if filename.endswith('.gzip'):
+                    filename = filename[:-5]
                 self.fileiter=gzip.GzipFile(fileobj=self.fileiter)
 
         except Exception,e:
@@ -192,8 +200,15 @@ class FileCursor:
 
         if filename.endswith('.csv'):
             rest['dialect']=lib.inoutparsing.defaultcsv()
+
         if filename.endswith('.tsv'):
             rest['dialect']=lib.inoutparsing.tsv()
+
+        if filename.endswith('.json') or filename.endswith('.js'):
+            self.fast = True
+            namelist += json.loads(self.fileiter.readline())['schema']
+            self.iter = itertools.imap(json.loads, self.fileiter)
+            return
 
         if hasheader or len(rest)>0: #if at least one csv argument default dialect is csv else line
             if 'dialect' not in rest:
@@ -214,13 +229,13 @@ class FileCursor:
             if first:
                 if hasheader:
                     for i in sample:
-                        namelist.append(i)
+                        namelist.append( [i, 'text'] )
                 else:
                     for i in xrange(1,len(sample)+1):
-                        namelist.append("C"+str(i))
+                        namelist.append( ['C'+str(i), 'text'] )
         else: #### Default read lines
             self.iter=directfile(self.fileiter, encoding=self.encoding)
-            namelist.append("C1")
+            namelist.append( ['C1', 'text'] )
 
     def __iter__(self):
         if self.fast:
@@ -252,7 +267,8 @@ class FileVT:
         if not self.names:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
         self.nonames=False
-        return [(i,'text') for i in self.names]
+        return self.names
+    
     def open(self):
         if self.nonames:
             try:
@@ -276,6 +292,7 @@ class FileVT:
             self.inoutargs=inoutargs
         
         return FileCursor(self.inoutargs['filename'],self.inoutargs['url'],self.inoutargs['compressiontype'],self.inoutargs['compression'],self.inoutargs['header'],self.nonames,self.names,self.extraheader,**self.dictargs)
+
     def destroy(self):
         import os
         for f in self.destroyfiles:
