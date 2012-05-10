@@ -4,7 +4,7 @@
 Opens and returns a file or url as a table. The file's format is defined through
 named options. *location* is defined through a URL, or a regular filename, can be given also as
 the named parameter *url* or *file*. If no named parameters are given the returned table has one column
-with each line of resource as a row or it assumes the dialect from the file ending (Files ending in .tsv or .csv are automatically
+with each line of resource as a row or it assumes the dialect from the file ending (Files ending in .tsv, .csv, .json are automatically
 recognized with the corresponding dialect).
 
 :Returned table schema:
@@ -14,7 +14,7 @@ Formatting options:
 
 :fast:
 
-    Default is 0 (false). Fast option shortcircuits accurate splitting of lines into values. It uses the delimiter option to split lines
+    Default is 0 (false). Fast option shortcircuits accurate splitting of lines into values. It uses the delimiter option to split lines.
 
 :encoding:
 
@@ -30,9 +30,9 @@ Formatting options:
 
 Formatting options for CSV file types:
 
-:dialect: *tsv/csv*
+:dialect: *tsv/csv/json*
 
-    Formats field as tab/comma separated values with minimal quoting
+    Formats field as tab/comma separated values with minimal quoting. *JSON* dialect uses a line oriented *JSON* based format.
 
 :header: *t/f*
 
@@ -137,6 +137,7 @@ import lib.inoutparsing
 from functions.conf import domainExtraHeaders
 import itertools
 import json
+import os.path
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
@@ -198,16 +199,38 @@ class FileCursor:
         except Exception,e:
             raise functions.OperatorError(__name__.rsplit('.')[-1],e)
 
-        if filename.endswith('.csv'):
+        _, filenameExt = os.path.splitext(filename)
+        filenameExt = filenameExt.lower()
+
+        if filenameExt =='.csv':
+            if self.fast:
+                rest['delimiter'] = ','
             rest['dialect']=lib.inoutparsing.defaultcsv()
 
-        if filename.endswith('.tsv'):
+        if filenameExt == '.tsv':
+            if self.fast:
+                rest['delimiter'] = '\t'
             rest['dialect']=lib.inoutparsing.tsv()
 
-        if filename.endswith('.json') or filename.endswith('.js'):
+        if filenameExt == '.json' or filenameExt == '.js' or ('dialect' in rest and type(rest['dialect']) == str and rest['dialect'].lower()=='json'):
             self.fast = True
-            namelist += json.loads(self.fileiter.readline())['schema']
+            firstline = self.fileiter.readline()
+            schemaline = json.loads(firstline)
+            schemalinetype = type(schemaline)
+
+            if schemalinetype == list:
+                for i in xrange(1, len(schemaline)+1):
+                    namelist.append( ['C'+str(i), 'text'] )
+                self.fileiter = itertools.chain([firstline], self.fileiter)
+
+            elif schemalinetype == dict:
+                namelist += schemaline['schema']
+
+            else:
+                raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
+
             self.iter = itertools.imap(json.loads, self.fileiter)
+
             return
 
         if hasheader or len(rest)>0: #if at least one csv argument default dialect is csv else line
