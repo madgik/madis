@@ -194,7 +194,8 @@ class Cursor(object):
 
                     if len(i)==4:
                         self.__permanentvtables[i[0]]=createvirtualsql
-                    self.__vtables.append(i[0])
+                    else:
+                        self.__vtables.append(i[0])
                 except DynamicSchemaWithEmptyResultError:                    
                     if not checkhassetschema(svts[1],i) or i[0] in s:
                         raise
@@ -221,10 +222,6 @@ class Cursor(object):
         if self.__vtables!=[]:
             self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
             self.__vtables=[]
-
-
-#        for t, v in self.__permanentvtables:
-#            self.executetrace(v)
 
 
 class Connection(apsw.Connection):
