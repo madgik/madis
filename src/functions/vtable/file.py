@@ -147,7 +147,7 @@ def nullify(iterlist):
 
 def directfile(f, encoding='utf-8'):
     for line in f:
-        yield (unicode(line.rstrip("\n"), encoding), )
+        yield ( unicode(line.rstrip("\n"), encoding), )
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
@@ -202,16 +202,6 @@ class FileCursor:
         _, filenameExt = os.path.splitext(filename)
         filenameExt = filenameExt.lower()
 
-        if filenameExt =='.csv':
-            if self.fast:
-                rest['delimiter'] = ','
-            rest['dialect']=lib.inoutparsing.defaultcsv()
-
-        if filenameExt == '.tsv':
-            if self.fast:
-                rest['delimiter'] = '\t'
-            rest['dialect']=lib.inoutparsing.tsv()
-
         if filenameExt == '.json' or filenameExt == '.js' or ('dialect' in rest and type(rest['dialect']) == str and rest['dialect'].lower()=='json'):
             self.fast = True
             firstline = self.fileiter.readline()
@@ -233,9 +223,20 @@ class FileCursor:
 
             return
 
+        if filenameExt =='.csv':
+            if self.fast:
+                rest['delimiter'] = ','
+            rest['dialect']=lib.inoutparsing.defaultcsv()
+
+        if filenameExt == '.tsv':
+            if self.fast:
+                rest['delimiter'] = '\t'
+            rest['dialect']=lib.inoutparsing.tsv()
+
         if hasheader or len(rest)>0: #if at least one csv argument default dialect is csv else line
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
+
             if first and not hasheader:
                 if self.fast:
                     self.iter=peekable(reader(self.fileiter,encoding=self.encoding,**rest))
@@ -244,11 +245,12 @@ class FileCursor:
                 sample=self.iter.peek()
             else: ###not first or header
                 if self.fast:
-                    self.iter=reader(self.fileiter, encoding=self.encoding, **rest)
+                    self.iter=iter(reader(self.fileiter,encoding=self.encoding,**rest))
                 else:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                 if hasheader:
                     sample=self.iter.next()
+
             if first:
                 if hasheader:
                     for i in sample:
