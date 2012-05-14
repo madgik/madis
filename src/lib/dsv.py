@@ -64,18 +64,15 @@ class reader:
             else:
                 delimiter = ','
             del kwds['fast']
-            self.iterl = (unicode((r[:-1] if r[-1] == '\n' else r), 'utf-8').split(delimiter) for r in tsvfile)
-
-        if not hasheader:
-            self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
+            self.reader = (unicode((r[:-1] if r[-1] == '\n' else r), 'utf-8').split(delimiter) for r in tsvfile)
         else:
-            self.reader=UnicodeDictReader(tsvfile,dialect,encoding,**kwds)
+            if not hasheader:
+                self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
+            else:
+                self.reader=UnicodeDictReader(tsvfile,dialect,encoding,**kwds)
 
     def __iter__(self):
-        if self.fast:
-            return self.iterl
-        else:
-            return self.reader
+        return self.reader
 
     def fieldnames(self):
         return None
