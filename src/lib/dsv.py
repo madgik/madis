@@ -89,11 +89,7 @@ class UTF8Recoder:
         self.encoding = encoding
 
     def __iter__(self):
-        # For default case shortcircuit self
-        if self.encoding.upper() == 'UTF-8':
-            return self.reader
-        else:
-            return self
+        return self
 
     def next(self):
         return self.reader.next().encode("utf-8")
