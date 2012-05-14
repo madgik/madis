@@ -86,9 +86,13 @@ class UTF8Recoder:
     """
     def __init__(self, f, encoding):
         self.reader = codecs.getreader(encoding)(f)
-        self.encoding = encoding
+        self.encoding = encoding.lower()
+        self.f = f
 
     def __iter__(self):
+        # Shortcircuit for default case
+        if self.encoding == 'utf-8':
+            return self.f
         return self
 
     def next(self):
