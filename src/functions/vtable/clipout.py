@@ -26,7 +26,7 @@ import functions
 
 registered=True
 
-def Clipout(diter, *args, **kargs):
+def Clipout(diter, schema, *args, **kargs):
     import lib.pyperclip as clip
     a=[]
 
@@ -40,10 +40,11 @@ def Clipout(diter, *args, **kargs):
         if i.startswith('h'):
             exportheader=True
 
-    for row,header in diter:
-        if exportheader==True:
-            a.append(u'\t'.join([unicode(unicode(i[0]).replace('\t','    ')).encode('utf-8', 'replace') for i in header]))
-            exportheader=False
+    if exportheader==True:
+        a.append(u'\t'.join([unicode(unicode(i[0]).replace('\t','    ')).encode('utf-8', 'replace') for i in schema]))
+        exportheader=False
+
+    for row in diter:
         a.append(u'\t'.join([unicode(unicode(i).replace('\t','    ')).encode('utf-8', 'replace') for i in row]))
 
     if os.name == 'nt':

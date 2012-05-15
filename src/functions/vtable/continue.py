@@ -20,7 +20,7 @@ import functions
  #UNCOMMENT TO REGISTER THE N to 1 OPERATOR
 registered=False
 
-def execontinue(diter,*args,**kargs):
+def execontinue(diter, schema, *args,**kargs):
     if args or kargs:
         raise functions.OperatorError(__name__.rsplit('.')[-1],"operator takes no arguments")
     
