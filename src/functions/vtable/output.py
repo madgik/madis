@@ -220,6 +220,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 header=False
             for row in diter:
                 csvprinter.writerow(row)
+
         elif formatArgs['mode']=='tsv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel-tab',**formatArgs)
@@ -228,15 +229,20 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 header=False
             for row in diter:
                 csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
+
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
+
         elif formatArgs['mode']=='gjson':
             vtoutpugtformat(fileIter,diter,simplejson=True)
+
         elif formatArgs['mode']=='html':
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
+
         elif formatArgs['mode']=='plain':
             for row in diter:
                 fileIter.write(((''.join([unicode(x) for x in row]))+'\n').encode('utf-8'))
+
         elif formatArgs['mode']=='db':
             def createdb(where, tname, schema, page_size=16384):
                 c=apsw.Connection(where)
