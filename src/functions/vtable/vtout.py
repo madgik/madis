@@ -46,13 +46,19 @@ class doall(object):
         self.passconnection=passconnection
     def run(self):        
         c=self.connection.cursor()
-
         try:
+            cexec = c.execute(self.query)
+
+            try:
+                schema = c.getdescription()
+            except functions.ExecutionCompleteError:
+                raise functions.DynamicSchemaWithEmptyResultError("got empty input")
+        
             if self.passconnection:
-                self.func(diter(c.execute(self.query),c.getdescription),self.connection,*self.args,**self.kargs)
+                self.func(cexec, schema,self.connection,*self.args,**self.kargs)
             else:
-                self.func(diter(c.execute(self.query),c.getdescription),*self.args,**self.kargs)
-            ret=True            
+                self.func(cexec, schema,*self.args,**self.kargs)
+            ret=True
         except Exception,e:
             if functions.settings['logging']:
                 lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
@@ -71,14 +77,6 @@ class doall(object):
             except:
                 pass
         return ret
-
-def diter(iter,func):
-    try:
-        funcval=func()
-    except functions.ExecutionCompleteError:
-        raise functions.DynamicSchemaWithEmptyResultError("got empty input")
-
-    return itertools.izip(iter, itertools.repeat(funcval))
 
 class SourceNtoOne:
     def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):

@@ -128,7 +128,7 @@ import types
 comment_line=re.compile(r'/\*.*?\*/(.*)$')
 registered=True
 
-def execflow(diter,connection,*args,**kargs):
+def execflow(diter, schema, connection,*args,**kargs):
     ignoreflag='ignorefail'
 
     if functions.variables.execdb==None:
@@ -169,7 +169,7 @@ def execflow(diter,connection,*args,**kargs):
     try:
 
         line=0
-        for query, ttypes in diter:
+        for query in diter:
             
             if len(query)>1:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Ambiguous query column, result has more than one columns")

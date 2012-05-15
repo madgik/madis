@@ -82,7 +82,6 @@ import lib.inoutparsing
 import os
 import apsw
 from collections import defaultdict
-import json
 
 registered=True
 
@@ -119,7 +118,7 @@ def autotype(f, extlist):
             return extlist[ext]
     return 'plain'
 
-def outputData(diter, connection, *args, **formatArgs):
+def outputData(diter, schema, connection, *args, **formatArgs):
     ### Parameter handling ###
     where=None
     if len(args)>0:
@@ -163,15 +162,17 @@ def outputData(diter, connection, *args, **formatArgs):
     del formatArgs['compressiontype']
     del formatArgs['compression']
     try:
+        
         if formatArgs['mode']=='json':
             del formatArgs['mode']
+            import json
             je = json.JSONEncoder(separators = (',',':'), ensure_ascii = True, check_circular = False).encode
 
             if 'split' in formatArgs:
                 def cjs():
                     unikey = unicode(key)
                     t=open(os.path.join(fullpath, filename+'.'+unikey+ext), 'w')
-                    print >> t, je( {'schema':header[1:]} )
+                    print >> t, je( {'schema':schema[1:]} )
                     splitkeys[unikey]=t
                     jsfiles[key]=t
                     # Case for number as key
@@ -182,8 +183,7 @@ def outputData(diter, connection, *args, **formatArgs):
                 jsfiles = {}
                 splitkeys=defaultdict(cjs)
 
-                # Copy to local var
-                for row, header in diter:
+                for row in diter:
                     key=row[0]
                     print >> splitkeys[key], je(row[1:])
 
@@ -204,27 +204,29 @@ def outputData(diter, connection, *args, **formatArgs):
                     if f != None:
                         f.close()
             else:
-                row, header = diter.next()
-                fileIter.write( je( {'schema':header} ) + '\n')
-                fileIter.write( je( row ) + '\n')
+                fileIter.write( je( {'schema':schema} ) + '\n')
 
-                for row,_ in diter:
-                    print >> fileIter, je(row)
+                def writeline(x):
+                    print >> fileIter, je(x)
+
+                import itertools
+                itertools.ifilter(None, itertools.imap(writeline, diter)).next()
+                    
         elif formatArgs['mode']=='csv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
-            for row,headers in diter:
-                if header:
-                    csvprinter.writerow([h[0] for h in headers])
-                    header=False
+            if header:
+                csvprinter.writerow([h[0] for h in schema])
+                header=False
+            for row in diter:
                 csvprinter.writerow(row)
         elif formatArgs['mode']=='tsv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel-tab',**formatArgs)
-            for row,headers in diter:
-                if header:
-                    csvprinter.writerow([h[0] for h in headers])
-                    header=False
+            if header:
+                csvprinter.writerow([h[0] for h in schema])
+                header=False
+            for row in diter:
                 csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
@@ -233,7 +235,7 @@ def outputData(diter, connection, *args, **formatArgs):
         elif formatArgs['mode']=='html':
             raise functions.OperatorError(__name__.rsplit('.')[-1],"HTML format not available yet")
         elif formatArgs['mode']=='plain':
-            for row,headers in diter:
+            for row in diter:
                 fileIter.write(((''.join([unicode(x) for x in row]))+'\n').encode('utf-8'))
         elif formatArgs['mode']=='db':
             def createdb(where, tname, schema, page_size=16384):
@@ -262,7 +264,7 @@ def outputData(diter, connection, *args, **formatArgs):
                 def cdb():
                     global insertqueryw
                     unikey = unicode(key)
-                    t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, headers[1:], page_size)
+                    t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, schema[1:], page_size)
                     splitkeys[unikey]=t[1].execute
                     insertqueryw = t[2]
                     dbcon[key]=t[0], t[1]
@@ -274,15 +276,9 @@ def outputData(diter, connection, *args, **formatArgs):
                 dbcon = {}
                 splitkeys=defaultdict(cdb)
 
-                row, headers = diter.next()
-                key=row[0]
-                cexec = splitkeys[key]
-                cexec(insertqueryw, row[1:])
-                # Copy to local var
-                insquery = insertqueryw
-                for row, headers in diter:
+                for row in diter:
                     key=row[0]
-                    splitkeys[key](insquery, row[1:])
+                    splitkeys[key](insertqueryw, row[1:])
 
                 # Create other parts
                 maxparts = 1
@@ -302,10 +298,8 @@ def outputData(diter, connection, *args, **formatArgs):
                         cursor.execute('commit')
                         c.close()
             else:
-                row, headers=diter.next()
-                c, cursor, insertquery=createdb(where, tablename, headers, page_size)
-                cursor.execute(insertquery, row)
-                cursor.executemany(insertquery, (x[0] for x in diter))
+                c, cursor, insertquery=createdb(where, tablename, schema, page_size)
+                cursor.executemany(insertquery, (x for x in diter))
                 list(cursor.execute('commit'))
                 c.close()
         else:
