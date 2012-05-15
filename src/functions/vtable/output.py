@@ -206,11 +206,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             else:
                 fileIter.write( je( {'schema':schema} ) + '\n')
 
-                def writeline(x):
-                    print >> fileIter, je(x)
-
-                import itertools
-                itertools.ifilter(None, itertools.imap(writeline, diter)).next()
+                for row in diter:
+                    print >> fileIter, je(row)
                     
         elif formatArgs['mode']=='csv':
             del formatArgs['mode']
