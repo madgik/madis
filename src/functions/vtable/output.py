@@ -217,7 +217,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             csvprinter=writer(fileIter,'excel',**formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
-                header=False
             for row in diter:
                 csvprinter.writerow(row)
 
@@ -226,7 +225,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             csvprinter=writer(fileIter,'excel-tab',**formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
-                header=False
             for row in diter:
                 csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
 
