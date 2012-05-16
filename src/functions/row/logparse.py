@@ -1,5 +1,6 @@
 # coding: utf-8
 import re
+import functions
 
 apache_log_split=re.compile('^(\\S*) (\\S*) (\\S*) (\\[[^\\]]+\\]) \\"(\\w+) ([^"\\\\]*(?:\\\\.[^"\\\\]*)*) HTTP/([\\d.]+)\\" (\\S*) (\\S*) \\"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)\\" \\"([^\\"]*)\\"$', re.UNICODE)
 
@@ -39,7 +40,11 @@ def apachelogsplit(*args):
 
     yield ('ip', 'ident', 'authuser', 'date', 'method', 'uri', 'httpver', 'status', 'bytes', 'referrer', 'useragent')
 
-    f=apache_log_split.match(''.join(args).strip()).groups()
+    f=apache_log_split.match(''.join(args).strip())
+
+    if f == None:
+        raise functions.OperatorError("APACHELOGSPLIT", "Row function didn't receive any input")
+    f=f.groups()
 
     f=[None if x=='-' else x for x in f]
 
