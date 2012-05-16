@@ -202,10 +202,7 @@ class Cursor:
 
 #    @echocall #-- Commented out for speed reasons
     def ColumnStop(self, col):
-        try:
-            return self.row[col]
-        except IndexError:
-            raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in rowid: %s" %(self.pos+1))
+        raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in input")
 
 #    @echocall #-- Commented out for speed reasons
     def Next(self):
