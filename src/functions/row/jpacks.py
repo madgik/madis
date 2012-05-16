@@ -93,11 +93,15 @@ def jlen(*args):
     >>> sql("select jlen('a', jpack('b',3))")
     jlen('a', jpack('b',3))
     -----------------------
-    2
+    3
+
+    >>> sql("select jlen('[1,2,3]')")
+    jlen('[1,2,3]')
+    ---------------
+    3
 
     """
-
-    return len(jopts.elemfromj(*args))
+    return sum([len(x) if type(x) in (dict,list) else 1 for x in (jopts.elemfromj(*args))])
 
 jlen.registered=True
 
