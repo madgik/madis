@@ -180,7 +180,7 @@ def strictminus1(tabiter, colcount):
         linenum += 1
         row = tabiter.next()
         if len(row) != colcount:
-            yield (linenum, u','.join([unicode(x) for x in row]))
+            yield (linenum, len(row), u','.join([unicode(x) for x in row]))
 
 def cleanBOM(t):
     return t.encode('ascii', errors = 'ignore').strip()
@@ -304,7 +304,7 @@ class FileCursor:
 
             if self.strict == -1:
                 self.iter = strictminus1(self.iter, len(sample))
-                namelist += [['linenumber', 'int'], ['contents', 'text']]
+                namelist += [['linenumber', 'int'], ['elemcount', 'int'], ['contents', 'text']]
 
             if first and namelist==[]:
                 if hasheader:
