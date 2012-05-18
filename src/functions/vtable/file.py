@@ -14,7 +14,15 @@ Formatting options:
 
 :fast:
 
-    Default is 0 (false). Fast option shortcircuits accurate splitting of lines into values. It uses the delimiter option to split lines.
+    Default is 0 (false). Fast option speeds up the parsing of lines into values, exchanging accuracy for speed. It uses the delimiter option to split lines.
+
+:'strict' option:
+
+    - strict:1  (default), if a failure occurs, the current transaction will be cancelled and an error will be returned.
+    - strict:0  , returns all data that succesfully parses.
+    - strict:-1 , returns all input lines in which the parser finds a problem. In essence this works as a negative parser.
+
+    If no strict option is defined in fast:1 mode, then no strictness checking is applied at all, and an "Unknown error" will be returned if a problem occurs.
 
 :encoding:
 
@@ -135,6 +143,7 @@ from lib.iterutils import peekable
 from lib.ziputils import ZipIter
 import lib.inoutparsing
 from functions.conf import domainExtraHeaders
+from functions import mstr
 import itertools
 import json
 import os.path
@@ -149,14 +158,43 @@ def directfile(f, encoding='utf-8'):
     for line in f:
         yield ( unicode(line.rstrip("\n"), encoding), )
 
+def strict0(tabiter, colcount):
+    while True:
+        row = tabiter.next()
+        if len(row) == colcount:
+            yield row
+
+def strict1(tabiter, colcount):
+    linenum = 0
+    while True:
+        row = tabiter.next()
+        linenum += 1
+        if len(row) != colcount:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. The line's parsed contents are:\n" + u','.join([mstr(x) for x in row]))
+        yield row
+
+def strictminus1(tabiter, colcount):
+    linenum = 0
+    while True:
+        linenum += 1
+        row = tabiter.next()
+        if len(row) != colcount:
+            yield (linenum, u','.join([unicode(x) for x in row]))
+
+
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
         self.encoding='utf-8'
         self.fast = False
+        self.strict = None
         
         if 'encoding' in rest:
             self.encoding=rest['encoding']
             del rest['encoding']
+
+        if 'strict' in rest:
+            self.strict = int(rest['strict'])
+            del rest['strict']
 
         if 'fast' in rest:
             self.fast = True
@@ -242,22 +280,37 @@ class FileCursor:
                     self.iter=peekable(reader(self.fileiter,encoding=self.encoding,**rest))
                 else:
                     self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
+                    if self.strict == None:
+                        self.strict = 1
                 sample=self.iter.peek()
             else: ###not first or header
                 if self.fast:
                     self.iter=iter(reader(self.fileiter,encoding=self.encoding,**rest))
                 else:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
+                    if self.strict == None:
+                        self.strict = 1
                 if hasheader:
                     sample=self.iter.next()
 
-            if first:
+            if self.strict == 0:
+                self.iter = strict0(self.iter, len(sample))
+
+            if self.strict == 1:
+                self.iter = strict1(self.iter, len(sample))
+
+            if self.strict == -1:
+                self.iter = strictminus1(self.iter, len(sample))
+                namelist += [['linenumber', 'int'], ['contents', 'text']]
+
+            if first and namelist==[]:
                 if hasheader:
                     for i in sample:
                         namelist.append( [i, 'text'] )
                 else:
                     for i in xrange(1,len(sample)+1):
                         namelist.append( ['C'+str(i), 'text'] )
+
         else: #### Default read lines
             self.iter=directfile(self.fileiter, encoding=self.encoding)
             namelist.append( ['C1', 'text'] )
