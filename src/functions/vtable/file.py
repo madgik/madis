@@ -147,6 +147,7 @@ from functions import mstr
 import itertools
 import json
 import os.path
+import codecs
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
@@ -181,6 +182,8 @@ def strictminus1(tabiter, colcount):
         if len(row) != colcount:
             yield (linenum, u','.join([unicode(x) for x in row]))
 
+def cleanBOM(t):
+    return t.encode('ascii', errors = 'ignore').strip()
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
@@ -306,7 +309,7 @@ class FileCursor:
             if first and namelist==[]:
                 if hasheader:
                     for i in sample:
-                        namelist.append( [i, 'text'] )
+                        namelist.append( [cleanBOM(i), 'text'] )
                 else:
                     for i in xrange(1,len(sample)+1):
                         namelist.append( ['C'+str(i), 'text'] )
