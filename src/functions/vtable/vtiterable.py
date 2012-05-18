@@ -207,8 +207,6 @@ class Cursor:
 #    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
-#            self.row=self.iter.next()
-#            self.pos+=1
             self.Column=self.iter.next().__getitem__
         except StopIteration:
             self.Column=self.ColumnStop
