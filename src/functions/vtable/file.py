@@ -174,8 +174,10 @@ def strict1(tabiter, colcount):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. The line's parsed contents are:\n" + u','.join([mstr(x) for x in row]))
         yield row
 
-def strictminus1(tabiter, colcount):
+def strictminus1(tabiter, colcount, hasheader = False):
     linenum = 0
+    if hasheader:
+        linenum += 1
     while True:
         linenum += 1
         row = tabiter.next()
@@ -303,7 +305,7 @@ class FileCursor:
                 self.iter = strict1(self.iter, len(sample))
 
             if self.strict == -1:
-                self.iter = strictminus1(self.iter, len(sample))
+                self.iter = strictminus1(self.iter, len(sample), hasheader)
                 namelist += [['linenumber', 'int'], ['elemcount', 'int'], ['contents', 'text']]
 
             if first and namelist==[]:
