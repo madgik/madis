@@ -124,7 +124,7 @@ def parse_date(datestring, default_timezone=UTC):
         tz=None
 
     if not groups["year"]:
-        groups["year"]=2000
+        raise ParseError("Unable to parse date string %r" % datestring)
     if not groups["month"]:
         groups["month"]=1
     if not groups["day"]:
