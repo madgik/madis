@@ -2,6 +2,7 @@
 import functions
 import datetime
 from lib import iso8601
+from lib.dateutil import parser
 
 def cleantimezone(*args):
 
@@ -182,6 +183,44 @@ def datestrf2isoweek(*args):
     return str(year)+'W'+week
 
 datestrf2isoweek.registered=True
+
+
+def date2iso(*args):
+
+    """
+    .. function:: date2iso(sec) -> ISO Datetime
+
+    Converts an input date to ISO-8601 date format. It tries to autodetect, the
+    input date format.
+
+    Examples:
+
+    >>> table1('''
+    ... 2007-12-31
+    ... 2010-01-01
+    ... 2010W06
+    ... "18/Jan/2011:11:13:00 +0100"
+    ... ''')
+
+    >>> sql("select date2iso(a) from table1")
+    date2iso(a)
+    -------------------------
+    2007-12-31T00:00:00+00:00
+    2010-01-01T00:00:00+00:00
+    2010-02-05T00:00:00+00:00
+    2011-01-18T11:13:00+01:00
+
+    """
+
+    date = args[0]
+    try:
+        date = iso8601.parse_date(date)
+    except iso8601.ParseError:
+        date = parser.parse(date, fuzzy=True)
+
+    return date.isoformat()
+
+date2iso.registered=True
 
 
 if not ('.' in __name__):
