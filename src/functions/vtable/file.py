@@ -4,8 +4,8 @@
 Opens and returns a file or url as a table. The file's format is defined through
 named options. *location* is defined through a URL, or a regular filename, can be given also as
 the named parameter *url* or *file*. If no named parameters are given the returned table has one column
-with each line of resource as a row or it assumes the dialect from the file ending (Files ending in .tsv, .csv, .json are automatically
-recognized with the corresponding dialect).
+with each line of resource as a row or it assumes the dialect from the file ending (Files ending in .tsv, .csv, .json are
+assumed to be in the corresponding dialect).
 
 :Returned table schema:
     Columns are automatically named as *C1, C2...* or if header is set, columns are named by the resource first line value, and have the type *text*
@@ -41,6 +41,8 @@ Formatting options for CSV file types:
 :dialect: *tsv/csv/json*
 
     Formats field as tab/comma separated values with minimal quoting. *JSON* dialect uses a line oriented *JSON* based format.
+
+    File extensions that are recognised as a dialect (.tsv, .csv etc) take precedence over a specified dialect parameter.
 
 :header: *t/f*
 
