@@ -171,7 +171,7 @@ def strict1(tabiter, colcount):
         row = tabiter.next()
         linenum += 1
         if len(row) != colcount:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. The line's parsed contents are:\n" + u','.join([mstr(x) for x in row]))
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. Found "+str(len(row))+" of expected "+str(colcount)+" columns\n"+"The line's parsed contents are:\n" + u','.join([mstr(x) for x in row]))
         yield row
 
 def strictminus1(tabiter, colcount, hasheader = False):
@@ -182,7 +182,7 @@ def strictminus1(tabiter, colcount, hasheader = False):
         linenum += 1
         row = tabiter.next()
         if len(row) != colcount:
-            yield (linenum, len(row), u','.join([unicode(x) for x in row]))
+            yield (linenum, len(row), colcount, u','.join([unicode(x) for x in row]))
 
 def cleanBOM(t):
     return t.encode('ascii', errors = 'ignore').strip()
@@ -306,7 +306,7 @@ class FileCursor:
 
             if self.strict == -1:
                 self.iter = strictminus1(self.iter, len(sample), hasheader)
-                namelist += [['linenumber', 'int'], ['elemcount', 'int'], ['contents', 'text']]
+                namelist += [['linenumber', 'int'], ['foundcols', 'int'], ['expectedcols', 'int'],['contents', 'text']]
 
             if first and namelist==[]:
                 if hasheader:
