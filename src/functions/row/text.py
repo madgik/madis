@@ -397,33 +397,30 @@ regexprmatches.registered=True
 
 
 
-def included(*args):
+def contains(*args):
     """
-    .. function:: included(str1,str2)
+    .. function:: contains(str1,str2)
 
-    Returns true if *str1* is included in *str2* or *str2* is included in *str1*.
-
-    .. note::
-
-        If any of the inputs is the *empty string* it returns true.
+    Returns true if string *str1* contains *str2*.
 
     Examples:
 
-    >>> sql("select included('Lola start',lower('iStart otherword end')) as test  ")
-    test
-    ----
-    0
-    >>> sql("select included('start',lower('iStart lola otherword end')) as test  ")
+    >>> sql("select contains('test string', 'str') as test  ")
     test
     ----
     1
+    >>> sql("select contains('test string', 'nostr') as test  ")
+    test
+    ----
+    0
     """
     if len(args)!=2:
         raise functions.OperatorError("included","operator takes exactly two arguments")
-    if (args[0] in args[1]) or (args[1] in args[0]):
+    if (args[1] in args[0]):
         return True
     return False
-included.registered=True
+
+contains.registered=True
 
 def unitosuni(*args):
     """
