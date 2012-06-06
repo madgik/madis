@@ -86,7 +86,6 @@ KEYWORDS = {
     'CONSTRAINT_NAME': Keyword,
     'CONSTRAINT_SCHEMA': Keyword,
     'CONSTRUCTOR': Keyword,
-    'CONTAINS': Keyword,
     'CONTINUE': Keyword,
     'CONVERSION': Keyword,
     'CONVERT': Keyword,
