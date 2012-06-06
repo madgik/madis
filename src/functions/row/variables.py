@@ -35,7 +35,7 @@ def var(*args):
     if len(args)==0:
         return str(functions.variables.__dict__)
 
-    var=args[0].lower()
+    var=args[0]
 
     if len(args)==1:
         if hasattr(functions.variables,var):
