@@ -19,8 +19,6 @@ Formatting options:
     - json      Writes data in a line separated JSON format. Header is always added. *JSON* mode is autoselected when the filename ends in ".JSON".
     - db        Writes data in a SQLite DB. *DB* mode is autoselected when the filename ends in ".db".
 
-                - If *split* option is also provided, the output is multiplexed into multiple databases according to first input table column.
-
                 - If pagesize:xxxxx option is given, set new DBs page size to parameter given, if not inherit page size from parent DB.
 
     - gtable    In gtable mode table is formatted as a google Data Table for visualisation.
@@ -38,7 +36,7 @@ Formatting options:
     gz/zip Selects between the two compression types.
 
 :split:
-    (number) It splits the input into many *db* or *json* files. Splitting only works when writting to a *db* or *JSON*. Splitting is done by using the first column of
+    (number) It splits the input to many *db* or *json* files. Splitting only works when writting to a *db* or *JSON*. Splitting is done by using the first column of
     the input and it outputs all columns except the first one. If the *split* argument is greater than *1* then the output will
     always be splitted to the defined number of files. If the split argument is 1 or lower, then the output will only contain the parts of which
     a key were found on the first column of the input data.
