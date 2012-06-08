@@ -399,7 +399,7 @@ regexprmatches.registered=True
 
 def contains(*args):
     """
-    .. function:: contains(str1,str2)
+    .. function:: contains(str1,str2) -> bool
 
     Returns true if string *str1* contains *str2*.
 
