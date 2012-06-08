@@ -1,6 +1,6 @@
 """functions
 """
-VERSION="1.5"
+VERSION="1.6"
 
 import os.path
 import os
