@@ -16,7 +16,7 @@ Formatting options:
 
     Default is 0 (false). Fast option speeds up the parsing of lines into values, exchanging accuracy for speed. It uses the delimiter option to split lines.
 
-:'strict' option:
+:strict:
 
     - strict:1  (default), if a failure occurs, the current transaction will be cancelled and an error will be returned.
     - strict:0  , returns all data that succesfully parses.
@@ -42,7 +42,7 @@ Formatting options for CSV file types:
 
     Formats field as tab/comma separated values with minimal quoting. *JSON* dialect uses a line oriented *JSON* based format.
 
-    File extensions that are recognised as a dialect (.tsv, .csv etc) take precedence over a specified dialect parameter.
+    File extensions that are recognised as a dialect (.tsv, .csv, .json) take precedence over a specified dialect parameter.
 
 :header: *t/f*
 
