@@ -391,10 +391,9 @@ def regexprmatches(*args):
     if a!=None:
         return True
     else:
-        return None
+        return False
 
 regexprmatches.registered=True
-
 
 
 def contains(*args):
