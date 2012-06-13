@@ -17,6 +17,7 @@ delete_word_all_and_or=re.compile(ur'\w+\sall\s(?:and|or)',re.UNICODE)
 reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 cqlterms=('title', 'subject', 'person', 'enter', 'creator', 'isbn')
 
+
 def keywords(*args):
 
     """
@@ -55,6 +56,7 @@ def keywords(*args):
     return ' '.join(out)
 
 keywords.registered=True
+
 
 def cqlkeywords(*args):
 
@@ -367,6 +369,7 @@ def regexpr(*args):
 
 regexpr.registered=True
 
+
 def regexprmatches(*args):
 
     """
@@ -421,6 +424,7 @@ def contains(*args):
 
 contains.registered=True
 
+
 def unitosuni(*args):
     """
     .. function:: unitosuni(str)
@@ -455,6 +459,7 @@ def unitosuni(*args):
         return args[0]
 
 unitosuni.registered=True
+
 
 def sunitouni(*args):
     """
@@ -495,6 +500,7 @@ def sunitouni(*args):
 
 sunitouni.registered=True
 
+
 def stripchars(*args):
     """
     .. function:: stripchars(str[,stripchars])
@@ -528,6 +534,7 @@ def stripchars(*args):
     return unicode(args[0]).strip(args[1])
 stripchars.registered=True
 
+
 def reencode(*args):
     if len(args)!=1:
         raise functions.OperatorError("reencode","operator takes only one arguments")
@@ -549,6 +556,7 @@ def reencode(*args):
             return us
 
 reencode.registered=False
+
 
 def normuni(*args):
     """
@@ -589,6 +597,7 @@ def normuni(*args):
 
 normuni.registered=True
 
+
 def hashmd5(*args):
     """
     .. function:: hashmd5(args)
@@ -622,6 +631,7 @@ def hashmd5(*args):
         return hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest()
 
 hashmd5.registered=True
+
 
 def hashmd5mod(*args):
     """
@@ -659,6 +669,7 @@ def hashmd5mod(*args):
         return int(hashlib.md5(chr(30).join([repr(x) for x in args])).hexdigest(),16) % args[-1]
 
 hashmd5mod.registered=True
+
 
 def crc32(*args):
     """
