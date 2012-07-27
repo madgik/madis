@@ -438,6 +438,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             if type(jxp) is list:
                 for i in jxp:
                     path=i.split('/')
+                    if path[0] == '':
+                        path=path[1:]
+
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
@@ -446,6 +449,9 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             elif type(jxp) is OrderedDict:
                 for k,v in jxp.iteritems():
                     path=k.split('/')
+                    if path[0] == '':
+                        path=path[1:]
+                        
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
                     if path[0]==self.subtreeroot:
