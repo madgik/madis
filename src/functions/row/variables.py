@@ -47,7 +47,40 @@ def var(*args):
         return functions.variables.__dict__[var]
     else:
         return None
+
 var.registered=True
+
+def getvar(*args):
+
+    """
+    .. function:: getvar(varname) -> value
+
+    Returns the value of varname. This function exists so as to be able to force
+    SQLite's engine to always evaluate the *getvar* function. This can be achieved
+    by givine to the function an always changing second parameter.
+
+    Examples:
+
+    >>> sql("var 't' 5")
+    var('t','5')
+    ------------
+    5
+    >>> sql("getvar 't'")
+    getvar('t')
+    -----------
+    5
+    >>> sql("select getvar('t', random())")
+    getvar('t', random())
+    ---------------------
+    5
+    """
+
+    try:
+        return functions.variables.__dict__[args[0]]
+    except KeyError:
+        raise functions.OperatorError('var', "Variable '" +var+"' does not exist")
+
+getvar.registered=True
 
 def requirevars(*args):
     """
