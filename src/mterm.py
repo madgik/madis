@@ -234,7 +234,15 @@ def mcomplete(textin,state):
         if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
             return col
         else:
-            return "`"+col.lower()+"`"  
+            return "`"+col.lower()+"`"
+
+    def numberedlist(c):
+        maxcolchars=len(str(len(c)+1))
+        formatstring='{:'+'>'+str(maxcolchars)+'}'
+        o=[]
+        for num in xrange(len(c)):
+            o.append( formatstring.format(num+1)+'|'+c[num] )
+        return o
 
     text=textin
 
@@ -297,21 +305,28 @@ def mcomplete(textin,state):
         if prepost:
             prefix, text=prepost.groups()
             hits= [x.lower() for x in lastcols+[y for y in colscompl if y.find('.')==-1] if x.lower()[:len(text)]==unicode(text.lower())]
+            # Complete table.number
+            if len(hits) == 0 and text.isdigit():
+                cols= get_table_cols(prefix[:-1])
+                colnum = int(text)
+                if 0 < colnum <= len(cols):
+                    hits = [cols[colnum-1]]
+                elif colnum == 0:
+                    hits = numberedlist(cols)
+                    if state<len(hits):
+                        return hits[state]
+                    else: return
 
     try:
         # Complete from colnums
         icol=int(text)
-        if len(hits)==0 and str(icol)==text:
+        if len(hits)==0 and text.isdigit():
             # Show all tables when completing 0
             if icol==0 and newcols!=[]:
                 if len(newcols)==1:
                     if state>0: return
                     return prefix+normalizename(newcols[0])
-                hits=[]
-                maxcolchars=len(str(len(newcols)+1))
-                formatstring='{:'+'>'+str(maxcolchars)+'}'
-                for num in xrange(len(newcols)):
-                    hits.append( formatstring.format(num+1)+'|'+newcols[num] )
+                hits = numberedlist(newcols)
                 if state<len(hits):
                     return hits[state]
                 else: return
