@@ -332,7 +332,7 @@ class sampledistvals:
             self.init = False
 
         for i in xrange(1, self.lenargs):
-            if args[i] not in self.vals[i-1]:
+            if len(self.vals[i-1])<args[0] and args[i] not in self.vals[i-1]:
                 self.vals[i-1].add(args[i])
 
     def final(self):
