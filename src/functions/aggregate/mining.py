@@ -2,6 +2,7 @@ import re
 import itertools
 import setpath
 import functions
+import lib.jopts as jopts
 from lib.buffer import CompBuffer
 
 __docformat__ = 'reStructuredText en'
@@ -298,6 +299,46 @@ class freqitemsets:
         else:
             return self.outbuf.serialize()
 
+
+class sampledistvals:
+    """
+
+    .. function:: sampledistvals(sample_size, C1, C2, C3) -> [C1, C2, C3]
+
+    Sampledistvals returns sample_size distinct values for each of the input C1..Cn columns.
+
+    >>> table1('''
+    ... test1 2 3
+    ... test1 2 3
+    ... test2 4 2
+    ... test4 2 t
+    ... ''')
+    >>> sql("select sampledistvals(3, a, b, c) from table1")
+    C1                        | C2    | C3
+    ---------------------------------------------
+    ["test1","test2","test4"] | [2,4] | [2,3,"t"]
+    """
+    registered=True
+
+    def __init__(self):
+        self.vals=None
+        self.lenargs = -1
+        self.init=True
+
+    def step(self, *args):
+        if self.init:
+            self.lenargs = len(args)
+            self.vals = a=[set() for i in xrange(self.lenargs-1)]
+            self.init = False
+
+        for i in xrange(1, self.lenargs):
+            if args[i] not in self.vals[i-1]:
+                self.vals[i-1].add(args[i])
+
+    def final(self):
+        yield tuple(['C'+str(i) for i in xrange(1, self.lenargs)] )
+
+        yield [jopts.toj(list(i)) for i in self.vals]
 
 if not ('.' in __name__):
     """
