@@ -205,6 +205,7 @@ class FileCursor:
 
         if 'fast' in rest:
             self.fast = True
+            del rest['fast']
 
         self.nonames=first
         for el in rest:
@@ -284,7 +285,8 @@ class FileCursor:
 
             if first and not hasheader:
                 if self.fast:
-                    self.iter=peekable(reader(self.fileiter,encoding=self.encoding,**rest))
+                    rest['fast'] = True
+                    self.iter=peekable(reader(self.fileiter,encoding=self.encoding, **rest))
                 else:
                     self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                     if self.strict == None:
@@ -292,6 +294,7 @@ class FileCursor:
                 sample=self.iter.peek()
             else: ###not first or header
                 if self.fast:
+                    rest['fast'] = True
                     self.iter=iter(reader(self.fileiter,encoding=self.encoding,**rest))
                 else:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
