@@ -2,17 +2,17 @@
 
 -- To find the XML keys inside above XML and under the "article" tag, execute.
 
-select jgroupunion(jdictkeys(c1)) from (select * from (xmlparse root:article fast:1 file 'dblp.xml.gz'));
+select jgroupunion(jdictkeys(c1)) from (xmlparse root:article fast:1 file 'dblp.xml.gz');
 
 -- ["article/@/mdate","article/@/key","article/author","article/title/*","article/journal","article/volume","article/month","article/year","article/cdrom","article/ee","article/url","article/@/publtype","article/editor","article/publisher","article/pages","article/number","article/cite","article/cite/@/label","article/crossref","article/booktitle","article/note","article/@/rating","article/@/reviewid"]
 
 -- We do the same for "www" and "inproceedings" tags.
 
-select jgroupunion(jdictkeys(c1)) from (select * from (xmlparse root:www fast:1 file 'dblp.gz'));
+select jgroupunion(jdictkeys(c1)) from (xmlparse root:www fast:1 file 'dblp.gz');
 
 --["www/@/mdate","www/@/key","www/author","www/title","www/year","www/url","www/editor","www/booktitle","www/note","www/crossref","www/cite","www/ee","www/note/@/type","www/author/@/bibtex"]
 
-select jgroupunion(jdictkeys(c1)) from (select * from (xmlparse root:inproceedings fast:1 file 'dblp.xml.gz'));
+select jgroupunion(jdictkeys(c1)) from (xmlparse root:inproceedings fast:1 file 'dblp.xml.gz');
 
 --["inproceedings/@/mdate","inproceedings/@/key","inproceedings/author","inproceedings/title/*","inproceedings/pages","inproceedings/year","inproceedings/booktitle","inproceedings/month","inproceedings/url","inproceedings/note","inproceedings/cdrom","inproceedings/ee","inproceedings/crossref","inproceedings/cite","inproceedings/editor","inproceedings/cite/@/label","inproceedings/@/publtype","inproceedings/number"]
 
