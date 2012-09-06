@@ -8,7 +8,7 @@ output 'rawdata.txt' select * from (oaiget metadataPrefix:oai_dc 'http://citesee
 
 -- We then want to find out which XML keys the 'rawdata' file contains. We restrict our key search to keys under "record".
 
-select jgroupunion(c1) from (xmlparse root:record fast:1 file 'rawdata.txt.gz');
+select jgroupunion(jdictkeys(c1)) from (xmlparse root:record fast:1 file 'rawdata.txt.gz');
 
 -- ["record/header/identifier","record/header/datestamp","record/metadata/dc/@/schemalocation","record/metadata/dc/title","record/metadata/dc/creator","record/metadata/dc/subject","record/metadata/dc/description","record/metadata/dc/contributor","record/metadata/dc/publisher","record/metadata/dc/date","record/metadata/dc/format","record/metadata/dc/type","record/metadata/dc/identifier","record/metadata/dc/source","record/metadata/dc/language","record/metadata/dc/relation","record/metadata/dc/rights"]
 
