@@ -320,7 +320,7 @@ def mcomplete(textin,state):
     try:
         # Complete from colnums
         icol=int(text)
-        if len(hits)==0 and text.isdigit():
+        if len(hits)==0 and text.isdigit() and icol>=0:
             # Show all tables when completing 0
             if icol==0 and newcols!=[]:
                 if len(newcols)==1:
