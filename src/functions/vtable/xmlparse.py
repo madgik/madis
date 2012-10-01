@@ -444,10 +444,14 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
 
-                    path = path[ path.index(self.subtreeroot)+1: ]
+                    try:
+                        path = path[ path.index(self.subtreeroot)+1: ]
+                    except ValueError:
+                        continue
 
                     if path!=[]:
                         s.addtoschema(path)
+                        
             elif type(jxp) is OrderedDict:
                 for k,v in jxp.iteritems():
                     path=k.split('/')
@@ -457,7 +461,10 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
 
-                    path = path[ path.index(self.subtreeroot)+1: ]
+                    try:
+                        path = path[ path.index(self.subtreeroot)+1: ]
+                    except ValueError:
+                        continue
 
                     if path==[]:
                         continue
