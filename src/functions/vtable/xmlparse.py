@@ -63,9 +63,9 @@ Examples:
     {"a/b":"row2val1"}
     {"a/c/d":"row2val"}
 
-    >>> sql("select jgroupunion(c1) from (xmlparse select * from table1)") # doctest: +NORMALIZE_WHITESPACE
-    jgroupunion(c1)
-    ---------------
+    >>> sql("select jgroupunion(jdictkeys(c1)) from (xmlparse select * from table1)") # doctest: +NORMALIZE_WHITESPACE
+    jgroupunion(jdictkeys(c1))
+    --------------------------
     ["a/b","a/c/d"]
 
     >>> sql('''select * from (xmlparse '["a/b","a/c/d"]' select * from table1)''') # doctest: +NORMALIZE_WHITESPACE
@@ -328,7 +328,7 @@ class schemaobj():
         self.colnames={}
         self.getall={}
 
-    def addtoschema(self, path):
+    def addtoschema(self, path, subtreeroot = None):
         s=self.schema
         pathpostfix=[]
         if path!=[] and path[-1] in ('*', '$'):
@@ -443,9 +443,11 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
-                    if path[0]==self.subtreeroot:
-                        path=path[1:]
-                    s.addtoschema(path)
+
+                    path = path[ path.index(self.subtreeroot)+1: ]
+
+                    if path!=[]:
+                        s.addtoschema(path)
             elif type(jxp) is OrderedDict:
                 for k,v in jxp.iteritems():
                     path=k.split('/')
@@ -454,8 +456,12 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                         
                     if self.subtreeroot==None:
                         self.subtreeroot=path[0]
-                    if path[0]==self.subtreeroot:
-                        path=path[1:]
+
+                    path = path[ path.index(self.subtreeroot)+1: ]
+
+                    if path==[]:
+                        continue
+                        
                     if type(v) in (list, OrderedDict):
                         for i in v:
                             if i in ('*', '$'):
