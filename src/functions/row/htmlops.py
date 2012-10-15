@@ -205,9 +205,12 @@ def htmlstriptags(*args):
 
     >>> sql("select htmlstriptags('<tag1>asdf<>as<br>df<br><p>paragraph</p>anotherline<tag2>') as query")
     query
-    ---------
+    -------------------------------
     asdfas
     df
+    paragraph
+    anotherline
+    
     >>> sql("select htmlstriptags(null) as query")
     query
     -----
@@ -275,6 +278,28 @@ def urlencode(*args):
     return None
 
 urlencode.registered=True
+
+def urlencodedouble(*args):
+    """
+    .. function:: urlencodedouble(str)
+
+    Returns the double encoded URL.
+
+    Examples:
+
+    >>> sql("select urlencodedouble('a/b') as url")
+    url
+    -------
+    a%252Fb
+
+    """
+    if len(args)>1:
+        raise functions.OperatorError("urlencode","operator takes only one argument")
+    if args[0]!=None:
+        return urllib.quote_plus(urllib.quote_plus(unicode(args[0])))
+    return None
+
+urlencodedouble.registered=True
 
 addwbr=re.compile(r'([./-])([^./\-\d\s])', re.DOTALL| re.UNICODE)
 
