@@ -1,7 +1,9 @@
-import lib.jopts as jopts
+from lib import jopts
+from lib.jsonpath import jsonpath as libjsonpath
 import json
 import operator
 import itertools
+import re
 try:
     from collections import OrderedDict
 except ImportError:
@@ -662,6 +664,77 @@ def jpermutations(*args):
         yield [jopts.toj(x) for x in p]
 
 jpermutations.registered=True
+
+
+def jsonpath(*args):
+
+    """
+    .. function:: jsonpath(JSON, jsonpathexpr1, jsonpathexpr2) -> multiset
+
+    Uses jsonpath expressions to pick values from inside a JSON input. If the outputs of all JSONpath expressions
+    have the same number of elements in them, it splits the output into multiple rows.
+
+    Examples:
+
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.d1') ''')
+    C1
+    -------------------------------------------------------
+    [{"name":"n1","value":"v1"},{"name":"n2","value":"v2"}]
+
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.d1[*].name') ''')
+    C1
+    --
+    n1
+    n2
+
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.d1[*].name', '$.d1[*].value') ''')
+    C1 | C2
+    -------
+    n1 | v1
+    n2 | v2
+
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.d1[*].name', '$.d1[*].nonexisting') ''')
+    C1 | C2
+    ---------
+    n1 | None
+    n2 | None
+
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2"}]}', '$.d1[*].name', '$.d1[*].value') ''')
+    C1          | C2
+    ----------------
+    ["n1","n2"] | v1
+    
+    >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.nonexisting') ''')
+
+
+    """
+
+    j = json.loads(args[0])
+    jpargs=args[1:]
+
+    yield tuple( ('C'+str(x)for x in xrange( 1,len(args) ) )   )
+    output=[libjsonpath(j, jp, use_eval=False) for jp in jpargs]
+
+    l=0
+    lchanges=0
+    for i in output:
+        try:
+            if len(i)!=l:
+                l=len(i)
+                lchanges+=1
+        except TypeError:
+            pass
+
+    if l==0:
+        return
+
+    if lchanges>1:
+        yield [jopts.toj(x) if type(x)!=bool else None for x in output]
+    else:
+        for i in xrange(l):
+            yield [jopts.toj(x[i]) if type(x)!=bool else None for x in output]
+
+jsonpath.registered=True
 
 
 if not ('.' in __name__):
