@@ -40,27 +40,16 @@ Examples::
     2     | Mark  | 7  | 3
 """
 import setpath
-from lib.sqlitetypes import typestoSqliteTypes
 from vtiterable import SourceVT
 from lib.iterutils import peekable
+import itertools
 import functions
 
 ### Classic stream iterator
-
-
 registered=True
-
-
-#special case iterator
-def number(iter):
-    num=1
-    for i in iter:
-        yield [num]+list(i)
-        num+=1
-        
+       
 class RowidCursor:
     def __init__(self,sqlquery,connection,first,names,types):
-
         self.sqlquery=sqlquery
         self.connection=connection
         self.c=self.connection.cursor()
@@ -93,9 +82,9 @@ class RowidCursor:
                     except:
                         pass
 
-            self.iter=number(execit)
+            self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), execit) )
         else:
-            self.iter=number(self.c.execute(self.sqlquery))
+            self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), self.c.execute(self.sqlquery)) )
     def close(self):
         self.c.close()
     def next(self):

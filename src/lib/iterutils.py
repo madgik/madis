@@ -1,6 +1,6 @@
 import itertools
 
-class peekable(object):
+class peekable():
     """ An iterator that supports a peek operation.  Example usage:
     >>> p = peekable(range(4))
     >>> p.peek( )
