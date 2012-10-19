@@ -4,6 +4,9 @@ from gzip import zlib
 import subprocess
 import functions
 import time
+import urllib2
+from functions.conf import domainExtraHeaders
+import lib.gzip32 as gzip
 
 def gz(*args):
 
@@ -65,6 +68,44 @@ def ungz(*args):
         return args[0]
 
 ungz.registered=True
+
+def urlrequest(*args):
+
+    """
+    .. function:: urlrequest([null], url) -> response
+
+    This functions connects to the *url* and returns the request's result. If first
+    parameter is *null*, then in case of errors *null* is returned.
+
+    Examples:
+
+    >>> sql("select urlrequest('http://www.google.com/not_existing')")
+    Traceback (most recent call last):
+    ...
+    HTTPError: HTTP Error 404: Not Found
+
+    >>> sql("select urlrequest(null, 'http://www.google.com/not_existing') as result")
+    result
+    ------------------------------------------------------
+    None
+
+    """
+    try:
+        req = urllib2.Request(''.join((x for x in args if x != None)), None, domainExtraHeaders)
+        hreq = urllib2.urlopen(req)
+
+        if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+            hreq = gzip.GzipFile(fileobj=hreq)
+
+        return unicode(hreq.read(), 'utf-8', errors = 'replace')
+
+    except urllib2.HTTPError,e:
+        if args[0] == None:
+            return None
+        else:
+            raise e
+
+urlrequest.registered=True
 
 def failif(*args):
     """
