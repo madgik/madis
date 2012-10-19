@@ -3,6 +3,7 @@ import setpath
 from gzip import zlib
 import subprocess
 import functions
+import time
 
 def gz(*args):
 
@@ -163,7 +164,7 @@ def execprogram(*args):
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator EXECPROGRAM: OSError(2, 'No such file or directory')
+    Operator EXECPROGRAM: [Errno 2] No such file or directory
 
     >>> sql("select execprogram(null, 'cat', 'non_existent_file')") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
@@ -218,6 +219,28 @@ def execprogram(*args):
     return outtext
 
 execprogram.registered=True
+
+
+def sleep(*args):
+    """
+    .. function:: sleep(seconds)
+
+    This function waits for the given number of seconds before returning. The *seconds* parameters can
+    be fractional (e.g. *0.1* will sleep for 100 milliseconds).
+
+    Examples:
+
+    >>> sql("select sleep(0.1)")
+    sleep(0.1)
+    ----------
+    0.1
+
+    """
+    time.sleep(args[0])
+
+    return args[0]
+
+sleep.registered=True
 
 
 if not ('.' in __name__):
