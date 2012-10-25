@@ -2,7 +2,6 @@ import random
 # coding: utf-8
 import math
 
-
 def randomrange(*args):
 
     """
@@ -12,10 +11,10 @@ def randomrange(*args):
 
     Examples:
 
-    >>> sql("select randomrange(0, 68, 1)")
+    >>> sql("select randomrange(0, 68, 1)") # doctest: +ELLIPSIS
     randomrange(0, 68, 1)
     ---------------------
-    5
+    ...
 
     """
 
@@ -27,6 +26,33 @@ def randomrange(*args):
     return ret
 
 randomrange.registered=True
+
+def gaussdistribution(*args):
+
+    """
+    .. function:: gaussdistribution(mean, sigma) -> float
+
+    Returns a gaussian distribution. Sigma is the standard deviation of the
+    distribution
+
+    Examples:
+
+    >>> sql("select gaussdistribution(10,5)") # doctest: +ELLIPSIS
+    gaussdistribution(10,5)
+    -----------------------
+    ...
+
+    """
+
+    try:
+        ret=random.gauss(args[0],args[1])
+    except ValueError:
+        return None
+
+    return ret
+
+gaussdistribution.registered=True
+
 
 def sqroot(*args):
 
