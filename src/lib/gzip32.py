@@ -20,17 +20,49 @@ FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
 
 READ, WRITE = 1, 2
 
-def U32(i):
-    """Return i as an unsigned integer, assuming it fits in 32 bits.
-    If it's >= 2GB when viewed as a 32-bit unsigned int, return a long.
-    """
-    if i < 0:
-        i += 1 << 32
-    return i
+def open(filename, mode="rb", compresslevel=9,
+         encoding=None, errors=None, newline=None):
+    """Open a gzip-compressed file in binary or text mode.
 
-def LOWU32(i):
-    """Return the low-order 32 bits, as a non-negative int"""
-    return i & 0xFFFFFFFF
+    The filename argument can be an actual filename (a str or bytes object), or
+    an existing file object to read from or write to.
+
+    The mode argument can be "r", "rb", "w", "wb", "a" or "ab" for binary mode,
+    or "rt", "wt" or "at" for text mode. The default mode is "rb", and the
+    default compresslevel is 9.
+
+    For binary mode, this function is equivalent to the GzipFile constructor:
+    GzipFile(filename, mode, compresslevel). In this case, the encoding, errors
+    and newline arguments must not be provided.
+
+    For text mode, a GzipFile object is created, and wrapped in an
+    io.TextIOWrapper instance with the specified encoding, error handling
+    behavior, and line ending(s).
+
+    """
+    if "t" in mode:
+        if "b" in mode:
+            raise ValueError("Invalid mode: %r" % (mode,))
+    else:
+        if encoding is not None:
+            raise ValueError("Argument 'encoding' not supported in binary mode")
+        if errors is not None:
+            raise ValueError("Argument 'errors' not supported in binary mode")
+        if newline is not None:
+            raise ValueError("Argument 'newline' not supported in binary mode")
+
+    gz_mode = mode.replace("t", "")
+    if isinstance(filename, (str, bytes)):
+        binary_file = GzipFile(filename, gz_mode, compresslevel)
+    elif hasattr(filename, "read") or hasattr(filename, "write"):
+        binary_file = GzipFile(None, gz_mode, compresslevel, filename)
+    else:
+        raise TypeError("filename must be a str or bytes object, or a file")
+
+    if "t" in mode:
+        return io.TextIOWrapper(binary_file, encoding, errors, newline)
+    else:
+        return binary_file
 
 def write32u(output, value):
     # The L format writes the bit pattern correctly whether signed
@@ -39,15 +71,6 @@ def write32u(output, value):
 
 def read32(input):
     return struct.unpack("<I", input.read(4))[0]
-
-def open(filename, mode="rb", compresslevel=9):
-    """Shorthand for GzipFile(filename, mode, compresslevel).
-
-    The filename argument is required; mode defaults to 'rb'
-    and compresslevel defaults to 9.
-
-    """
-    return GzipFile(filename, mode, compresslevel)
 
 class _PaddedFile:
     """Minimal read-only file object that prepends a string to the contents
@@ -109,6 +132,9 @@ class GzipFile(io.BufferedIOBase):
     """The GzipFile class simulates most of the methods of a file object with
     the exception of the readinto() and truncate() methods.
 
+    This class only supports opening files in binary mode. If you need to open a
+    compressed file in text mode, use the gzip.open() function.
+
     """
 
     myfileobj = None
@@ -135,8 +161,8 @@ class GzipFile(io.BufferedIOBase):
         The mode argument can be any of 'r', 'rb', 'a', 'ab', 'w', or 'wb',
         depending on whether the file will be read or written.  The default
         is the mode of fileobj if discernible; otherwise, the default is 'rb'.
-        Be aware that only the 'rb', 'ab', and 'wb' values should be used
-        for cross-platform portability.
+        A mode of 'r' is equivalent to one of 'rb', and similarly for 'w' and
+        'wb', and 'a' and 'ab'.
 
         The compresslevel argument is an integer from 1 to 9 controlling the
         level of compression; 1 is fastest and produces the least compression,
@@ -153,20 +179,20 @@ class GzipFile(io.BufferedIOBase):
 
         """
 
-        # guarantee the file is opened in binary mode on platforms
-        # that care about that sort of thing
+        if mode and ('t' in mode or 'U' in mode):
+            raise ValueError("Invalid mode: {!r}".format(mode))
         if mode and 'b' not in mode:
             mode += 'b'
         if fileobj is None:
             fileobj = self.myfileobj = builtins.open(filename, mode or 'rb')
         if filename is None:
-            if hasattr(fileobj, 'name'): filename = fileobj.name
-            else: filename = ''
+            filename = getattr(fileobj, 'name', '')
+            if not isinstance(filename, (str, bytes)):
+                filename = ''
         if mode is None:
-            if hasattr(fileobj, 'mode'): mode = fileobj.mode
-            else: mode = 'rb'
+            mode = getattr(fileobj, 'mode', 'rb')
 
-        if mode[0:1] == 'r':
+        if mode.startswith('r'):
             self.mode = READ
             # Set flag indicating start of a new member
             self._new_member = True
@@ -181,7 +207,7 @@ class GzipFile(io.BufferedIOBase):
             self.min_readsize = 100
             fileobj = _PaddedFile(fileobj)
 
-        elif mode[0:1] == 'w' or mode[0:1] == 'a':
+        elif mode.startswith(('w', 'a')):
             self.mode = WRITE
             self._init_write(filename)
             self.compress = zlib.compressobj(compresslevel,
@@ -190,7 +216,7 @@ class GzipFile(io.BufferedIOBase):
                                              zlib.DEF_MEM_LEVEL,
                                              0)
         else:
-            raise IOError("Mode " + mode + " not supported")
+            raise ValueError("Invalid mode: {!r}".format(mode))
 
         self.fileobj = fileobj
         self.offset = 0
@@ -235,7 +261,8 @@ class GzipFile(io.BufferedIOBase):
             # RFC 1952 requires the FNAME field to be Latin-1. Do not
             # include filenames that cannot be represented that way.
             fname = os.path.basename(self.name)
-            fname = fname.encode('latin-1')
+            if not isinstance(fname, bytes):
+                fname = fname.encode('latin-1')
             if fname.endswith(b'.gz'):
                 fname = fname[:-3]
         except UnicodeEncodeError:
@@ -352,6 +379,31 @@ class GzipFile(io.BufferedIOBase):
         self.offset += size
         return chunk
 
+    def read1(self, size=-1):
+        self._check_closed()
+        if self.mode != READ:
+            import errno
+            raise IOError(errno.EBADF, "read1() on write-only GzipFile object")
+
+        if self.extrasize <= 0 and self.fileobj is None:
+            return b''
+
+        try:
+            # For certain input data, a single call to _read() may not return
+            # any data. In this case, retry until we get some data or reach EOF.
+            while self.extrasize <= 0:
+                self._read()
+        except EOFError:
+            pass
+        if size < 0 or size > self.extrasize:
+            size = self.extrasize
+
+        offset = self.offset - self.extrastart
+        chunk = self.extrabuf[offset: offset + size]
+        self.extrasize -= size
+        self.offset += size
+        return chunk
+
     def peek(self, n):
         if self.mode != READ:
             import errno
@@ -365,8 +417,10 @@ class GzipFile(io.BufferedIOBase):
             if self.fileobj is None:
                 return b''
             try:
-                # 1024 is the same buffering heuristic used in read()
-                self._read(max(n, 1024))
+                # Ensure that we don't return b"" if we haven't reached EOF.
+                while self.extrasize == 0:
+                    # 1024 is the same buffering heuristic used in read()
+                    self._read(max(n, 1024))
             except EOFError:
                 pass
         offset = self.offset - self.extrastart
@@ -620,9 +674,9 @@ def _test():
             if not chunk:
                 break
             g.write(chunk)
-        if g is not sys.stdout:
+        if g is not sys.stdout.buffer:
             g.close()
-        if f is not sys.stdin:
+        if f is not sys.stdin.buffer:
             f.close()
 
 if __name__ == '__main__':
