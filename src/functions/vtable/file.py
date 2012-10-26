@@ -149,7 +149,6 @@ from functions import mstr
 import itertools
 import json
 import os.path
-import codecs
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
@@ -360,24 +359,23 @@ class FileVT:
     def open(self):
         if self.nonames:
             try:
-                inoutargs=lib.inoutparsing.inoutargsparse(self.largs,self.dictargs)
+                self.inoutargs=lib.inoutparsing.inoutargsparse(self.largs,self.dictargs)
             except lib.inoutparsing.InputsError:
                 raise functions.OperatorError(__name__.rsplit('.')[-1]," One source input is required")
-            if not inoutargs['filename']:
+            if not self.inoutargs['filename']:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"No input provided")
             
-            if inoutargs['url']:
+            if self.inoutargs['url']:
                 for domain in domainExtraHeaders:
-                    if domain in inoutargs['filename']:
+                    if domain in self.inoutargs['filename']:
                         self.extraheader=domainExtraHeaders[domain]
                         break
                 if 'User-Agent' not in self.extraheader:
                     self.extraheader['User-Agent']='Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-            if inoutargs['url'] and inoutargs['compression'] and inoutargs['compressiontype']=='zip':
-                inoutargs['filename']=lib.inoutparsing.cacheurl(inoutargs['filename'],self.extraheader)
-                self.destroyfiles=[inoutargs['filename']]
-                inoutargs['url']=False
-            self.inoutargs=inoutargs
+            if self.inoutargs['url'] and self.inoutargs['compression'] and self.inoutargs['compressiontype']=='zip':
+                self.inoutargs['filename']=lib.inoutparsing.cacheurl(self.inoutargs['filename'], self.extraheader)
+                self.destroyfiles=[self.inoutargs['filename']]
+                self.inoutargs['url']=False
         
         return FileCursor(self.inoutargs['filename'],self.inoutargs['url'],self.inoutargs['compressiontype'],self.inoutargs['compression'],self.inoutargs['header'],self.nonames,self.names,self.extraheader,**self.dictargs)
 
