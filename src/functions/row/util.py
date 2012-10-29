@@ -86,7 +86,7 @@ def urlrequest(*args):
 
     >>> sql("select urlrequest(null, 'http://www.google.com/not_existing') as result")
     result
-    ------------------------------------------------------
+    ------
     None
 
     """
@@ -277,9 +277,12 @@ def sleep(*args):
     0.1
 
     """
-    time.sleep(args[0])
+    t = args[0]
+    if t<0:
+        t=0
+    time.sleep(t)
 
-    return args[0]
+    return t
 
 sleep.registered=True
 
