@@ -1,7 +1,7 @@
 # coding: utf-8
 
 
-stopwords=set([ur"stessi", ur"można", ur"einseitiger", ur"wären", ur"fÛr", ur"olette", ur"würde", ur"andre", ur"για", ur"ebben", ur"negl", ur"steigen", ur"einseitigen",
+stopwords=set([ur".", ur"stessi", ur"można", ur"einseitiger", ur"wären", ur"fÛr", ur"olette", ur"würde", ur"andre", ur"για", ur"ebben", ur"negl", ur"steigen", ur"einseitigen",
 ur"dere", ur"niissä", ur"ergänzen", ur"otro", ur"noista", ur"dazu", ur"περί", ur"tobie", ur"erst", ur"mußt", ur"szinte", ur"otra", ur"drauf", ur"gänzlich", ur"aus",
 ur"under", ur"aux", ur"gesehen", ur"shouldn't", ur"dela", ur"neun", ur"dele", ur"berichteten", ur"neue", ur"voie", ur"ayantes", ur"letztes", ur"vase", ur"staremo",
 ur"algunos", ur"letzten", ur"tandis", ur"tinham", ur"senin", ur"olisimme", ur"we'll", ur"ÔÏÇÏ", ur"mog±", ur"haben", ur"zde", ur"geworden", ur"zda", ur"upp",
