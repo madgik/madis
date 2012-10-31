@@ -136,13 +136,43 @@ def jfilterempty(*args):
 
 jfilterempty.registered=True
 
+def j2s(*args):
+
+    """
+    .. function:: j2s(jpack) -> space separated string
+
+    Converts multiple input jpacks to a space separated string. Newlines are converted to spaces.
+
+    Examples:
+
+    >>> sql("select j2s('[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
+    j2s('[1,2,3]')
+    --------------
+    1 2 3
+
+    >>> sql("select j2s('[1,2,3]','a')") # doctest: +NORMALIZE_WHITESPACE
+    j2s('[1,2,3]','a')
+    ------------------
+    1 2 3 a
+
+    >>> sql("select j2s('a', 'b')") # doctest: +NORMALIZE_WHITESPACE
+    j2s('a', 'b')
+    -------------
+    a b
+
+    """
+
+    return ' '.join([ unicode(x).replace('\n',' ') for x in jopts.fromj(*args) ])
+
+j2s.registered=True
+
 def j2t(*args):
 
     """
     .. function:: j2t(jpack) -> tabpack
 
-    Converts multiple input jpacks to a tab separated pack (tab separated values). If tab characters are found in
-    the source jpack
+    Converts multiple input jpacks to a tab separated pack (tab separated values). If tab or newline characters are found in
+    the source jpack they are converted to spaces.
 
     Examples:
 
@@ -163,7 +193,7 @@ def j2t(*args):
 
     """
 
-    return '\t'.join([ str(x).replace('\t', '    ') for x in jopts.fromj(*args) ])
+    return '\t'.join([ unicode(x).replace('\t', '    ').replace('\n',' ') for x in jopts.fromj(*args) ])
 
 j2t.registered=True
 
