@@ -346,8 +346,8 @@ def regexpr(*args):
     --------------------------------------------------
     otherword
 
-    >>> sql("regexpr '\W+' 'nonword' '@#$%@$#% tobereplaced @#$%@#$%' ")
-    regexpr('\W+','nonword','@#$%@$#% tobereplaced @#$%@#$%')
+    >>> sql("regexpr '\W+' '@#$%@$#% tobereplaced @#$%@#$%' 'nonword'  ")
+    regexpr('\W+','@#$%@$#% tobereplaced @#$%@#$%','nonword')
     ---------------------------------------------------------
     nonwordtobereplacednonword
     """
@@ -365,7 +365,7 @@ def regexpr(*args):
             return None
 
     if len(args)==3:
-        return re.sub(args[0],args[1],args[2])
+        return re.sub(args[0], args[2], args[1])
 
 regexpr.registered=True
 
