@@ -17,6 +17,7 @@ if sys.platform == 'darwin':
 import re
 import apsw
 import functions
+import traceback
 
 pipedinput=not sys.stdin.isatty()
 
@@ -774,11 +775,16 @@ while True:
                 print e
             continue
         except Exception, e:
-            msg="Unknown error:"+functions.mstr(e)
+            trlines = []
+            for i in reversed(traceback.format_exc().splitlines()):
+                trlines.append(i)
+                if i.strip().startswith('File'):
+                    break
+            msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
             if pipedinput:
                 exitwitherror(functions.mstr(msg))
             print msg
-            #raise
+
         finally:
             colorama.deinit()
             try:
