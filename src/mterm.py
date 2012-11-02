@@ -83,6 +83,13 @@ def createConnection(db):
         connection.enableloadextension(True)
     except Exception, e:
         exitwitherror(e)
+
+    # Change TEMP store to where the mterm is run from
+    try:
+        connection.cursor().execute("PRAGMA temp_store_directory = '.';")
+    except:
+        pass
+    
     return connection
 
 def reloadfunctions():
