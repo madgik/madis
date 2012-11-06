@@ -368,7 +368,9 @@ def jmergeregexp(*args):
     """
     .. function:: jmergeregexp(jpacks) -> jpack
 
-    Flattens all nested sub-jpacks.
+    Creates a regular expression that matches all of the jpack's contents. If the input
+    jpack contains keyword pairs, then jmergeregexp returns a regular expression
+    with named groups.
 
     Examples:
 
@@ -377,9 +379,26 @@ def jmergeregexp(*args):
     ------------------------------
     (?:abc)|(?:def)
 
+    >>> sql(''' select jmergeregexp('[["pos", "p1"], ["neg", "n1"], ["pos", "p2"]]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jmergeregexp('[["pos", "p1"], ["neg", "n1"], ["pos", "p2"]]')
+    -------------------------------------------------------------
+    (?P<neg>n1)|(?P<pos>p1|p2)
+
     """
 
-    return '|'.join('(?:'+x+')' for x in jopts.fromj(*args))
+    inp = jopts.fromj(*args)
+
+    if type(inp[0]) == list:
+        out={}
+        for x,y in inp:
+            if x not in out:
+                out[x] = [y]
+            else:
+                out[x].append(y)
+
+        return '|'.join('(?P<'+ x + '>' + '|'.join(y)+')' for x, y in out.iteritems())
+
+    return '|'.join('(?:'+x+')' for x in inp)
 
 jmergeregexp.registered=True
 
