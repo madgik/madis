@@ -170,19 +170,29 @@ class dategroupduration:
     registered=True
 
     def __init__(self):
-        self.dates=[]
+        self.datemin = None
+        self.datemax = None
 
     def step(self, *args):
-        self.dates.append(iso8601.parse_date(args[0]))
+        pdate = iso8601.parse_date(args[0])
+
+        if self.datemin == None:
+            self.datemin = pdate
+
+        if self.datemax == None:
+            self.datemax = pdate
+
+        if pdate < self.datemin:
+            self.datemin = pdate
+
+        if pdate > self.datemax:
+            self.datemax = pdate
 
     def final(self):
-        lenofdates=len(self.dates)
-
-        if lenofdates==1:
+        if self.datemin == None or self.datemax == None:
             return 0
 
-        self.dates.sort()
-        diff=self.dates[-1]-self.dates[0]
+        diff=self.datemax - self.datemin
 
         return diff.days*86400+diff.seconds
 
