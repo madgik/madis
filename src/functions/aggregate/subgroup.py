@@ -407,18 +407,18 @@ class datedifffilter:
             yield(self.vals[dtpos])
         else:
             for el in self.vals:
-                el.insert(0,iso8601.parse_date(el[0]))
-            self.vals.sort(key=itemgetter(0))
+                el.append(iso8601.parse_date(el[0]))
+            self.vals.sort(key=itemgetter(-1))
             for el in self.vals:
                 if dtpos<lenofvals-1:
-                    dt = el[0]
-                    dtnew =self.vals[dtpos+1][0]
+                    dt = el[-1]
+                    dtnew =self.vals[dtpos+1][-1]
                     diff=dtnew-dt
                     dtpos+=1
                     if (diff.days*86400+diff.seconds)>self.maxdiff:
-                        yield(el[1:])
+                        yield(el[0:-1])
                     if dtpos==lenofvals-1:
-                        yield(self.vals[dtpos][1:])
+                        yield(self.vals[dtpos][0:-1])
 
 class datediffgroup:
     """
