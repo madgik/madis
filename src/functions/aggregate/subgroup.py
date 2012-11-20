@@ -255,7 +255,17 @@ class datediffnewsesid:
     bgroupid | C1
     ---------------
     None     | None
+
+    >>> table2('''
+    ... 1 session1 '2007-05-01T21:10:51Z'
+    ... 9 session1 '2012-01-08T18:24:32Z'
+    ... ''')
+    >>> sql("select datediffnewsesid(1800, c, b, a) from table2 group by b")
+    bgroupid  | C1
+    --------------
+    session11 | 9
     """
+
     registered=True
 
     def __init__(self):
@@ -426,7 +436,7 @@ class datediffgroup:
     .. function:: datediffgroup(maxdiff, date, C1, C2 ....) -> [groupid, date,C1,C2....]
 
     Performing a sort of entry clustering based on the entries date difference.
-    The cluster id that is assigned to each entry is reutrned in the first column, and it is followed by the entry's original contents.
+    The cluster id that is assigned to each entry is returned in the first column, and it is followed by the entry's original contents.
 
     The first argument defines the time differnece threshold that is employed for entry clustering, and it is provided in seconds.
     The second argument is assumed to contain the date column. Entries are assumed to be provided in an ascending order by the date column.
