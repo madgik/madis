@@ -84,24 +84,16 @@ class jgroupunion:
     --------------
     1
 
-    >>> table1('''
-    ... '{"b":1, "a":1}' 6
-    ... '{"c":1}' 7
-    ... ''')
-    >>> sql("select jgroupunion(a,b) from table1")
-    jgroupunion(a,b)
-    -----------------
-    ["b","a",6,"c",7]
-
     """
 
     registered=True #Value to define db operator
 
     def __init__(self):
         self.outgroup=collections.OrderedDict()
+        self.outgroupupdate=self.outgroup.update
 
     def step(self, *args):
-        self.outgroup.update( ( (x,None) for x in jopts.fromj(*args) ) )
+        self.outgroupupdate( [ (x,None) for x in jopts.fromj(*args) ] )
 
     def final(self):
         return jopts.toj(list(self.outgroup))
@@ -129,15 +121,6 @@ class jgroupintersection:
     jgroupintersection(1)
     ---------------------
     1
-
-    >>> table1('''
-    ... '{"b":1, "a":1}' 'b'
-    ... '{"b":1}' 'b'
-    ... ''')
-    >>> sql("select jgroupintersection(a,b) from table1")
-    jgroupintersection(a,b)
-    -----------------------
-    b
 
     """
 
