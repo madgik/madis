@@ -101,7 +101,7 @@ class jgroupunion:
         self.outgroup=collections.OrderedDict()
 
     def step(self, *args):
-        self.outgroup.update( [(x,None) for x in jopts.fromj(*args)] )
+        self.outgroup.update( ( (x,None) for x in jopts.fromj(*args) ) )
 
     def final(self):
         return jopts.toj(list(self.outgroup))
