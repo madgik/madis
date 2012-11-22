@@ -1,7 +1,7 @@
 __docformat__ = 'reStructuredText en'
 
 import lib.jopts as jopts
-import collections
+from collections import OrderedDict
 import json
 
 class jgroup:
@@ -89,7 +89,7 @@ class jgroupunion:
     registered=True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=collections.OrderedDict()
+        self.outgroup=OrderedDict()
         self.outgroupupdate=self.outgroup.update
 
     def step(self, *args):
@@ -127,12 +127,12 @@ class jgroupintersection:
     registered=True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=None #collections.OrderedDict()
+        self.outgroup=None
         self.outset=None
 
     def step(self, *args):
         if self.outgroup==None:
-            self.outgroup=collections.OrderedDict([(x,None) for x in jopts.fromj(args[0])])
+            self.outgroup=OrderedDict([(x,None) for x in jopts.fromj(args[0])])
             self.outset=set(self.outgroup)
         for jp in args:
             for i in self.outset.difference(jopts.fromj(jp)):
@@ -167,13 +167,13 @@ class jdictgroupunion:
     registered=True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=collections.OrderedDict()
+        self.outgroup=OrderedDict()
 
     def step(self, *args):
         for d in args:
-            for x,v in json.loads(d, object_pairs_hook=collections.OrderedDict).iteritems():
+            for x,v in json.loads(d, object_pairs_hook=OrderedDict).iteritems():
                 vlen=1
-                if type(v) in (list, collections.OrderedDict):
+                if type(v) in (list, OrderedDict):
                     vlen=len(v)
                 try:
                     if vlen > self.outgroup[x]:
@@ -183,6 +183,44 @@ class jdictgroupunion:
 
     def final(self):
         return json.dumps(self.outgroup, separators=(',',':'), ensure_ascii=False)
+
+
+class jgroupunionkeys:
+    """
+    .. function:: jgroupunionkeys(columns) -> jpack
+
+    Calculates the union of the jdict keys. Use it with care, because for performance
+    reasons the input data are not checked at all. They should all be jdicts.
+
+    Example:
+
+    >>> table1('''
+    ... '{"1":1, "2":3}' '{"a":5}'
+    ... '{"2":1, "3":3}' '{}'
+    ... ''')
+    >>> sql("select jgroupunionkeys(a,b) from table1")
+    jgroupunionkeys(a,b)
+    --------------------
+    ["1","2","a","3"]
+
+    >>> sql("select jgroupunionkeys('{}')")
+    jgroupunionkeys('{}')
+    ---------------------
+    []
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.outgroup=OrderedDict()
+        self.outgroupupdate=self.outgroup.update
+
+    def step(self, *args):
+        for arg in args:
+            self.outgroupupdate( ( (k,None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys() ) )
+
+    def final(self):
+        return jopts.toj(list(self.outgroup))
 
 if not ('.' in __name__):
     """
