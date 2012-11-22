@@ -217,11 +217,15 @@ class jgroupunionkeys:
 
     def __init__(self):
         self.outgroup=OrderedDict()
+        self.outgroupset=set()
         self.outgroupupdate=self.outgroup.update
 
     def step(self, *args):
         for arg in args:
-            self.outgroupupdate( ( (k,None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys() ) )
+            v = json.loads(arg)
+            if not set(v).issubset(self.outgroup):
+                self.outgroupset.update(v)
+                self.outgroupupdate( [(k, None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys()] )
 
     def final(self):
         return jopts.toj(list(self.outgroup))
