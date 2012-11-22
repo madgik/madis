@@ -93,7 +93,7 @@ ur"około", ur"obgleich", ur"stia", ur"×Ù", ur"þeyden", ur"आदि", ur"ved
 ur"facciate", ur"estuviese", ur"estarían", ur"dieselben", ur"einerseits", ur"jiz", ur"into", ur"nirgendwo", ur"twoje", ur"non", ur"twoja", ur"noi", ur"beim", ur"nog",
 ur"aquilo", ur"keitä", ur"अपनी", ur"halb", ur"अपने", ur"hiesige", ur"not", ur"qu", ur"ktoś", ur"trabajamos", ur"nor", ur"nos", ur"ÓÅÂÅ", ur"bearbeitete", ur"avons",
 ur"olit", ur"ketä", ur"इसमें", ur"desde", ur"ÓÅÂÑ", ur"anderem", ur"sabeis", ur"kann", ur"el", ur"en", ur"versorgt", ur"reeds", ur"ej", ur"ennek", ur"siihen", ur"eg",
-ur"ÓÅÇÏÄÎÑ", ur"ÉÌÉ", ur"había", ur"versorge", ur"houverão", ur"eu", ur"et", ur"wegen", ur"es", ur"er", ur"außer", ur"fôramos", ur"stiano", ur"tuvieseis", ur"meistä",
+ur"ÓÅÇÏÄÎÑ", ur"ÉÌÉ", ur"había", ur"versorge", ur"houverão", ur"et", ur"wegen", ur"es", ur"er", ur"außer", ur"fôramos", ur"stiano", ur"tuvieseis", ur"meistä",
 ur"ponad", ur"ÅÊ", ur"hajam", ur"poco", ur"fazer", ur"bli", ur"valeur", ur"obwohl", ur"ble", ur"voltunk", ur"außen", ur"denselben", ur"geteilte", ur"tienen", ur"punkt",
 ur"tuviera", ur"auch", ur"às", ur"terão", ur"czasem", ur"org", ur"klares", ur"vier", ur"mimo", ur"ora", ur"starebbe", ur"takze", ur"terá", ur"eûmes", ur"×ÄÒÕÇ",
 ur"horas", ur"siebte", ur"wichtig", ur"zal", ur"tenir", ur"noget", ur"एवं", ur"ona", ur"teríamos", ur"yourself", ur"belül", ur"sizi", ur"ÇÄÅ", ur"völlig",
