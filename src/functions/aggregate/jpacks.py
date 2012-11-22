@@ -1,8 +1,12 @@
 __docformat__ = 'reStructuredText en'
 
 import lib.jopts as jopts
-from collections import OrderedDict
 import json
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections import OrderedDict
 
 class jgroup:
     """
