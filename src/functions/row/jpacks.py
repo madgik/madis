@@ -136,6 +136,47 @@ def jfilterempty(*args):
 
 jfilterempty.registered=True
 
+def jlengthiest(*args):
+    """
+    .. function:: jlengthiest(jpacks.) -> jpack
+
+    Returns the string with the greatest length contained in the jpacks.
+
+    Examples:
+
+    >>> sql("select jlengthiest('a', '', '[]')")
+    jlengthiest('a', '', '[]')
+    --------------------------
+    a
+
+    >>> sql("select jlengthiest('a','longer',3)")
+    jlengthiest('a','longer',3)
+    ---------------------------
+    longer
+
+    >>> sql("select jlengthiest('[3]', jpack('b', ''))")
+    jlengthiest('[3]', jpack('b', ''))
+    ----------------------------------
+    3
+
+    """
+
+    maxlen=-1
+    res=None
+    
+    for i in (x for x in jopts.fromj(*args)):
+        if i == None: 
+            l=-1
+        else:
+            l = len(unicode(i))
+        if l > maxlen:
+            maxlen = l
+            res = i
+
+    return res
+
+jlengthiest.registered=True
+
 def j2s(*args):
 
     """
