@@ -237,6 +237,8 @@ def update_cols_from_tables_in_text(t):
 
 
 def mcomplete(textin,state):
+    global number_of_kb_exceptions
+    number_of_kb_exceptions = 0
     
     def normalizename(col):
         if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
@@ -575,6 +577,7 @@ while True:
         if number_of_kb_exceptions<2:
             continue
         else:
+            readline.write_history_file(histfile)
             break
 
     #Skip comments
@@ -716,7 +719,7 @@ while True:
         except:
             pass
 
-        before=datetime.datetime.now()
+        before = datetime.datetime.now()
         cursor = connection.cursor()
         try:
             cexec=cursor.execute(statement)
