@@ -40,6 +40,7 @@
 
 
 import os
+import subprocess
 
 def winGetClipboard():
     try:
@@ -112,6 +113,16 @@ def xclipGetClipboard():
     outf.close()
     return content
 
+def xselSetClipboard(text):
+    outf = os.popen('xsel -i', 'w')
+    outf.write(text)
+    outf.close()
+
+def xselGetClipboard():
+    outf = os.popen('xsel -o', 'r')
+    content = outf.read()
+    outf.close()
+    return content
 
 if os.name == 'nt':
     import ctypes
@@ -121,14 +132,25 @@ elif os.uname()[0].lower() == 'darwin' or os.name=='mac':
     getcb = macGetClipboard
     setcb = macSetClipboard
 elif os.name == 'posix':
-    xclipExists = os.system('which xclip') == 0
+    xclipExists = False
+    try:
+        xclipExists = (subprocess.check_output(['which',  'xclip']) != '')
+    except:
+        pass
     if xclipExists:
         getcb = xclipGetClipboard
         setcb = xclipSetClipboard
     else:
+        xselExists = False
+        try:
+            xselExists = (subprocess.check_output(['which',  'xsel']) != '')
+        except:
+            pass
+        if xselExists:
+            getcb = xselGetClipboard
+            setcb = xselSetClipboard
         try:
             import gtk
-            import signal
             signal.signal(signal.SIGINT, signal.SIG_DFL)
             getcb = gtkGetClipboard
             setcb = gtkSetClipboard
@@ -142,3 +164,6 @@ elif os.name == 'posix':
                 setcb = qtSetClipboard
             except:
                 raise Exception('Pyperclip requires the gtk or PyQt4 module installed, or the xclip command.')
+
+copy = setcb
+paste = getcb
