@@ -238,9 +238,13 @@ def execprogram(*args):
         if args[0]==None:
             outtext, errtext=p.communicate()
         else:
-            if type(args[0]) not in (buffer, str, unicode):
-                args[0]=unicode(args[0])
-            outtext, errtext=p.communicate(args[0])
+            val = args[0]
+            valtype = type(val)
+            if valtype == unicode:
+                val = val.encode('utf-8')
+            if valtype in (int,float):
+                val = str(val)
+            outtext, errtext=p.communicate( val )
     except Exception,e:
         raise functions.OperatorError('execprogram', functions.mstr(e))
 
