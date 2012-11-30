@@ -205,11 +205,15 @@ class Cursor:
         raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in input")
 
 #    @echocall #-- Commented out for speed reasons
+    def Column(self, col):
+        return self.row[col]
+
+#    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
-            self.Column=self.iter.next().__getitem__
+            self.row=self.iter.next()
+#            self.pos+=1
         except StopIteration:
-            self.Column=self.ColumnStop
             self.row=None
             self.eof=True
 
