@@ -378,7 +378,9 @@ def register_ops(module, connection):
                 if opexists(opname):
                     raise MadisError("Extended SQLERROR: Vtable '"+opname+"' name collision with other operator")
                 functions['vtable'][opname] = fobject
-                connection.createmodule(opname, fobject.Source())
+                modinstance = fobject.Source()
+                modinstance._madisVT = True
+                connection.createmodule(opname, modinstance)
 
             if type(fobject).__name__ == 'function':
                 if opexists(opname):
