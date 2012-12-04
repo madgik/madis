@@ -41,11 +41,11 @@ def Clipout(diter, schema, *args, **kargs):
             exportheader=True
 
     if exportheader==True:
-        a.append(u'\t'.join([unicode(unicode(i[0]).replace('\t','    ')).encode('utf-8', 'replace') for i in schema]))
+        a.append(u'\t'.join([unicode(i[0]).replace('\t','    ').replace('\n',' ') for i in schema]).encode('utf_8', 'replace'))
         exportheader=False
 
     for row in diter:
-        a.append(u'\t'.join([unicode(unicode(i).replace('\t','    ')).encode('utf-8', 'replace') for i in row]))
+        a.append(u'\t'.join([unicode(i).replace('\t','    ').replace('\n',' ') for i in row]).encode('utf_8', 'replace'))
 
     if os.name == 'nt':
         clip.setcb(functions.mstr('\n'.join(a)))
