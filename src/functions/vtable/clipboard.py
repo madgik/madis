@@ -72,6 +72,15 @@ class clipboard(vtiters.SchemaFromSampleVT):
         elif self.checkfordelimiter(','):
             delim = ','
             hasschema = True
+        elif self.checkfordelimiter(';'):
+            delim = ';'
+            hasschema = True
+        elif self.checkfordelimiter(':'):
+            delim = ':'
+            hasschema = True
+        elif self.checkfordelimiter(' ') and len(data)>1:
+            delim = ' '
+            hasschema = True
 
         if hasschema:
             data=[i.split(delim) for i in data]
