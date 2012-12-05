@@ -79,7 +79,7 @@ class dirfiles(vtiters.StaticSchemaVT):
 
         if not recursive:
             for f in os.listdir(dirname):
-                fullpathf=expandedpath(f)
+                fullpathf=expandedpath(os.path.join(dirname,f))
                 if os.path.isfile(fullpathf):
                     yield (fullpathf, f)
         else:
