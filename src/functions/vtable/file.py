@@ -156,7 +156,7 @@ def nullify(iterlist):
     for lst in iterlist:
         yield [x if x.upper()!='NULL' else None for x in lst]
 
-def directfile(f, encoding='utf-8'):
+def directfile(f, encoding='utf_8'):
     for line in f:
         yield ( unicode(line.rstrip("\n"), encoding), )
 
@@ -190,7 +190,7 @@ def cleanBOM(t):
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
-        self.encoding='utf-8'
+        self.encoding='utf_8'
         self.fast = False
         self.strict = None
         
