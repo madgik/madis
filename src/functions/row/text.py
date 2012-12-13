@@ -4,6 +4,8 @@ import functions
 import unicodedata
 import hashlib
 import zlib
+import itertools
+from collections import deque
 from lib import jopts
 
 # Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
@@ -707,6 +709,66 @@ def crc32(*args):
         return zlib.crc32(chr(30).join([repr(x) for x in args])) & 0xffffffff
 
 crc32.registered=True
+
+def textwindow(*args):
+    """
+    .. function:: textwindow(text, previous_word_count = 0, next_word_count = 0)
+
+    Returns a rolling window over the text. The window includes *previous_word_count* words before the middle word
+    and next_word_count words after the middleword.
+
+    Examples:
+
+    >>> sql("select textwindow('This is a test phrase')  ")
+    middle
+    ------
+    This
+    is
+    a
+    test
+    phrase
+
+    >>> sql("select textwindow('This is a test phrase',1,1)  ")
+    prev1 | middle | next1
+    -----------------------
+          | This   | is
+    This  | is     | a
+    is    | a      | test
+    a     | test   | phrase
+    test  | phrase |
+
+    """
+    try:
+        prevcount = args[1]
+    except IndexError:
+        prevcount = 0
+
+    try:
+        nextcount = args[2]
+    except IndexError:
+        nextcount = 0
+
+    text = args[0].split(' ')
+
+    # Schema
+    yield tuple(itertools.chain( ('prev' + str(x) for x in xrange(1, prevcount+1)), ('middle',), ('next' + str(x) for x in xrange(1, nextcount+1)) ))
+
+    itext = iter(text)
+    win = [''] * prevcount + [ next(itext, '') for _ in xrange(nextcount + 1)]
+    yield win
+
+    win = deque(win, prevcount + nextcount + 1 )
+    append = win.append
+    
+    for w in itext:
+        append(w)
+        yield list(win)
+
+    for _ in xrange( nextcount ):
+        append('')
+        yield list(win)
+
+textwindow.registered=True
 
 if not ('.' in __name__):
     """
