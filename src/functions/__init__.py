@@ -220,7 +220,8 @@ class Cursor(object):
 
     def cleanupvts(self):
         if self.__vtables!=[]:
-            self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
+            for t in reversed(self.__vtables):
+                self.executetrace('drop table if exists ' + 'temp.'+t)
             self.__vtables=[]
 
 
