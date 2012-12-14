@@ -117,7 +117,7 @@ class RangeVT:
             self.fromv=1
             self.tov=int(largs[0])+1
     def getdescription(self):
-        return [('value',)]
+        return [('C1',)]
     def open(self):
         return RangeCursor(self.fromv,self.tov,self.stepv)
     def disconnect(self):
