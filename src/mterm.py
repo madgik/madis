@@ -57,8 +57,9 @@ except:
     colorama=lambda x:x
     def dummyfunction():
         pass
-    colorama.deinit=dummyfunction
-    colorama.init=dummyfunction
+    colorama.deinit = colorama.init = dummyfunction
+    Fore = Style = Back = dummyfunction
+    Fore.RED = Style.BRIGHT = Style.RESET_ALL = ''
     colnums = False
     pass
 
