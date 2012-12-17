@@ -48,7 +48,7 @@ class NopCursor:
         if schema==[]:
             try:
                 ### Find names and types
-                self.iter=self.c.execute(self.sqlquery)
+                self.iter = iter(self.c.execute(self.sqlquery))
                 schema.extend(list(self.c.getdescription()))
 
             except StopIteration:
