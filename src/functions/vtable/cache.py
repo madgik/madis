@@ -62,7 +62,6 @@ import setpath
 import functions
 import apsw
 import itertools
-import bisect
 import operator
 from lib import argsparse
 from lib import kdtree
