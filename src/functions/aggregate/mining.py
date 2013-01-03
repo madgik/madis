@@ -3,7 +3,7 @@ import itertools
 import setpath
 import functions
 import lib.jopts as jopts
-from lib.buffer import CompBuffer
+from operator import itemgetter
 
 __docformat__ = 'reStructuredText en'
 
@@ -56,7 +56,7 @@ class freqitemsets:
 
         Return frequent itemset statistics
 
-    :maxlen: 1-inf (Default is inf)
+    :maxlen: NUMBER (Default is no limit at all)
 
         Maximum itemset length to search
 
@@ -69,8 +69,8 @@ class freqitemsets:
     ... 'car wood ice'  'first group'
     ... 'ice'           'second group'
     ... 'car ice'       'second group'
-    ... 'car cream' 'second group'
-    ... 'icecream ice car'  'second group'
+    ... 'car cream toy' 'second group'
+    ... 'icecream ice car toy'  'second group'
     ... ''')
     >>> sql("select b,freqitemsets(a, 'threshold:2', 'noautothres:1', 'maxlen:2') from table1 group by b")
     b            | itemset_id | itemset_length | itemset_frequency | item
@@ -81,8 +81,20 @@ class freqitemsets:
     first group  | 3          | 2              | 4                 | wood
     second group | 1          | 1              | 3                 | ice
     second group | 2          | 1              | 3                 | car
-    second group | 3          | 2              | 2                 | car
-    second group | 3          | 2              | 2                 | ice
+    second group | 3          | 1              | 2                 | toy
+    second group | 4          | 2              | 2                 | car
+    second group | 4          | 2              | 2                 | ice
+    second group | 5          | 2              | 2                 | car
+    second group | 5          | 2              | 2                 | toy
+
+    >>> sql("select b,freqitemsets(a, 'stats:1') from table1 group by b")
+    b            | MaxTransactionLength | CombinationCount | PassedTransactions | ValidKeywords
+    -------------------------------------------------------------------------------------------
+    first group  | 3                    | 2                | 3                  | 2
+    first group  | 3                    | 1                | 1                  | 2
+    first group  | 3                    | 0                | 0                  | 0
+    second group | 4                    | 3                | 3                  | 3
+    second group | 4                    | 0                | 3                  | 0
     """
 
 
@@ -104,7 +116,6 @@ class freqitemsets:
         self.belowthres={}
         self.passedkw={}
         self.init=True
-        self.outbuf= CompBuffer()
         self.itemset_id=0
         self.maxlen=None
         self.stats=False
@@ -132,7 +143,7 @@ class freqitemsets:
                 if v[0]=='stats':
                     self.stats=True
 
-    def demultiplex(self,data):
+    def demultiplex(self, data):
         iterable=None
         iterpos=-1
 
@@ -152,14 +163,6 @@ class freqitemsets:
                     yield pre+[i]+post
                 else:
                     yield pre+list(i)+post
-
-    def save(self,data):
-        from operator import itemgetter
-
-        for its,v in sorted(data.items(), key=itemgetter(1),reverse=True):
-            self.itemset_id+=1
-            for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
-                self.outbuf.write( i )
         
     def insertcombfreq(self, comb, freq):
         if comb in self.overthres:
@@ -238,14 +241,17 @@ class freqitemsets:
                 self.insertitemset(tuple(inputkws))
 
     def final(self):
-        self.outbuf.writeheader(['itemset_id', 'itemset_length', 'itemset_frequency', 'item'])
-        statsstr=''
-        statsstr+='Max transaction length:'+ str(self.maxlength)+'\n'
-        #print "input:", self.input
+        if not self.stats:
+            yield ('itemset_id', 'itemset_length', 'itemset_frequency', 'item')
+        else:
+            yield ('MaxTransactionLength', 'CombinationCount', 'PassedTransactions', 'ValidKeywords')
+
         splist=[{},{}]
         del(self.kwcode)
         splist[1]=self.overthres
-        statsstr+='1|'+"# of combinations:"+str(len(splist[1]))+'|'+"# of passed transactions:"+ str(len(self.input))+'|'+ "# of valid keywords:"+ str(len(self.passedkw))+'\n'
+
+        if self.stats:
+            yield [self.maxlength, len(splist[1]), len(self.input), len(self.passedkw)]
 
         if self.maxlen==None:
             self.maxlen=self.maxlength
@@ -277,14 +283,22 @@ class freqitemsets:
                         self.insertcombfreq( k,v )
 
             splist[l]=self.overthres
-            statsstr+=str(l)+'|'+"# of combinations:"+str(len(splist[l]))+'|'+"# of passed transactions:"+ str(len(self.input))+'|'+ "# of valid keywords:"+str(len(self.passedkw))+'\n'
+
+            if self.stats:
+                yield [self.maxlength, len(splist[l]), len(self.input), len(self.passedkw)]
 
             if not self.stats:
-                self.save(splist[prevl])
+                for its,v in sorted(splist[l-1].items(), key=itemgetter(1),reverse=True):
+                    self.itemset_id+=1
+                    for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
+                        yield i
             splist[l-1]={}
 
         if not self.stats:
-            self.save(splist[-1])
+            for its,v in sorted(splist[-1].items(), key=itemgetter(1),reverse=True):
+                self.itemset_id+=1
+                for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
+                    yield i
         splist[-1]={}
 
         del(self.overthres)
@@ -293,12 +307,6 @@ class freqitemsets:
         del(self.input)
         del(self.codekw)
         del(splist)
-
-        if self.stats:
-            return statsstr
-        else:
-            return self.outbuf.serialize()
-
 
 class sampledistvals:
     """

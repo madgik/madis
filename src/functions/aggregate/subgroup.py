@@ -52,9 +52,6 @@ class condbreak:
     user21   | open
     user21   | write
     >>> sql("select condbreak(b,c,c='open',a) from (select 4 as a, 6 as b, 9 as c where c!=9)")
-    bgroupid | C1
-    ---------------
-    None     | None
 
     """
     registered=True
@@ -80,22 +77,17 @@ class condbreak:
         else:
             size=len(self.vals[0])-2
 
-        from lib.buffer import CompBuffer
-        a=CompBuffer()
         if size<=0:
-            a.writeheader(["bgroupid","C1"])
-            a.write(["None","None"])
-            return a.serialize()
-        a.writeheader(["bgroupid"]+["C"+str(i+1) for i in xrange(size-1)])
+            yield ("bgroupid","C1")
+        else:
+            yield tuple(["bgroupid"]+["C"+str(i+1) for i in xrange(size-1)])
 
         counter=0
         for el in self.vals:
             if el[-2]==True:
                 counter+=1
             bid=unistr(el[0])+str(counter)
-            a.write([bid]+el[1:-2])
-
-        return a.serialize()
+            yield [bid]+el[1:-2]
 
 
 class datediffbreak:
@@ -506,15 +498,10 @@ class datediffgroup:
         self.counter+=1
 
     def final(self):
-
-        from lib.buffer import CompBuffer
-        a=CompBuffer()
         if self.tablesize<=0:
-            a.writeheader(["groupid","date","C1"])
-            a.write(["None","None","None"])
-            return a.serialize()
-        a.writeheader(["groupid"]+["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
-
+            yield ("groupid","date","C1")
+        else:
+            yield tuple(["groupid"]+["date"]+["C"+str(i+1) for i in xrange(self.tablesize-1)])
 
         dt=None
         dtpos=0
@@ -526,15 +513,13 @@ class datediffgroup:
                 dt = iso8601.parse_date(el[0])
                 dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
                 diff=dtnew-dt
-                a.write([str(self.groupIdCounter)]+el)
+                yield [str(self.groupIdCounter)]+el
                 if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
                     self.groupIdCounter+=1
                 
                 dtpos+=1
                 if dtpos==self.counter-1:
-                    a.write([str(self.groupIdCounter)]+self.vals[dtpos])
-
-        return a.serialize()
+                    yield [str(self.groupIdCounter)]+self.vals[dtpos]
 
 if not ('.' in __name__):
     """

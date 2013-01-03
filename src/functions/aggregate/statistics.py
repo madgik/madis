@@ -4,7 +4,6 @@ import math
 from lib import iso8601
 import re
 import datetime
-from lib.buffer import CompBuffer
 from fractions import Fraction
 
 
@@ -151,12 +150,9 @@ class modeop:
 
         #CREATE MULTISET OUTPUT
         #print all keys, along with the modevlaue
-        a=CompBuffer()
-        a.writeheader(["ModeOpElements", "ModeOpValue"])
+        yield ("ModeOpElements", "ModeOpValue")
         for el in output:
-            a.write([el, modevalue])
-        return a.serialize()
-
+            yield (el, modevalue)
 
 
 class median:
@@ -882,17 +878,19 @@ class pearson:
 
     Examples:
 
-    >>> sql("select pearson(value,1/value) from range(1,91)")
-    pearson(value,1/value)
-    ----------------------
+    >>> sql("select pearson(c1,1/c1) from range(1,91)")
+    pearson(c1,1/c1)
+    ----------------
     -0.181568259801
-    >>> sql("select pearson(value,17*value+5) from range(1,91)")
-    pearson(value,17*value+5)
-    -------------------------
+    
+    >>> sql("select pearson(c1,17*c1+5) from range(1,91)")
+    pearson(c1,17*c1+5)
+    -------------------
     1.0
-    >>> sql("select pearson(value,pyfun('math.pow',2,value)) from range(1,41)")
-    pearson(value,pyfun('math.pow',2,value))
-    ----------------------------------------
+    
+    >>> sql("select pearson(c1,pyfun('math.pow',2,c1)) from range(1,41)")
+    pearson(c1,pyfun('math.pow',2,c1))
+    ----------------------------------
     0.456349821382
     """
 
