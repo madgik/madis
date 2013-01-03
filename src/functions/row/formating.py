@@ -6,8 +6,6 @@ from lib.dsv import writer, reader
 from lib import argsparse
 import functions
 import lib.inoutparsing as csvargs
-from lib.buffer import CompBuffer,emptyBuffer
-
 
 def strsplit(*args): ###splits the first arguments
     """
@@ -92,8 +90,7 @@ def strsplit(*args): ###splits the first arguments
     """    
     if len(args)<1:
         raise functions.OperatorError("strsplit"," no input")
-    if None in args:
-        return emptyBuffer("C1")
+
     arg=args[0]
     args=args[1:]
     try:
@@ -115,27 +112,20 @@ def strsplit(*args): ###splits the first arguments
         r=reader(f,**kargs)
     except Exception,e:
         raise functions.MadisError(e)
-    from lib.buffer import CompBuffer
-    a=CompBuffer()
     first=True
     
     for row in r:
         if first:
             first=False
-            a.writeheader(["C"+str(i+1) for i in xrange(len(row))])
-        a.write(row)
+            yield tuple("C"+str(i) for i in xrange(1, len(row) + 1))
+        yield row
     if first:
         first=False
-        a.writeheader(["C1"])
-        a.write([''])
+        yield ["C1"]
     f.close()
-    return a.serialize()
     
 
 strsplit.registered=True
-strsplit.multiset=True
-
-
 
 def strsplitv(*args): ###splits the first arguments
     """
@@ -164,8 +154,7 @@ def strsplitv(*args): ###splits the first arguments
     """
     if len(args)<1:
         raise functions.OperatorError("strsplitv","strsplit operator: no input")
-    if None in args:
-        return emptyBuffer("C1")
+
     arg=args[0]
     args=args[1:]
     try:
@@ -188,27 +177,20 @@ def strsplitv(*args): ###splits the first arguments
         r=reader(f,**kargs)
     except Exception,e:
         raise functions.MadisError(e)
-    a=CompBuffer()
     first=True
 
     for row in r:
         if first:
             first=False
-            a.writeheader(["C1"])
+            yield ("C1",)
         for el in row:
-            a.write([el])
+            yield [el]
     if first:
         first=False
-        a.writeheader(["C1"])
-        a.write([''])
+        yield ("C1",)
     f.close()
-    return a.serialize()
-
-
 
 strsplitv.registered=True
-strsplitv.multiset=True
-
 
 def strjoin(*args):
 

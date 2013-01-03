@@ -327,9 +327,7 @@ class ontop:
     all  | 120  | all
 
     >>> sql("select ontop(pk) from (select 5 as pk where pk!=5)")
-    top
-    ----
-    None
+
     """
     registered=True
     multiset=True
@@ -354,7 +352,7 @@ class ontop:
                 raise functions.OperatorError("ontop","Wrong type in first argument")
 
         inparg=args[1]
-        outarg=args[2:]        
+        outarg=args[2:]
 
         if not self.topn.full():
             self.topn.put_nowait((inparg,outarg))       
@@ -366,21 +364,17 @@ class ontop:
 
 
     def final(self):
-        from lib.buffer import CompBuffer
-        a=CompBuffer()
         output=[]
         if self.topn:
             while not self.topn.empty():
                 output+=[self.topn.get_nowait()[1]]
         if output:
-            a.writeheader(["top"+str(i+1) for i in xrange(len(output[0]))])
+            yield tuple(["top"+str(i+1) for i in xrange(len(output[0]))])
         else:
-            a.writeheader(["top"])
-            a.write(["None"])
+            yield ("top",)
 
         for el in output:
-            a.write(el)
-        return a.serialize()
+            yield el
 
 
 if not ('.' in __name__):

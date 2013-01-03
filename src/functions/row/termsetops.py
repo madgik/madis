@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import itertools
-from lib.buffer import CompBuffer,emptyBuffer
 
 def tset(*args):
 
@@ -78,26 +77,20 @@ def tsetcombinations(*args):
     """
     if len(args)<1:
         raise functions.OperatorError("tsetcombinations","tsetcombinations operator: no input")
-    if None in args:
-        return emptyBuffer("C1")
 
     tset=args[0]
 
     if not isinstance(args[1], int):
         raise functions.OperatorError("tsetcombinations","tsetcombinations operator: second argument should be integer")
 
-    a=CompBuffer()
-    first=True
-    a.writeheader(["C1"])
+    yield ("C1",)
 
     for p in itertools.combinations(sorted(tset.split(' ')), args[1]):
         first=False
-        a.write([' '.join(p)])
+        yield [' '.join(p)]
 
     if first:
-        a.write([''])
-
-    return a.serialize()
+        yield ['']
 
 tsetcombinations.registered=True
 tsetcombinations.multiset=True
