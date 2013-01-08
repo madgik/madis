@@ -122,7 +122,7 @@ class freqitemsets:
 
     def initargs(self, args):
         self.init=False
-        for i in xrange(len(args)):
+        for i in xrange(1, len(args)):
             v=re_params.match(args[i])
             if v is not None and v.groups()[0]!='' and v.groups()[1]!='' and i>0:
                 v=v.groups()
