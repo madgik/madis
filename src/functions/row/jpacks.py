@@ -262,6 +262,29 @@ def t2j(*args):
 
 t2j.registered=True
 
+def s2j(*args):
+
+    """
+    .. function:: s2j(tabpack) -> jpack
+
+    Converts a space separated pack to a jpack.
+
+    Examples:
+
+    >>> sql("select s2j('1  2 3 ')") # doctest: +NORMALIZE_WHITESPACE
+    s2j('1  2 3 ')
+    --------------
+    ["1","2","3"]
+    """
+
+    fj=[]
+    for t in args:
+        fj+=[x for x in t.split(' ') if x!='']
+
+    return jopts.toj(fj)
+
+s2j.registered=True
+
 def jmerge(*args):
 
     """
