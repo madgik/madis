@@ -193,13 +193,13 @@ class freqitemsets:
     def cleanitemsets(self, minlength):
         newitemsets={}
         for k,v in self.input.iteritems():
-            itemset=tuple([i for i in k if i in self.passedkw])
+            itemset=tuple(i for i in k if i in self.passedkw)
             if self.compress==1:
-                esoteric_itemset=tuple([i for i in itemset if self.passedkw[i]==v])
+                esoteric_itemset=tuple(i for i in itemset if self.passedkw[i]==v)
                 if len(esoteric_itemset)>0:
                     if len(itemset)>=minlength:
                         self.overthres[itemset]=v
-                    itemset=tuple([i for i in itemset if self.passedkw[i]!=v])
+                    itemset=tuple(i for i in itemset if self.passedkw[i]!=v)
             if len(itemset)>=minlength:
                 if itemset not in newitemsets:
                     newitemsets[itemset]=v
@@ -253,6 +253,12 @@ class freqitemsets:
         if self.stats:
             yield [self.maxlength, len(splist[1]), len(self.input), len(self.passedkw)]
 
+        if not self.stats:
+            for its,v in sorted(splist[1].items(), key=itemgetter(1),reverse=True):
+                self.itemset_id+=1
+                for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
+                    yield i
+
         if self.maxlen==None:
             self.maxlen=self.maxlength
         for l in xrange(2, min(self.maxlength+1, self.maxlen+1)):
@@ -270,36 +276,32 @@ class freqitemsets:
 
             self.cleanitemsets(l)
             self.passedkw={}
+            prevsplist = splist[prevl]
+            icombs = itertools.combinations
+            insertcomb = self.insertcombfreq
 
             for k,v in self.input.iteritems():
-                for k in itertools.combinations(k,l):
+                for k in icombs(k,l):
                     insertit=True
-                    for i1 in itertools.combinations(k, prevl):
-                        if not splist[prevl].has_key(i1):
+                    for i1 in icombs(k, prevl):
+                        if i1 not in prevsplist:
                             insertit=False
                             break
 
                     if insertit:
-                        self.insertcombfreq( k,v )
+                        insertcomb( k,v )
 
+            splist[l-1]={}
             splist[l]=self.overthres
 
             if self.stats:
                 yield [self.maxlength, len(splist[l]), len(self.input), len(self.passedkw)]
 
             if not self.stats:
-                for its,v in sorted(splist[l-1].items(), key=itemgetter(1),reverse=True):
+                for its,v in sorted(splist[l].items(), key=itemgetter(1),reverse=True):
                     self.itemset_id+=1
                     for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
                         yield i
-            splist[l-1]={}
-
-        if not self.stats:
-            for its,v in sorted(splist[-1].items(), key=itemgetter(1),reverse=True):
-                self.itemset_id+=1
-                for i in self.demultiplex( (self.itemset_id, len([self.codekw[i] for i in its]), v, [self.codekw[i] for i in its]) ):
-                    yield i
-        splist[-1]={}
 
         del(self.overthres)
         del(self.belowthres)
