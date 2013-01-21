@@ -337,7 +337,8 @@ class schemaobj():
             pathpostfix=['$']
 
         fpath=cleandata.match("/".join(path)).groups()[0].lower()
-        if fpath=='':
+
+        if fpath == '' and pathpostfix == []:
             return
 
         if fpath not in s:
