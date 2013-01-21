@@ -113,21 +113,21 @@ Examples:
 
     >>> sql('''select * from (xmlparse  '{"a/b":[1,2] ,"a/c":[1,"*"]}' select * from table2)''')
     b        | b1 | c    | c_$
-    -------------------------------------
+    -----------------------------------------
     row1val1 |    |      |
-    row2val1 |    | asdf | <d>row2val</d>
+    row2val1 |    | asdf | asdf<d>row2val</d>
 
     >>> sql('''select * from (xmlparse  '["a/b", "a/c", "a/c/*"]' select * from table2)''')
     b        | c    | c_$
-    --------------------------------
+    ------------------------------------
     row1val1 |      |
-    row2val1 | asdf | <d>row2val</d>
+    row2val1 | asdf | asdf<d>row2val</d>
 
     >>> sql("select * from (xmlparse '<a><b>v</b><c>*</c></a>' select * from table2)")
     b        | c_$
-    -------------------------
+    -----------------------------
     row1val1 |
-    row2val1 | <d>row2val</d>
+    row2val1 | asdf<d>row2val</d>
 
     >>> sql("select * from (xmlparse root:a select * from table2)")
     C1
@@ -198,9 +198,10 @@ try:
 except:
     import xml.etree.ElementTree as etree
 
-registered=True
-cleandata=re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
-attribguard='@'
+registered = True
+cleandata = re.compile(r'[\n\r]*(.*?)\s*$', re.DOTALL| re.UNICODE)
+cleansubtree = re.compile(r'[^<]*<[^<>]+?>(.*)</[^<>]+?>[^>]*$', re.DOTALL| re.UNICODE)
+attribguard = '@'
 
 # Workaround for older versions of elementtree
 if not hasattr(etree, 'ParseError'):
@@ -224,6 +225,18 @@ def pathwithoutns(path):
         outpath+=[i]
     return "/".join(outpath)
 
+def itertext(elem):
+    tag = elem.tag
+    if not isinstance(tag, basestring) and tag is not None:
+        return
+    if elem.text:
+        yield elem.text
+    for e in elem:
+        for s in e.itertext():
+            yield s
+        if e.tail:
+            yield e.tail
+
 class rowobj():
     def __init__(self, schema, strictness):
         self.schema=schema.schema
@@ -233,20 +246,33 @@ class rowobj():
         self.row=['']*self.schemacolsnum
         self.strict= strictness
         self.tabreplace='    '
-        self.addtorowall=self.addtorow
+        if self.schemagetall=={}:
+            self.addtorowall=lambda x, y, z:0
+        else:
+            self.addtorowall=self.addtorow
 
     def addtorow(self, xpath, data, elem=None):
+        fullp='/'.join(xpath)
+        path=None
+
         if elem!=None:
-            if self.schemagetall=={}:
-                return
             s=self.schemagetall
-            data=etree.tostring(elem)
+            if fullp in s:
+                path=fullp
+            else:
+                shortp=pathwithoutns(xpath)
+                if shortp in s:
+                    path=shortp
+
+            if path == None:
+                return
+
+            try:
+                data = cleansubtree.match(etree.tostring(elem)).groups()[0]
+            except AttributeError:
+                data = etree.tostring(elem)
         else:
             s=self.schema
-
-        fullp='/'.join(xpath)
-
-        path=None
 
         if fullp in s:
             path=fullp
@@ -254,7 +280,7 @@ class rowobj():
             shortp=pathwithoutns(xpath)
             if shortp in s:
                 path=shortp
-        
+
         if path==None:
             if self.strict==2 and elem==None:
                 path=xpath
@@ -656,13 +682,15 @@ class XMLparse(vtiters.SchemaFromArgsVT):
                     for ev, el in etreeparse:
                         if ev=='start':
                             if capture:
-                                addtorowall(xpath, '', el)
                                 xpath.append(el.tag.lower())
                             else:
                                 capture=lmatchtag(el.tag.lower(), self.subtreeroot)
-                            if el.attrib!={} and capture:
-                                for k,v in el.attrib.iteritems():
-                                    addtorow(xpath+[attribguard, k.lower()], v)
+
+                            if capture:
+                                addtorowall(xpath, '', el)
+                                if el.attrib!={}:
+                                    for k,v in el.attrib.iteritems():
+                                        addtorow(xpath+[attribguard, k.lower()], v)
                         else:
                             if capture:
                                 if el.text!=None:
