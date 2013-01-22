@@ -177,6 +177,34 @@ def jlengthiest(*args):
 
 jlengthiest.registered=True
 
+def jchars(*args):
+    """
+    .. function:: jletters(text) -> character jpack
+
+    Splits an input text into its composing characters.
+
+    Examples:
+
+    >>> sql("select jchars('this is a text')")
+    jchars('this is a text')
+    ---------------------------------------------------------
+    ["t","h","i","s"," ","i","s"," ","a"," ","t","e","x","t"]
+
+    >>> sql("select jchars('another', 'text')")
+    jchars('another', 'text')
+    ---------------------------------------------
+    ["a","n","o","t","h","e","r","t","e","x","t"]
+    """
+
+    output = []
+
+    for i in args:
+        output+=list(i)
+
+    return json.dumps(output, separators=(',',':'), ensure_ascii=False)
+
+jchars.registered=True
+
 def j2s(*args):
 
     """
