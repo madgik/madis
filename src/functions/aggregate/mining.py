@@ -4,6 +4,7 @@ import setpath
 import functions
 import lib.jopts as jopts
 from operator import itemgetter
+import random
 
 __docformat__ = 'reStructuredText en'
 
@@ -347,8 +348,54 @@ class sampledistvals:
 
     def final(self):
         yield tuple(['C'+str(i) for i in xrange(1, self.lenargs)] )
-
         yield [jopts.toj(list(i)) for i in self.vals]
+
+class sample:
+    """
+
+    .. function:: sample(sample_size, C1, C2, C3)
+
+    Sample returns a random sample_size set of rows.
+
+    >>> table1('''
+    ... test1 2 3
+    ... test1 2 3
+    ... test2 4 2
+    ... test4 2 t
+    ... ''')
+
+    >>> sql("select sample(2, a, b, c) from table1") # doctest: +ELLIPSIS
+    C1    | C2 | C3
+    ---------------
+    ...
+    """
+    registered=True
+
+    def __init__(self):
+        self.samplelist = []
+        self.index = 0
+
+    def step(self, *args):
+        sample_count = args[0]
+
+        # Generate the reservoir
+        if self.index < sample_count:
+            self.samplelist.append(args[1:])
+        else:
+            r = random.randint(0, self.index)
+            if r < sample_count:
+                self.samplelist[r] = args[1:]
+
+        self.index += 1
+
+
+    def final(self):
+        if len(self.samplelist) == []:
+            yield tuple(['C1'])
+        else:
+            yield tuple(['C'+str(i) for i in xrange(1, len(self.samplelist[0]) + 1)] )
+            for r in self.samplelist:
+                yield list(r)
 
 if not ('.' in __name__):
     """
