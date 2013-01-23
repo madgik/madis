@@ -815,6 +815,10 @@ def jsonpath(*args):
     Uses jsonpath expressions to pick values from inside a JSON input. If the outputs of all JSONpath expressions
     have the same number of elements in them, it splits the output into multiple rows.
 
+    .. note::
+
+        For more on JSONpath see: http://goessner.net/articles/JsonPath/
+
     Examples:
 
     >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.d1') ''')
