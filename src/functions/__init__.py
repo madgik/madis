@@ -215,12 +215,14 @@ class Cursor(object):
 
     def getdescription(self):
         try:
+            # Try to get the schema the normal way
             schema = self.__wrapped.getdescription()
         except apsw.ExecutionCompleteError:
+            # Else create a tempview and query the view
             try:
-                list(self.executetrace('create temp view temp.schemaview as '+ self.__query + ';'))
-                schema = [(x[1], x[2]) for x in list(self.executetrace('pragma table_info(schemaview);'))]
-                list(self.executetrace('drop view temp.schemaview;'))
+                list(self.executetrace('create temp view temp.___schemaview as '+ self.__query + ';'))
+                schema = [(x[1], x[2]) for x in list(self.executetrace('pragma table_info(___schemaview);'))]
+                list(self.executetrace('drop view temp.___schemaview;'))
             except Exception, e:
                 raise apsw.ExecutionCompleteError
             
