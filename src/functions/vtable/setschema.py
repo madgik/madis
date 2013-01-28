@@ -29,7 +29,9 @@ Examples::
     Traceback (most recent call last):
     ...
     SQLError: SQLError: no such function: strplitv
-    >>> sql("setschema 'a,b' (select strsplitv(q) from (select 5 as q) where q!=5)")
+    >>> sql("setschema 'a,b' select strsplitv(q) from (select 5 as q) where q!=5")
+    a | b
+    -----
 
     >>> sql("select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3")
     userid | colid | preference | usertype
@@ -41,6 +43,8 @@ Examples::
 The query below has constraints preference column to be less than an int value , but preference is text ( outcomes from :func:`~functions.vtable.file.file` are *text*), so an empty result is produced
     
     >>> sql("select * from (select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3) where preference<634131")
+    userid | colid | preference | usertype
+    -------------
 
 With setschema functions preference column is casted as float.
     

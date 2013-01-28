@@ -42,19 +42,19 @@ class NamesCursor:
 
             try:
                 samplerow=execit.next()
+            except StopIteration:
+                pass
+
+            try:
                 vals=[str(v[0]) for v in c.getdescription()]
                 cols=["colname"+str(i) for i in range(1,len(vals)+1)]
                 results.append(vals)
                 for el in cols:
                     names.append(el)
-            except StopIteration:
-                try:
-                    raise
-                finally:
-                    try:
-                        self.c.close()
-                    except:
-                        pass
+            except Exception, e:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Could not aquire schema")
+            finally:
+                c.close()
                 
         self.iter=iter(results)
 

@@ -140,7 +140,8 @@ class Cursor(object):
         self.__wrapped=w
         self.__vtables=[]
         self.__permanentvtables=OrderedDict()
-        self.__initialised=True
+        self.__query = ''
+        self.__initialised=True #this should be last in init
         
     def __getattr__(self, attr):
         if self.__dict__.has_key(attr):
@@ -199,6 +200,7 @@ class Cursor(object):
                 except DynamicSchemaWithEmptyResultError:                    
                     if not checkhassetschema(svts[1],i) or i[0] in s:
                         raise
+            self.__query = s
             return self.executetrace(s,bindings)
         except Exception, e:
             if settings['tracing']:
@@ -212,7 +214,17 @@ class Cursor(object):
                     pass
 
     def getdescription(self):
-        return self.__wrapped.getdescription()
+        try:
+            schema = self.__wrapped.getdescription()
+        except apsw.ExecutionCompleteError:
+            try:
+                list(self.executetrace('create temp view temp.schemaview as '+ self.__query + ';'))
+                schema = [(x[1], x[2]) for x in list(self.executetrace('pragma table_info(schemaview);'))]
+                list(self.executetrace('drop view temp.schemaview;'))
+            except Exception, e:
+                raise apsw.ExecutionCompleteError
+            
+        return schema
 
     def close(self, force=False):
         self.cleanupvts()
