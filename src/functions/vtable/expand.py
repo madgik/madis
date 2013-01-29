@@ -135,8 +135,8 @@ class ExpCursor:
 
             for i in xrange(len(row)):
                 obj=row[i]
-                if type(obj) in (str, unicode) and obj.startswith(functions.iterheader):
-                    oiter=self.connection.openiters[obj]
+                if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
+                    oiter=self.connection.openiters[str(obj)]
                     try:
                         first = oiter.next()
                     except StopIteration:
