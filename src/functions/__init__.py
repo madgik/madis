@@ -154,7 +154,8 @@ class Cursor(object):
                 if type(bindings) is dict:
                     bindings.update(variables.__dict__)
 
-        if not parse:            
+        if not parse:
+            self.__query = statements
             return self.executetrace(statements,bindings)
         
         svts=sqltransform.transform(statements, multiset_functions.keys(), functions['vtable'], functions['row'].keys(), substitute=functions['row']['subst'])
