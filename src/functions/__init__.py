@@ -11,7 +11,7 @@ import traceback
 import logging
 import re
 import sys
-from lib import simplequeryparse
+
 import compiler.consts
 try:
     from collections import OrderedDict
@@ -97,7 +97,7 @@ class OperatorError(MadisError):
 
 class DynamicSchemaWithEmptyResultError(MadisError):
     def __init__(self,opname):
-        self.msg="operator %s: Cannot initialise dynamic schema virtual table without data" %(str(opname))
+        self.msg="Operator %s: Cannot initialise dynamic schema virtual table without data" %(mstr(opname.upper()))
 
 def echofunctionmember(func):
     def wrapper(*args, **kw):
@@ -112,21 +112,6 @@ def echofunctionmember(func):
             print "%s(%s)" %(func.__name__,','.join(list([repr(el)[:200]+('' if len(repr(el))<=200 else '...') for el in args[1:]])+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
         return func(*args, **kw)
     return wrapper
-
-def checkhassetschema(vts,vt):
-    vtname=vt[0].lower()
-    qis="'query:SELECT * FROM %s" %(vt[0])
-    qis=qis.lower()
-    for i in vts:
-        vtparam=i[2].lower()
-        vtsoperator=i[1].lower()
-        if vtname in vtparam:
-            if vtsoperator!='setschema':
-                return False
-            relatedtbs=simplequeryparse.dependencytbs(vtparam)
-            if not relatedtbs or len(relatedtbs)>1 or relatedtbs[0]!=vtname:
-                return False
-    return True
 
 def iterwrapper(connection, func, *args):
     global iterheader
@@ -186,20 +171,16 @@ class Cursor(object):
                     sep=''
                 createvirtualsql='create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
                 try:
-                    try:
-                        self.executetrace(createvirtualsql)
-                    except Exception, e:
-                        self.__permanentvtables[i[0]]=createvirtualsql
-                        if settings['tracing'] or (not mstr(e).endswith("already exists")):
-                            raise(e)
+                    self.executetrace(createvirtualsql)
+                except Exception, e:
+                    self.__permanentvtables[i[0]]=createvirtualsql
+                    if settings['tracing'] or (not mstr(e).endswith("already exists")):
+                        raise(e)
 
-                    if len(i)==4:
-                        self.__permanentvtables[i[0]]=createvirtualsql
-                    else:
-                        self.__vtables.append(i[0])
-                except DynamicSchemaWithEmptyResultError:                    
-                    if not checkhassetschema(svts[1],i) or i[0] in s:
-                        raise
+                if len(i)==4:
+                    self.__permanentvtables[i[0]]=createvirtualsql
+                else:
+                    self.__vtables.append(i[0])
             self.__query = s
             return self.executetrace(s,bindings)
         except Exception, e:

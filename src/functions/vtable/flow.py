@@ -28,7 +28,7 @@ Examples:
     >>> sql("select * from (flow file 'testing/colpref.csv' limit 5) ")
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: operator flow: Incompete statement found : userid colid pr ... 41 416900.0 agr
+    OperatorError: Madis SQLError: operator flow: Incomplete statement found : userid colid pr ... 41 416900.0 agr
 
 
 Test files:
@@ -68,9 +68,9 @@ def sqlstatement(iter):
             st=''
     if len(st)>0 and not re.match(r'\s+$', st, re.DOTALL| re.UNICODE):
         if len(st)>35:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incompete statement found : %s ... %s" %(st[:15],st[-15:]))
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s ... %s" %(st[:15],st[-15:]))
         else:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incompete statement found : %s" %(st))
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s" %(st))
     return
 
 
