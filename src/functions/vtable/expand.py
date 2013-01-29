@@ -116,18 +116,22 @@ class ExpCursor:
                             raise          
                         except:
                             self.types[i]='text'
-            except StopIteration: #if StopIteration but names are discovered, meaning that Compbuffers where empty return schema                
-                if self.names==[]:                    
-                    raise
+            except StopIteration: #if StopIteration try to discover names via getdescription
+                if self.names==[]:
+                    schema = self.cursor.getdescription()
+                    self.names+=[c[0] for c in schema]
+                    self.types+=[x[1] if len(x)>1 else 'None' for x in schema]
 
     def __iter__(self):
         return self
     def _expanditern(self,iter, descrfun):
         names = []
+        schema = descrfun()
+        if self.nonames:
+            names = [x[0] for x in schema]
+            types = [x[1] if len(x)>1 else 'None' for x in schema]
+
         for row in iter:
-            if self.nonames:
-                names = [x[0] for x in descrfun()]
-                types = [x[1] if len(x)>1 else 'None' for x in descrfun()]
             nrow = []
             nnames = []
             ttypes=[]
