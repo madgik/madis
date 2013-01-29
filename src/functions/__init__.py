@@ -118,7 +118,7 @@ def iterwrapper(connection, func, *args):
     i=func(*args)
     si=iterheader+str(i)
     connection.openiters[si]=i
-    return si
+    return buffer(si)
 
 class Cursor(object):
     def __init__(self,w):
