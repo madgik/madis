@@ -58,33 +58,29 @@ class RowidCursor:
         self.types=types
         if first:
             first = False
+            ### Find names and types
+            execit=peekable(self.c.execute(self.sqlquery))
             try:
-                ### Find names and types
-                execit=peekable(self.c.execute(self.sqlquery))
                 samplerow=execit.peek()
-                qnames=[str(v[0]) for v in self.c.getdescription()]
-                qtypes=[str(v[1]) for v in self.c.getdescription()]
-                qnames[:0]=['rowid']
-                qtypes[:0]=['integer']
-
-                ### Set names and types
-                for i in qnames:
-                    self.cols.append(i)
-                for i in qtypes:
-                    self.types.append(i)
-
             except StopIteration:
-                try:
-                    raise
-                finally:
-                    try:
-                        self.c.close()
-                    except:
-                        pass
+                pass
+
+            schema = self.c.getdescription()
+            qnames=[str(v[0]) for v in schema]
+            qtypes=[str(v[1]) for v in schema]
+            qnames[:0]=['rowid']
+            qtypes[:0]=['integer']
+
+            ### Set names and types
+            for i in qnames:
+                self.cols.append(i)
+            for i in qtypes:
+                self.types.append(i)
 
             self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), execit) )
         else:
             self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), self.c.execute(self.sqlquery)) )
+
     def close(self):
         self.c.close()
     def next(self):
