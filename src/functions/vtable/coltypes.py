@@ -47,24 +47,21 @@ class TypesCursor:
         self.sqlquery=sqlquery
         self.connection=connection
         if first:
+            self.c=self.connection.cursor()
+            execit=self.c.execute(self.sqlquery)
             try:
-                self.c=self.connection.cursor()
-                execit=self.c.execute(self.sqlquery)
                 samplerow=execit.next()
-                vals=self.c.getdescription()
-                self.vals=vals
-                for i in vals:
-                    results.append(i)
             except StopIteration:
-                try:
-                    raise
-                finally:
-                    try:
-                        self.c.close()
-                    except:
-                        pass
-        self.iter=iter(results)
+                pass
 
+            vals=self.c.getdescription()
+            self.vals=vals
+            self.c.close()
+
+            for i in vals:
+                results.append(i)
+
+        self.iter=iter(results)
         
     def close(self):
         pass
