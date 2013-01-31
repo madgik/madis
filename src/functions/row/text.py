@@ -690,7 +690,7 @@ def crc32(*args):
     >>> sql("select crc32(6,5)")
     crc32(6,5)
     ----------
-    498629140
+    1565899724
 
     >>> sql("select crc32(5)")
     crc32(5)
@@ -703,7 +703,7 @@ def crc32(*args):
     1201448970
     """
 
-    if len(args)==2:
+    if len(args)==1:
         return zlib.crc32(repr(args[0])) & 0xffffffff
     else:
         return zlib.crc32(chr(30).join([repr(x) for x in args])) & 0xffffffff
