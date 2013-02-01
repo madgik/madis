@@ -712,10 +712,13 @@ crc32.registered=True
 
 def hashmodarchdep(*args):
     """
-    .. function:: crc32(args) -> int
+    .. function:: hashmodarchdep(args, divisor) -> int
 
-    Returns the CRC32 of args. Numbers are converted to text before hashing is
-    performed.
+    Returns a hash of the args.
+
+    .. note::
+
+        This hash function is architecture dependent (32bit vs 64bit).
 
     Examples:
 
