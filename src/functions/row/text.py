@@ -710,6 +710,40 @@ def crc32(*args):
 
 crc32.registered=True
 
+def hashmodarchdep(*args):
+    """
+    .. function:: crc32(args) -> int
+
+    Returns the CRC32 of args. Numbers are converted to text before hashing is
+    performed.
+
+    Examples:
+
+    >>> sql("select hashmodarchdep(65,5)")
+    hashmodarchdep(65,5)
+    --------------------
+    1
+
+    >>> sql("select hashmodarchdep(6,5)")
+    hashmodarchdep(6,5)
+    -------------------
+    3
+
+    >>> sql("select hashmodarchdep(5,5)")
+    hashmodarchdep(5,5)
+    -------------------
+    0
+
+    >>> sql("select hashmodarchdep('5',5)")
+    hashmodarchdep('5',5)
+    ---------------------
+    3
+    """
+
+    return hash(tuple(args[:-1])) % args[-1]
+
+hashmodarchdep.registered=True
+
 def textwindow(*args):
     """
     .. function:: textwindow(text, previous_word_count = 0, next_word_count = 0)
