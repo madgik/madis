@@ -170,13 +170,12 @@ class Cursor(object):
                     sep=','
                 else:
                     sep=''
-                createvirtualsql='create virtual table temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
+                createvirtualsql='create virtual table if not exists temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
                     self.__permanentvtables[i[0]]=createvirtualsql
-                    if settings['tracing'] or (not mstr(e).endswith("already exists")):
-                        raise(e)
+                    raise(e)
 
                 if len(i)==4:
                     self.__permanentvtables[i[0]]=createvirtualsql
