@@ -260,43 +260,57 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 tablename=formatArgs['tablename']
 
             if 'split' in formatArgs:
-                def cdb():
-                    global insertqueryw
-                    unikey = unicode(key)
-                    t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, schema[1:], page_size)
-                    splitkeys[unikey]=t[1].execute
-                    insertqueryw = t[2]
-                    dbcon[key]=t[0], t[1]
-                    # Case for number as key
-                    if unikey != key:
-                        splitkeys[key] = splitkeys[unikey]
-                    return splitkeys[key]
-                
-                dbcon = {}
-                splitkeys=defaultdict(cdb)
 
-                for row in diter:
-                    key=row[0]
-                    splitkeys[key](insertqueryw, row[1:])
-
-                # Create other parts
-                maxparts = 1
+                maxparts = 0
                 try:
                     maxparts = int(formatArgs['split'])
                 except ValueError:
-                    maxparts = 1
+                    maxparts = 0
 
-                if maxparts > 1:
-                    for i in xrange(0, maxparts):
-                        if i not in splitkeys:
-                            key = i
-                            tmp = splitkeys[key]
+                # If not split parts is defined
+                if maxparts == 0:
+                    ns = lambda x:x
+                    def cdb():
+                        unikey = unicode(key)
+                        t=createdb(os.path.join(fullpath, filename+'.'+unikey+ext), tablename, schema[1:], page_size)
+                        splitkeys[unikey]=t[1].execute
+                        ns.insertqueryw = t[2]
+                        dbcon[key]=t[0], t[1]
+                        # Case for number as key
+                        if unikey != key:
+                            splitkeys[key] = splitkeys[unikey]
+                        return splitkeys[key]
 
-                for c, cursor in dbcon.values():
-                    if c != None:
-                        cursor.execute('commit')
-                        c.close()
+                    dbcon = {}
+                    splitkeys=defaultdict(cdb)
+
+                    for row in diter:
+                        key=row[0]
+                        splitkeys[key](ns.insertqueryw, row[1:])
+
+                    for c, cursor in dbcon.values():
+                        if c != None:
+                            cursor.execute('commit')
+                            c.close()
+                # Splitparts defined
+                else:
+                    cursors = []
+                    dbcon = []
+                    for i in xrange(0,maxparts):
+                        t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                        cursors.append(t[1].execute)
+                        dbcon.append((t[0], t[1]))
+                        insertqueryw = t[2]
+
+                    for row in diter:
+                        cursors[row[0]](insertqueryw, row[1:])
+
+                    for c, cursor in dbcon:
+                        if c != None:
+                            cursor.execute('commit')
+                            c.close()
             else:
+                # Write to db without split
                 c, cursor, insertquery=createdb(where, tablename, schema, page_size)
                 cursor.executemany(insertquery, diter)
                 list(cursor.execute('commit'))
