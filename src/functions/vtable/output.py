@@ -298,7 +298,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         c.close()
             else:
                 c, cursor, insertquery=createdb(where, tablename, schema, page_size)
-                cursor.executemany(insertquery, (x for x in diter))
+                cursor.executemany(insertquery, diter)
                 list(cursor.execute('commit'))
                 c.close()
         else:
