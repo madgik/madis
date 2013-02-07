@@ -78,8 +78,8 @@ import functions
 from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
+import apsw
 from collections import defaultdict
-import platform
 
 registered=True
 
@@ -237,28 +237,16 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 fileIter.write(((''.join([unicode(x) for x in row]))+'\n').encode('utf-8'))
 
         elif formatArgs['mode']=='db':
-            useapsw = platform.python_implementation() == 'PyPy'
             def createdb(where, tname, schema, page_size=16384):
-                if useapsw:
-                    import apsw as sqlengine
-                    c=sqlengine.Connection(where)
-                    cursor=c.cursor()
-                    exescript = cursor.execute
-                else:
-                    import sqlite3 as sqlengine
-                    c=sqlengine.Connection(where, isolation_level = "EXCLUSIVE")
-                    cursor=c.cursor()
-                    exescript = cursor.executescript
-
-                list(exescript('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
+                c=apsw.Connection(where)
+                cursor=c.cursor()
+                list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
                 create_schema='create table '+tname+' ('
                 create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
                 for colname, coltype in schema[1:]:
                     create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
-                create_schema+=');'
-                if useapsw:
-                    create_schema+= 'begin exclusive;'
-                list(exescript(create_schema))
+                create_schema+='); begin exclusive;'
+                list(cursor.execute(create_schema))
                 insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
                 return c, cursor, insertquery
 
@@ -302,10 +290,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
                     for c, cursor in dbcon.values():
                         if c != None:
-                            if useapsw:
-                                cursor.execute('commit')
-                            else:
-                                c.commit()
+                            cursor.execute('commit')
                             c.close()
                 # Splitparts defined
                 else:
@@ -322,19 +307,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
                     for c, cursor in dbcon:
                         if c != None:
-                            if useapsw:
-                                cursor.execute('commit')
-                            else:
-                                c.commit()
+                            cursor.execute('commit')
                             c.close()
             else:
                 # Write to db without split
                 c, cursor, insertquery=createdb(where, tablename, schema, page_size)
                 cursor.executemany(insertquery, diter)
-                if useapsw:
-                    cursor.execute('commit')
-                else:
-                    c.commit()
+                list(cursor.execute('commit'))
                 c.close()
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Unknown mode value")
