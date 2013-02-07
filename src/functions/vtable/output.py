@@ -296,14 +296,27 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 else:
                     cursors = []
                     dbcon = []
-                    for i in xrange(0,maxparts):
-                        t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
-                        cursors.append(t[1].execute)
-                        dbcon.append((t[0], t[1]))
-                        insertqueryw = t[2]
+                    if "MSPW" in apsw.apswversion():
+                        prepedqueries = []
+                        for i in xrange(0,maxparts):
+                            t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                            cursors.append(t[1].executeprepared)
+                            prepedqueries.append(t[1].prepare(t[2]))
+                            dbcon.append((t[0], t[1]))
 
-                    for row in diter:
-                        cursors[row[0]](insertqueryw, row[1:])
+                        for row in diter:
+                            row0 = row[0]
+                            cursors[row0](prepedqueries[row0], row[1:])
+
+                    else:
+                        for i in xrange(0,maxparts):
+                            t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                            cursors.append(t[1].execute)
+                            dbcon.append((t[0], t[1]))
+                            insertqueryw = t[2]
+
+                        for row in diter:
+                            cursors[row[0]](insertqueryw, row[1:])
 
                     for c, cursor in dbcon:
                         if c != None:
