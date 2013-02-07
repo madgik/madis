@@ -185,7 +185,7 @@ class Cursor(object):
             return self.executetrace(s,bindings)
         except Exception, e:
             if settings['tracing']:
-                print traceback.print_exc()
+                traceback.print_exc()
             try: #avoid masking exception in recover statements
                 raise
             finally:
