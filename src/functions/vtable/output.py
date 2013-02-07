@@ -300,7 +300,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         prepedqueries = []
                         for i in xrange(0,maxparts):
                             t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
-                            cursors.append(t[1].executeprepared)
+                            cursors.append(t[1].executedirect)
                             prepedqueries.append(t[1].prepare(t[2]))
                             dbcon.append((t[0], t[1]))
 
