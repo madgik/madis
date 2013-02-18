@@ -149,6 +149,7 @@ from functions import mstr
 import itertools
 import json
 import os.path
+from codecs import utf_8_decode
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
 
@@ -158,7 +159,15 @@ def nullify(iterlist):
 
 def directfile(f, encoding='utf_8'):
     for line in f:
-        yield ( unicode(line.rstrip("\n"), encoding), )
+        yield ( unicode(line.rstrip("\r\n"), encoding), )
+
+def directfileutf8(f):
+    try:
+        for line in f:
+            yield ( utf_8_decode(line.rstrip("\r\n"))[0], )
+    except UnicodeDecodeError, e:
+        raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not %s encoded" %(self.encoding))
+
 
 def strict0(tabiter, colcount):
     while True:
@@ -268,7 +277,6 @@ class FileCursor:
                 raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
 
             self.iter = itertools.imap(json.loads, self.fileiter)
-
             return
 
         if filenameExt =='.csv':
@@ -324,8 +332,15 @@ class FileCursor:
                         namelist.append( ['C'+str(i), 'text'] )
 
         else: #### Default read lines
-            self.iter=directfile(self.fileiter, encoding=self.encoding)
+            if self.encoding == 'utf_8':
+                self.iter = directfileutf8(self.fileiter)
+                self.fast = True
+            else:
+                self.iter = directfile(self.fileiter, encoding=self.encoding)
             namelist.append( ['C1', 'text'] )
+
+        if self.fast:
+            self.next = self.iter.next
 
     def __iter__(self):
         if self.fast:
