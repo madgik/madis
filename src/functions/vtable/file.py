@@ -228,7 +228,7 @@ class FileCursor:
                 self.fileiter=ZipIter(filename,"r")
             elif not isurl:
                 pathname=filename.strip()
-                if compression or (pathname!=None and ( pathname.endswith('.gz') or pathname.endswith('.gzip') )):
+                if self.fast or compression or (pathname!=None and ( pathname.endswith('.gz') or pathname.endswith('.gzip') )):
                     self.fileiter=open(filename,"r", buffering=1000000)
                 else:
                     self.fileiter=open(filename,"rU", buffering=1000000)
