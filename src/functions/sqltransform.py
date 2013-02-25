@@ -7,7 +7,12 @@ import re
 from sqlparse.tokens import *
 import zlib
 import functions
-from collections import OrderedDict
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections26 import OrderedDict
 
 break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)\s*$""", re.DOTALL| re.UNICODE)
 find_parenthesis=re.compile(r"""\s*\((.*)\)\s*$""", re.DOTALL| re.UNICODE)

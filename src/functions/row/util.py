@@ -5,8 +5,15 @@ import subprocess
 import functions
 import time
 import urllib2
+import urllib
+from lib import jopts
 from functions.conf import domainExtraHeaders
 import lib.gzip32 as gzip
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python 2.6
+    from lib.collections26 import OrderedDict
 
 def gz(*args):
 
@@ -110,19 +117,29 @@ urlrequest.registered=True
 def urlrequestpost(*args):
 
     """
-    .. function:: urlrequestpost(data, [null], url) -> response
+    .. function:: urlrequestpost(data_jdict, [null], url) -> response
 
-    This functions connects to the *url* (via POST HTTP method), submits the *data*, and returns the request's result. If second
+    This functions connects to the *url* (via POST HTTP method), submits the *data_jdict*, and returns the request's result. If second
     parameter is *null*, then in case of errors *null* will be returned.
 
     Examples:
 
-    >>> sql("select urlrequestpost('test', 'http://www.google.com/not_existing')")
+    >>> sql('''select urlrequestpost('{"POST_param_name":"data"}', 'http://www.google.com/not_existing')''')
     Traceback (most recent call last):
     ...
     HTTPError: HTTP Error 404: Not Found
 
-    >>> sql("select urlrequestpost('test', null, 'http://www.google.com/not_existing') as result")
+    >>> sql('''select urlrequestpost('["POST_param_name","data"]', null, 'http://www.google.com/not_existing') as result''')
+    result
+    ------
+    None
+
+    >>> sql("select urlrequestpost(jdict('param1','value1'), null, 'http://www.google.com/not_existing') as result")
+    result
+    ------
+    None
+
+    >>> sql("select urlrequestpost(jpack('param1','value1'), null, 'http://www.google.com/not_existing') as result")
     result
     ------
     None
@@ -130,7 +147,20 @@ def urlrequestpost(*args):
     """
     try:
         req = urllib2.Request(''.join((x for x in args[1:] if x != None)), None, domainExtraHeaders)
-        hreq = urllib2.urlopen(req, args[0])
+
+        datain = jopts.fromjsingle(args[0])
+
+        dataout = []
+        if type(datain) == list:
+            for i in xrange(0, len(datain), 2):
+                dataout.append((datain[i], datain[i+1]))
+        else:
+            dataout = datain.items()
+
+        if dataout == []:
+            raise functions.OperatorError('urlrequestpost',"A list or dict should be provided")
+
+        hreq = urllib2.urlopen(req, urllib.urlencode(dataout))
 
         if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
             hreq = gzip.GzipFile(fileobj=hreq)
