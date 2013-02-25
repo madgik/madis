@@ -191,7 +191,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6
-    from lib.collections import OrderedDict
+    from lib.collections26 import OrderedDict
 
 try:
     import xml.etree.cElementTree as etree

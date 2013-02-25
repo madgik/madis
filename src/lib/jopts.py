@@ -62,7 +62,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6
-    from lib.collections import OrderedDict
+    from lib.collections26 import OrderedDict
 
 def toj(l):
     if l==None:
@@ -98,6 +98,22 @@ def tojstrict(l):
         return json.dumps(l, separators=(',',':'), ensure_ascii=False)
     return json.dumps([l], separators=(',',':'), ensure_ascii=False)
 
+def fromjsingle(j):
+    typej=type(j)
+    if typej == int or typej == float:
+        return j
+    if typej == str or typej == unicode:
+        if j == '':
+            return u''
+        if (j[0] == '[' and j[-1] == ']') or (j[0]=='{' and j[-1]=='}'):
+            try:
+                return json.loads(j, object_pairs_hook = OrderedDict)
+            except KeyboardInterrupt:
+                raise
+#            except:
+#                return j
+        return j
+
 def fromj(*jargs):
     fj=[]
     for j in jargs:
@@ -120,7 +136,7 @@ def fromj(*jargs):
                     continue
             if (j[0]=='{' and j[-1]=='}'):
                 try:
-                    fj+=list(json.loads(j, object_pairs_hook=collections.OrderedDict))
+                    fj+=list(json.loads(j, object_pairs_hook = OrderedDict))
                     continue
                 except KeyboardInterrupt:
                     raise

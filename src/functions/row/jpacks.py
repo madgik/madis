@@ -6,12 +6,11 @@ import operator
 import itertools
 import re
 import functions
-
 try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6
-    from lib.collections import OrderedDict
+    from lib.collections26 import OrderedDict
 
 def jpack(*args):
 
@@ -525,21 +524,17 @@ def jdict(*args):
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
-    Operator JPACKS: At least two arguments required
+    Operator JDICT: At least two arguments required
 
     """
 
     if len(args)==1:
-        raise functions.OperatorError(__name__.rsplit('.')[-1],"At least two arguments required")
+        raise functions.OperatorError('jdict',"At least two arguments required")
 
     result = OrderedDict()
     
     for i in xrange(0, len(args), 2):
-        v = args[i+1]
-        if len(v) > 0 and ((v[0] == '[' and v[-1] == ']') or (v[0] == '{' and v[-1] == '}')):
-            v = json.loads(v, object_pairs_hook = OrderedDict)
-
-        result[args[i]] = v
+        result[args[i]] = jopts.fromjsingle(args[i+1])
 
     return jopts.toj( result )
 
