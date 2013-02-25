@@ -35,10 +35,7 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
 
     # Check cache
     if subsquery in _statement_cache:
-        tmp = _statement_cache[subsquery]
-        del(_statement_cache[subsquery])
-        _statement_cache[subsquery] = tmp
-        return tmp
+        return _statement_cache[subsquery]
 
     out_vtables=[]
 
