@@ -74,8 +74,8 @@ def urlrequest(*args):
     """
     .. function:: urlrequest([null], url) -> response
 
-    This functions connects to the *url* and returns the request's result. If first
-    parameter is *null*, then in case of errors *null* is returned.
+    This functions connects to the *url* (via GET HTTP method) and returns the request's result. If first
+    parameter is *null*, then in case of errors *null* will be returned.
 
     Examples:
 
@@ -106,6 +106,44 @@ def urlrequest(*args):
             raise e
 
 urlrequest.registered=True
+
+def urlrequestpost(*args):
+
+    """
+    .. function:: urlrequestpost(data, [null], url) -> response
+
+    This functions connects to the *url* (via POST HTTP method), submits the *data*, and returns the request's result. If second
+    parameter is *null*, then in case of errors *null* will be returned.
+
+    Examples:
+
+    >>> sql("select urlrequestpost('test', 'http://www.google.com/not_existing')")
+    Traceback (most recent call last):
+    ...
+    HTTPError: HTTP Error 404: Not Found
+
+    >>> sql("select urlrequestpost('test', null, 'http://www.google.com/not_existing') as result")
+    result
+    ------
+    None
+
+    """
+    try:
+        req = urllib2.Request(''.join((x for x in args[1:] if x != None)), None, domainExtraHeaders)
+        hreq = urllib2.urlopen(req, args[0])
+
+        if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+            hreq = gzip.GzipFile(fileobj=hreq)
+
+        return unicode(hreq.read(), 'utf-8', errors = 'replace')
+
+    except urllib2.HTTPError,e:
+        if args[1] == None:
+            return None
+        else:
+            raise e
+
+urlrequestpost.registered=True
 
 def failif(*args):
     """
