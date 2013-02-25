@@ -1,9 +1,12 @@
+import setpath
 from lib import jopts
 from lib.jsonpath import jsonpath as libjsonpath
 import json
 import operator
 import itertools
 import re
+import functions
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -494,6 +497,54 @@ def jmergeregexp(*args):
 
 jmergeregexp.registered=True
 
+def jdict(*args):
+
+    """
+    .. function:: jdict(key, value, key1, value1) -> jdict
+
+    Returns a jdict of the keys and value pairs.
+
+    Examples:
+
+    >>> sql(''' select jdict('key1', 'val1', 'key2', 'val2') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdict('key1', 'val1', 'key2', 'val2')
+    -------------------------------------
+    {"key1":"val1","key2":"val2"}
+
+    >>> sql(''' select jdict('key', '{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdict('key', '{"k1":1,"k2":2}')
+    -------------------------------
+    {"key":{"k1":1,"k2":2}}
+
+    >>> sql(''' select jdict('key', '["val1", "val2"]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jdict('key', '["val1", "val2"]')
+    --------------------------------
+    {"key":["val1","val2"]}
+
+    >>> sql(''' select jdict('1') ''') # doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+    ...
+    OperatorError: Madis SQLError:
+    Operator JPACKS: At least two arguments required
+
+    """
+
+    if len(args)==1:
+        raise functions.OperatorError(__name__.rsplit('.')[-1],"At least two arguments required")
+
+    result = OrderedDict()
+    
+    for i in xrange(0, len(args), 2):
+        v = args[i+1]
+        if len(v) > 0 and ((v[0] == '[' and v[-1] == ']') or (v[0] == '{' and v[-1] == '}')):
+            v = json.loads(v, object_pairs_hook = OrderedDict)
+
+        result[args[i]] = v
+
+    return jopts.toj( result )
+
+jdict.registered=True
+
 def jdictkeys(*args):
 
     """
@@ -736,6 +787,8 @@ def jcombinations(*args):
     t2 | ["t3","t4"]
 
     >>> sql('''select jcombinations(null,2)''')
+    C1 | C2
+    -----
 
     >>> sql('''select jcombinations('["t1","t2","t3","t4"]')''')
     C1
@@ -786,6 +839,8 @@ def jpermutations(*args):
     ["t3","t4"] | t2
 
     >>> sql('''select jpermutations(null,2)''')
+    C1 | C2
+    -----
 
     >>> sql('''select jpermutations('["t1","t2","t3","t4"]')''')
     C1
@@ -850,6 +905,8 @@ def jsonpath(*args):
     ["n1","n2"] | v1
     
     >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.nonexisting') ''')
+    C1
+    -
 
 
     """
