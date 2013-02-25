@@ -7,17 +7,12 @@ import re
 from sqlparse.tokens import *
 import zlib
 import functions
-try:
-    from collections import OrderedDict
-except ImportError:
-    # Python 2.6
-    from lib.collections import OrderedDict
+from collections import OrderedDict
 
 break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)\s*$""", re.DOTALL| re.UNICODE)
 find_parenthesis=re.compile(r"""\s*\((.*)\)\s*$""", re.DOTALL| re.UNICODE)
 viewdetector=re.compile(r'(?i)\s*create\s+(?:temp|temporary)\s+view\s+', re.DOTALL| re.UNICODE)
-_statement_cache = OrderedDict()
-_statement_cache_size = 1000
+
 
 # delete reserved SQL keywords that collide with our vtables
 if __name__ != "__main__":
@@ -27,13 +22,6 @@ if __name__ != "__main__":
 
 #Top level transform (runs once)
 def transform(query, multiset_functions=None, vtables=[], row_functions=[], substitute = None):
-    # Check cache
-    if query in _statement_cache and substitute == None:
-        tmp = _statement_cache[query]
-        del(_statement_cache[query])
-        _statement_cache[query] = tmp
-        return tmp
-
     out_vtables=[]
     if type(query) not in (str,unicode):
         return (query, [], [])
@@ -64,15 +52,7 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
                 out_vtables+=[x+(False,) for x in sqp[1]]
             else:
                 out_vtables+=sqp[1]
-
-    result = (s_out, vt_distinct(out_vtables), sqp[2])
-    
-    if len( _statement_cache ) < _statement_cache_size:
-        _statement_cache[query] = result
-    else:
-        _statement_cache.popitem(last=False)
-        _statement_cache[query] = result
-    return result
+    return (s_out, vt_distinct(out_vtables), sqp[2])
 
 class Transclass:
     direct_exec=[]
