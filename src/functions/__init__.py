@@ -55,6 +55,12 @@ oldexecdb=-1
 
 ExecutionCompleteError = apsw.ExecutionCompleteError
 
+def getvar(name):
+    return variables.__dict__[name]
+
+def setvar(name, value):
+    variables.__dict__[name] = value
+
 def mstr(s):
     if s==None:
         return None
