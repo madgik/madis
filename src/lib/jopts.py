@@ -110,8 +110,8 @@ def fromjsingle(j):
                 return json.loads(j, object_pairs_hook = OrderedDict)
             except KeyboardInterrupt:
                 raise
-#            except:
-#                return j
+            except:
+                return j
         return j
 
 def fromj(*jargs):

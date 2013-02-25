@@ -153,9 +153,9 @@ def urlrequestpost(*args):
         dataout = []
         if type(datain) == list:
             for i in xrange(0, len(datain), 2):
-                dataout.append((datain[i], datain[i+1]))
+                dataout.append((datain[i].encode('utf_8'), datain[i+1].encode('utf_8')))
         else:
-            dataout = datain.items()
+            dataout = [( x.encode('utf_8'), y.encode('utf_8') ) for x,y in datain.items()]
 
         if dataout == []:
             raise functions.OperatorError('urlrequestpost',"A list or dict should be provided")
