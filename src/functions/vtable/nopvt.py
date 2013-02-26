@@ -45,12 +45,10 @@ class NopCursor:
         self.connection=connection
         self.c=self.connection.cursor()
 
+        self.iter = iter(self.c.execute(self.sqlquery))
         if schema==[]:
             try:
-                ### Find names and types
-                self.iter = iter(self.c.execute(self.sqlquery))
                 schema.extend(list(self.c.getdescription()))
-
             except StopIteration:
                 try:
                     raise
