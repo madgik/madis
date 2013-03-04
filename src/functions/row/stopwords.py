@@ -25,6 +25,9 @@ def filterstopwords(*args):
     stop words free time
     """
 
+    if len(args) == 1:
+        return ' '.join([k for k in args[0].lower().split(' ') if k not in stopwords and k!=''])
+
     out=[]
     for i in args:
         out.append(' '.join([k for k in i.lower().split(' ') if k not in stopwords and k!='']))
