@@ -231,10 +231,12 @@ def comprspaces(*args):
     an example with spaces another example with spaces
     """
 
+    if len(args) == 1:
+        return reduce_spaces.sub(' ', args[0]).strip()
+
     out=[]
     for i in args:
-        o=i.strip()
-        o=reduce_spaces.sub(' ',o)
+        o=reduce_spaces.sub(' ', i).strip()
         out+=[o]
 
     return ' '.join(out)
