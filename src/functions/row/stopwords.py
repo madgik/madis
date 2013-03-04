@@ -2,7 +2,7 @@
 
 import re
 import setpath
-from lib import stopwordlist
+from lib.stopwordlist import stopwords
 
 
 def filterstopwords(*args):
@@ -27,14 +27,7 @@ def filterstopwords(*args):
 
     out=[]
     for i in args:
-        o=i.lower()
-        o=o.strip()
-        o=o.split(' ')
-
-        for k in o:
-            if len(k)>0:
-                if k not in stopwordlist.stopwords:
-                    out.append(k)
+        out.append(' '.join([k for k in i.lower().split(' ') if k not in stopwords and k!='']))
 
     return ' '.join(out)
 
