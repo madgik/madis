@@ -16,6 +16,7 @@ delete_numbers_and_non_letters=re.compile(ur'[\W]',re.UNICODE)
 delete_non_letters=re.compile(ur'[\W]',re.UNICODE)
 delete_word_all=re.compile(ur'\w+\sall',re.UNICODE)
 delete_word_all_and_or=re.compile(ur'\w+\sall\s(?:and|or)',re.UNICODE)
+strip_remove_newlines=re.compile(u'(?:\\s+$|^\\s+|(?<=[^\\s\\d\\w])\n+)', re.UNICODE)
 reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 cqlterms=('title', 'subject', 'person', 'enter', 'creator', 'isbn')
 
@@ -232,11 +233,11 @@ def comprspaces(*args):
     """
 
     if len(args) == 1:
-        return reduce_spaces.sub(' ', args[0]).strip()
+        return reduce_spaces.sub(' ', strip_remove_newlines.sub('', args[0]))
 
     out=[]
     for i in args:
-        o=reduce_spaces.sub(' ', i).strip()
+        o=reduce_spaces.sub(' ', strip_remove_newlines.sub('', i))
         out+=[o]
 
     return ' '.join(out)
