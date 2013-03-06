@@ -20,7 +20,6 @@ strip_remove_newlines=re.compile(u'(?:\\s+$|^\\s+|(?<=[^\\s\\d\\w.;,!?])\n+)', r
 reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 cqlterms=('title', 'subject', 'person', 'enter', 'creator', 'isbn')
 
-
 def keywords(*args):
 
     """
@@ -243,6 +242,45 @@ def comprspaces(*args):
     return ' '.join(out)
 
 comprspaces.registered=True
+
+reduce_special_characters=re.compile(ur'(?:[\s\n,.;]+|[^\w,.\s]+)',re.UNICODE)
+reduce_underscore = re.compile(ur'(\b_+\b)',re.UNICODE)
+
+def normreplace(a):
+    if (a.group()[0] in ' \n.,;'):
+        return ' '
+
+    return '_';
+
+def normalizetext(*args):
+    """
+    .. function:: normalizetext(text1, [text2,...]) -> text
+
+    Normalizes a text by replacing all the non-words except \s\n,.; with '_'
+
+    Examples:
+
+    >>> table1('''
+    ... first(second)   third+fourth
+    ... πρωτο(δευτερο)  τριτο+τέταρτο
+    ... 'πέμπτο all'      'έκτο title all τεστ'
+    ... ''')
+    >>> sql("select normalizetext(a,b) from table1")
+    normalizetext(a,b)
+    ----------------------------------------------------
+    first_second_ third_fourth
+    πρωτο_δευτερο_ τριτο_τέταρτο
+    πέμπτο all έκτο title all τεστ
+    """
+    out=[]
+    for o in args:
+        o=reduce_special_characters.sub(normreplace,o)
+        o=reduce_underscore.sub(' ',o)
+        out.append(reduce_spaces.sub(' ', o).strip())
+
+    return ' '.join(out)
+
+normalizetext.registered=True
 
 
 query_regular_characters=re.compile(ur"""^[·∆©(́−·¨¬…‐"•΄€„”“‘’´«»’ʹ–\w\s\[!-~\]]*$""", re.UNICODE)
