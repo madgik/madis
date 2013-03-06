@@ -496,6 +496,34 @@ def jmergeregexp(*args):
 
 jmergeregexp.registered=True
 
+def jmergeregexpnamed(*args):
+
+    """
+    .. function:: jmergeregexpnamed(jpacks) -> jpack
+
+    Creates a regular expression that matches all of the jpack's contents with named groups. If the number of
+    named groups in a regular expression is greater than 99, then the output will be a jpack of regular expressions.
+
+    Examples:
+
+    >>> sql(''' select jmergeregexpnamed('["abc", "def"]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jmergeregexpnamed('["abc", "def"]')
+    -----------------------------------
+    (abc)|(def)
+
+    """
+
+    inp = jopts.fromj(*args)
+    inp.sort()
+
+    out = []
+    for g in xrange(0, len(inp), 99):
+        out.append('|'.join('('+x+')' for x in inp[g:g+99]))
+
+    return jopts.toj(out)
+
+jmergeregexpnamed.registered=True
+
 def jdict(*args):
 
     """
