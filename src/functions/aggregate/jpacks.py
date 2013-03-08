@@ -261,7 +261,7 @@ class jgroupuniquelimit:
         if self.k == None:
             self.gset.update( [ (x,None) for x in jopts.fromj(args[0]) ] )
             
-            if len(self.gset) > args[-1]:
+            if len(self.gset) >= args[-1]:
                 self.k = args[1]
 
     def final(self):
