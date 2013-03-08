@@ -230,11 +230,11 @@ class jgroupunionkeys:
         return jopts.toj(list(self.outgroup))
 
 
-class jgroupdistlimit:
+class jgroupuniquelimit:
     """
-    .. function:: jgroupdistlimit(jpack, k, limit) -> jpack
+    .. function:: jgroupuniquelimit(jpack, k, limit) -> jpack
 
-    Returns the k where the distinct values inside all jpacks have reached limit.
+    Returns the k where the unique values inside all jpacks have reached limit.
 
     Example:
 
@@ -244,9 +244,9 @@ class jgroupdistlimit:
     ... '[2,4]' 3
     ... 5 4
     ... ''')
-    >>> sql("select jgroupdistlimit(a,b,3) from table1")
-    jgroupdistlimit(a,b,3)
-    ----------------------
+    >>> sql("select jgroupuniquelimit(a,b,3) from table1")
+    jgroupuniquelimit(a,b,3)
+    ------------------------
     2
 
     """
