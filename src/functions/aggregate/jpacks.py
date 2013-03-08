@@ -229,6 +229,44 @@ class jgroupunionkeys:
     def final(self):
         return jopts.toj(list(self.outgroup))
 
+
+class jgroupdistlimit:
+    """
+    .. function:: jgroupdistlimit(jpack, k, limit) -> jpack
+
+    Returns the k where the distinct values inside all jpacks have reached limit.
+
+    Example:
+
+    >>> table1('''
+    ... '[1,2]' 1
+    ... '[2,3,4,5]' 2
+    ... '[2,4]' 3
+    ... 5 4
+    ... ''')
+    >>> sql("select jgroupdistlimit(a,b,3) from table1")
+    jgroupdistlimit(a,b,3)
+    ----------------------
+    2
+
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.gset=set()
+        self.k = None
+
+    def step(self, *args):
+        if self.k == None:
+            self.gset.update( [ (x,None) for x in jopts.fromj(args[0]) ] )
+            
+            if len(self.gset) > args[-1]:
+                self.k = args[1]
+
+    def final(self):
+        return self.k
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
