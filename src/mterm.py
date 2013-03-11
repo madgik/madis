@@ -376,7 +376,7 @@ def mcomplete(textin,state):
         return
 
 def buildrawprinter(separator):
-    return writer(sys.stdout,dialect=mtermoutput(),delimiter=separator)
+    return writer(sys.stdout, dialect=mtermoutput(), delimiter=str(separator))
 
 def schemaprint(cols):
     global pipedinput
@@ -607,7 +607,13 @@ while True:
                 separator = "\t"
             else:
                 separator = argument
+
+            if separator == '':
+                colnums = True
+                separator = '|'
+
             if separator!=tmpseparator:
+                colnums = False
                 rawprinter=buildrawprinter(separator)
 
         elif command=='explain':
