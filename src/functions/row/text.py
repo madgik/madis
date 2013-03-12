@@ -8,6 +8,12 @@ import itertools
 from collections import deque
 from lib import jopts
 
+# Increase regular expression cache
+try:
+    re._MAXCACHE = 1000
+except:
+    pass
+
 # Every regular expression containing \W \w \D \d \b \S \s needs to be compiled
 # like below. If you want to embed the UNICODE directive inside the
 # regular expression use:

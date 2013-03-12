@@ -1,5 +1,5 @@
 """
-.. function:: uniondb(db_filename)
+.. function:: unionalldb(db_filename)
 
 This function returns the contents of a table that has been split using OUTPUT split functionality.
 
@@ -11,6 +11,10 @@ Its input are DBs with names such as:
 
 It is assumed that inside each of above DBs, a table named as *dbname* will exist. All of these
 tables should have the same schema
+
+Usage:
+
+  select * from (unionalldb 'dbname');
 
 """
 import vtiters
