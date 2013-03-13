@@ -12,15 +12,21 @@ Its input are DBs with names such as:
 It is assumed that inside each of above DBs, a table named as *dbname* will exist. All of these
 tables should have the same schema
 
-Usage:
+If a *start* or *end* argument is present then *unionalldb* will start scanning from the *start* numbered part
+and end scanning at *end* numbered db part (without including the *end* numbered part).
+
+Usage examples:
 
   select * from (unionalldb 'dbname');
+
+  select * from (unionalldb start:1 end:4 'dbname');
 
 """
 import vtiters
 import functions
 import apsw
 import os
+import sys
 
 registered=True
 
@@ -34,6 +40,15 @@ class UnionDB(vtiters.SchemaFromArgsVT):
 
         self.query=None
         tablename=None
+
+        self.start = 0
+        self.end = sys.maxint
+
+        if 'start' in opts[1]:
+            self.start = int(opts[1]['start'])
+
+        if 'end' in opts[1]:
+            self.end = int(opts[1]['end'])
 
         if 'tablename' in opts[1]:
             tablename=opts[1]['tablename']
@@ -56,14 +71,14 @@ class UnionDB(vtiters.SchemaFromArgsVT):
 
         self.dbfile = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(dbname)))))
 
-        self.part = 0
-        self.xcon=apsw.Connection(self.dbfile+'.0.db')
+        self.part = self.start
+        self.xcon=apsw.Connection(self.dbfile+'.' + str(self.part) + '.db')
         self.xcursor=self.xcon.cursor()
         self.xexec=self.xcursor.execute(self.query)
         return self.xcursor.getdescription()
 
     def open(self, *parsedArgs, **envars):
-        while True:
+        while self.part < self.end:
             try:
                 self.xcon.close()
                 self.xcon = apsw.Connection(self.dbfile+'.' + str(self.part) + '.db')
