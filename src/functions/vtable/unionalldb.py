@@ -39,7 +39,6 @@ class UnionDB(vtiters.SchemaFromArgsVT):
         opts=self.full_parse(parsedArgs)
 
         self.query=None
-        tablename=None
 
         self.start = 0
         self.end = sys.maxint
@@ -50,29 +49,34 @@ class UnionDB(vtiters.SchemaFromArgsVT):
         if 'end' in opts[1]:
             self.end = int(opts[1]['end'])
 
+        try:
+            dbname=opts[0][0]
+        except:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"A DB filename should be provided")
+
+        try:
+            self.query=opts[1]['query']
+        except:
+            pass
+
+        tablename = dbname
         if 'tablename' in opts[1]:
             tablename=opts[1]['tablename']
 
         if 'table' in opts[1]:
             tablename=opts[1]['table']
 
-        try:
-            self.query=opts[1]['query']
-        except:
-            pass
-            
-        try:
-            dbname=opts[0][0]
-        except:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"A DB filename should be provided")
-
         if self.query == None:
-            self.query = 'select * from '+dbname+';'
+            self.query = 'select * from '+tablename+';'
 
         self.dbfile = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(dbname)))))
 
         self.part = self.start
-        self.xcon=apsw.Connection(self.dbfile+'.' + str(self.part) + '.db')
+        try:
+            self.xcon=apsw.Connection(self.dbfile+'.' + str(self.part) + '.db', flags=apsw.SQLITE_OPEN_READONLY)
+        except Exception,e:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"DB could not be opened")
+
         self.xcursor=self.xcon.cursor()
         self.xexec=self.xcursor.execute(self.query)
         return self.xcursor.getdescription()
@@ -81,7 +85,7 @@ class UnionDB(vtiters.SchemaFromArgsVT):
         while self.part < self.end:
             try:
                 self.xcon.close()
-                self.xcon = apsw.Connection(self.dbfile+'.' + str(self.part) + '.db')
+                self.xcon = apsw.Connection(self.dbfile+'.' + str(self.part) + '.db', flags=apsw.SQLITE_OPEN_READONLY)
                 self.xexec = self.xcon.cursor().execute(self.query)
             except Exception,e:
                 raise StopIteration
