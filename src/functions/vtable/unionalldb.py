@@ -30,10 +30,22 @@ import sys
 
 registered=True
 
-class UnionDB(vtiters.SchemaFromArgsVT):
+class UnionAllDB(vtiters.SchemaFromArgsVT):
     def __init__(self):
         self.xcursor=None
         self.xcon=None
+
+    def findschema(self):
+        try:
+            # Try to get the schema the normal way
+            schema = self.xcursor.getdescription()
+        except apsw.ExecutionCompleteError:
+            # Else create a tempview and query the view
+            list(self.xcursor.execute('create temp view temp.___schemaview as '+ self.query + ';'))
+            schema = [(x[1], x[2]) for x in list(self.xcursor.execute('pragma table_info(___schemaview);'))]
+            list(self.xcursor.execute('drop view temp.___schemaview;'))
+
+        return schema
 
     def getschema(self, *parsedArgs,**envars):
         opts=self.full_parse(parsedArgs)
@@ -79,7 +91,7 @@ class UnionDB(vtiters.SchemaFromArgsVT):
 
         self.xcursor=self.xcon.cursor()
         self.xexec=self.xcursor.execute(self.query)
-        return self.xcursor.getdescription()
+        return self.findschema()
 
     def open(self, *parsedArgs, **envars):
         while self.part < self.end:
@@ -99,7 +111,7 @@ class UnionDB(vtiters.SchemaFromArgsVT):
         self.xcon.close()
 
 def Source():
-    return vtiters.SourceCachefreeVT(UnionDB)
+    return vtiters.SourceCachefreeVT(UnionAllDB)
 
 
 if not ('.' in __name__):
