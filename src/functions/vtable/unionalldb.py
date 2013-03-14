@@ -71,7 +71,10 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
         except:
             pass
 
-        tablename = dbname
+        self.dbfile = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(dbname)))))
+
+
+        tablename = os.path.split(self.dbfile)[1]
         if 'tablename' in opts[1]:
             tablename=opts[1]['tablename']
 
@@ -80,8 +83,6 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
 
         if self.query == None:
             self.query = 'select * from '+tablename+';'
-
-        self.dbfile = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(dbname)))))
 
         self.part = self.start
         try:
