@@ -125,7 +125,7 @@ class Table:
         self.dobj=dobj
 
     def BestIndex(self, *args):
-        return None
+        return (None, 0, None, False, 1000)
 
     def Rollback(self,*args):
         pass

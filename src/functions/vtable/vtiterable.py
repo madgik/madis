@@ -125,7 +125,7 @@ class LTable: ####Init means setschema and execstatus
 
     @echocall
     def BestIndex(self, *args):
-        return None
+        return (None, 0, None, False, 1000)
 
     @echocall
     def Open(self):
