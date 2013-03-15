@@ -796,10 +796,10 @@ hashmodarchdep.registered=True
 
 def textwindow(*args):
     """
-    .. function:: textwindow(text, previous_word_count = 0, next_word_count = 0)
+    .. function:: textwindow(text, previous_word_count = 0, next_word_count = 0, middle_word_count = 1, pattern = None)
 
     Returns a rolling window over the text. The window includes *previous_word_count* words before the middle word
-    and next_word_count words after the middleword.
+    and next_word_count words after the middleword. Optionally you may choose more than one words to be in the middle, and filter your window with a regular expression pattern
 
     Examples:
 
@@ -821,36 +821,73 @@ def textwindow(*args):
     a     | test   | phrase
     test  | phrase |
 
+    >>> sql("select textwindow('This is a test phrase',1,1,2)  ")
+    prev1 | middle      | next1
+    ----------------------------
+          | This is     | a
+    This  | is a        | test
+    is    | a test      | phrase
+    a     | test phrase |
+
+    >>> sql("select textwindow('This is a test phrase (123) for filtering middle with a number',1,1,'\d+')  ")
+    prev1  | middle | next1
+    -----------------------
+    phrase | (123)  | for
+
     """
+    r = args[0]
     try:
-        prevcount = args[1]
+        prev = args[1]
     except IndexError:
-        prevcount = 0
-
+        prev = 0
     try:
-        nextcount = args[2]
+        nextlen = args[2]
     except IndexError:
-        nextcount = 0
+        nextlen = 0
 
-    text = args[0].split(' ')
-
-    # Schema
-    yield tuple(itertools.chain( ('prev' + str(x) for x in xrange(1, prevcount+1)), ('middle',), ('next' + str(x) for x in xrange(1, nextcount+1)) ))
-
-    itext = iter(text)
-    win = [''] * prevcount + [ next(itext, '') for _ in xrange(nextcount + 1)]
-    yield win
-
-    win = deque(win, prevcount + nextcount + 1 )
-    append = win.append
+    middle = 1
+    pattern = None
+    try:
+        if type(args[3]) == int:
+            middle = args[3]
+        else:
+            pattern = args[3]
+    except IndexError:
+        pass
     
-    for w in itext:
-        append(w)
-        yield list(win)
+    try :
+        if type(args[4]) == int:
+            middle = args[4]
+        else:
+            pattern = args[4]
+    except IndexError:
+        pass
 
-    for _ in xrange( nextcount ):
-        append('')
-        yield list(win)
+    yield tuple(itertools.chain( ('prev'+str(x) for x in xrange(1,prev+1)),('middle',), ('next'+str(y) for y in xrange(1,nextlen + 1)) ))
+
+    g = [''] * prev + r.split(' ') + [''] * (nextlen)
+
+    window = prev + nextlen + middle
+    pm = prev+middle
+    im = prev
+    if middle == 1:
+        if pattern == None:
+            for i in xrange(len(g)-window + 1):
+                yield (g[i:i+window])
+        else:
+             for i in xrange(len(g)-window + 1):
+                if re.search(pattern,g[i+im]):
+                    yield (g[i:i+window])
+
+    else :
+        if pattern == None:
+            for i in xrange(len(g)-window + 1):
+                yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
+        else:
+             for i in xrange(len(g)-window + 1):
+                mid = ' '.join(g[i+prev:i+pm])
+                if re.search(pattern,mid):
+                    yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
 
 textwindow.registered=True
 
