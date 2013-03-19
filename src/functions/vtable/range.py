@@ -106,6 +106,10 @@ class RangeVT(vtbase.VT):
             fromv=1
             tov=int(largs[0])+1
 
+        if 'query' in dictargs:
+            fromv=1
+            tov=int(dictargs['query'])+1
+
         yield [('C1',)]
 
         for i in xrange(fromv,tov,stepv):
