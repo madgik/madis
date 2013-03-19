@@ -22,7 +22,7 @@ Usage examples:
   select * from (unionalldb start:1 end:4 'dbname');
 
 """
-import vtiters
+import vtbase
 import functions
 import apsw
 import os
@@ -30,11 +30,7 @@ import sys
 
 registered=True
 
-class UnionAllDB(vtiters.SchemaFromArgsVT):
-    def __init__(self):
-        self.xcursor=None
-        self.xcon=None
-
+class UnionAllDB(vtbase.VT):
     def findschema(self):
         try:
             # Try to get the schema the normal way
@@ -47,7 +43,7 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
 
         return schema
 
-    def getschema(self, *parsedArgs,**envars):
+    def VTiter(self, *parsedArgs,**envars):
         opts=self.full_parse(parsedArgs)
 
         self.query=None
@@ -73,7 +69,6 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
 
         self.dbfile = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(dbname)))))
 
-
         tablename = os.path.split(self.dbfile)[1]
         if 'tablename' in opts[1]:
             tablename=opts[1]['tablename']
@@ -88,19 +83,19 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
         try:
             self.xcon=apsw.Connection(self.dbfile+'.' + str(self.part) + '.db', flags=apsw.SQLITE_OPEN_READONLY)
         except Exception,e:
+            print e
             raise functions.OperatorError(__name__.rsplit('.')[-1],"DB could not be opened")
 
         self.xcursor=self.xcon.cursor()
         self.xexec=self.xcursor.execute(self.query)
-        return self.findschema()
+        yield self.findschema()
 
-    def open(self, *parsedArgs, **envars):
         while self.part < self.end:
             try:
-                self.xcon.close()
                 self.xcon = apsw.Connection(self.dbfile+'.' + str(self.part) + '.db', flags=apsw.SQLITE_OPEN_READONLY)
-                self.xexec = self.xcon.cursor().execute(self.query)
-            except Exception,e:
+                self.xcursor = self.xcon.cursor()
+                self.xexec =self.xcursor.execute(self.query)
+            except apsw.CantOpenError,e:
                 raise StopIteration
 
             for row in self.xexec:
@@ -108,11 +103,8 @@ class UnionAllDB(vtiters.SchemaFromArgsVT):
 
             self.part += 1
 
-    def close(self):
-        self.xcon.close()
-
 def Source():
-    return vtiters.SourceCachefreeVT(UnionAllDB)
+    return vtbase.VTGenerator(UnionAllDB)
 
 
 if not ('.' in __name__):

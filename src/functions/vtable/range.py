@@ -24,8 +24,8 @@ Named parameters:
 Examples::
 
     >>> sql("select * from range()")
-    value
-    -----
+    C1
+    --
     0
     1
     2
@@ -36,9 +36,10 @@ Examples::
     7
     8
     9
+    
     >>> sql("select * from range('from:1','to:11')")
-    value
-    -----
+    C1
+    --
     1
     2
     3
@@ -49,25 +50,28 @@ Examples::
     8
     9
     10
+    
     >>> sql("select * from range('from:2','to:15','step:3')")
-    value
-    -----
+    C1
+    --
     2
     5
     8
     11
     14
+    
     >>> sql("select * from range(1,10,2)")
-    value
-    -----
+    C1
+    --
     1
     3
     5
     7
     9
+
     >>> sql("select * from range(5)")
-    value
-    -----
+    C1
+    --
     1
     2
     3
@@ -76,59 +80,39 @@ Examples::
 
 """
 
-
-from vtiterable import SourceVT
+import vtbase
 registered=True
 
-def linerange(fromv,tov,stepv):
-    for i in xrange(fromv,tov,stepv):
-        yield [i]
+class RangeVT(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        largs, dictargs = self.full_parse(parsedArgs)
+        fromv=0
+        tov=10
+        stepv=1
 
-class RangeCursor:
-    def __init__(self,fromv,tov,stepv):
-        self.iter=linerange(fromv,tov,stepv)
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-    def close(self):
-        pass
-class RangeVT:
-    def __init__(self,envdict,largs,dictargs):
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.fromv=0
-        self.tov=10
-        self.stepv=1
         if 'from' in dictargs:
-            self.fromv=int(dictargs['from'])
+            fromv=int(dictargs['from'])
         if 'to' in dictargs:
-            self.tov=int(dictargs['to'])
+            tov=int(dictargs['to'])
         if 'step' in dictargs:
-            self.stepv=int(dictargs['step'])
+            stepv=int(dictargs['step'])
         if len(largs)>=1:
-            self.fromv=int(largs[0])
+            fromv=int(largs[0])
         if len(largs)>=2:
-            self.tov=int(largs[1])
+            tov=int(largs[1])
         if len(largs)>=3:
-            self.stepv=int(largs[2])
+            stepv=int(largs[2])
         if len(largs)==1:
-            self.fromv=1
-            self.tov=int(largs[0])+1
-    def getdescription(self):
-        return [('C1',)]
-    def open(self):
-        return RangeCursor(self.fromv,self.tov,self.stepv)
-    def disconnect(self):
-        pass
-    def destroy(self):
-        pass
+            fromv=1
+            tov=int(largs[0])+1
+
+        yield [('C1',)]
+
+        for i in xrange(fromv,tov,stepv):
+            yield [i]
 
 def Source():
-    return SourceVT(RangeVT,staticschema=True)
-
-
+    return vtbase.VTGenerator(RangeVT)
 
 if not ('.' in __name__):
     """
