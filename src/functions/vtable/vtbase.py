@@ -17,6 +17,8 @@ import functions
 import apsw
 from lib import argsparse ,schemaUtils
 
+autostring='automatic_vtable:1'
+
 # Decorator to extended a function by calling first another function with no arguments
 def echocall(func):
     def wrapper(*args, **kw):
@@ -50,6 +52,9 @@ class VTGenerator:
     def Create(self, db, modulename, dbname, tablename,*args):
         envars={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
         uargs=[argsparse.unquote(a) for a in args]
+        if len(uargs)>0 and uargs[-1]==autostring:
+            auto=True
+            uargs=uargs[:-1]
         TableVT=self.fobj()
         parsedArgs = list(TableVT.parse(*uargs))
         iterFunc = lambda:TableVT.VTiter(*parsedArgs,**envars)
