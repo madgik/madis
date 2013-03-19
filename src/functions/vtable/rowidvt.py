@@ -40,82 +40,43 @@ Examples::
     2     | Mark  | 7  | 3
 """
 import setpath
-from vtiterable import SourceVT
-from lib.iterutils import peekable
-import itertools
+import vtbase
 import functions
 
 ### Classic stream iterator
 registered=True
        
-class RowidCursor:
-    def __init__(self,sqlquery,connection,first,names,types):
-        self.sqlquery=sqlquery
-        self.connection=connection
-        self.c=self.connection.cursor()
+class RowidVT(vtbase.VT):
+    def VTiter(self, *parsedArgs, **envars):
+        largs, dictargs = self.full_parse(parsedArgs)
 
-        self.cols=names
-        self.types=types
-        if first:
-            first = False
-            ### Find names and types
-            execit=peekable(self.c.execute(self.sqlquery))
-            try:
-                samplerow=execit.peek()
-            except StopIteration:
-                pass
-
-            schema = self.c.getdescription()
-            qnames=[str(v[0]) for v in schema]
-            qtypes=[str(v[1]) for v in schema]
-            qnames[:0]=['rowid']
-            qtypes[:0]=['integer']
-
-            ### Set names and types
-            for i in qnames:
-                self.cols.append(i)
-            for i in qtypes:
-                self.types.append(i)
-
-            self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), execit) )
-        else:
-            self.iter=( [x]+list(y) for x,y in itertools.izip(itertools.count(1), self.c.execute(self.sqlquery)) )
-
-    def close(self):
-        self.c.close()
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-
-class RowidVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
         self.nonames=True
         self.names=[]
         self.types=[]
+
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        if not self.names:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
-        self.nonames=False
-        return [(i,j) for i,j in zip(self.names,self.types)]
-    def open(self):
-        return RowidCursor(self.query,self.envdict['db'],self.nonames,self.names,self.types,*self.largs,**self.dictargs)
-    def destroy(self):
-        pass
+        query=dictargs['query']
 
+        c=envars['db'].cursor().execute(query)
 
+        try:
+            yield [('rowid', 'integer')] + list(c.getdescription())
+        except StopIteration:
+            try:
+                raise
+            finally:
+                try:
+                    c.close()
+                except:
+                    pass
+        i = 1
+        for r in c:
+            yield [i] + list(r)
+            i += 1
 
 def Source():
-    return SourceVT(RowidVT)
-
-
+    return vtbase.VTGenerator(RowidVT)
 
 if not ('.' in __name__):
     """
