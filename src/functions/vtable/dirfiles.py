@@ -32,25 +32,23 @@ Examples:
     clipboard.py
 
 """
+import vtbase
 import os.path
-import vtiters
 import functions
 import os
 
 registered=True
 
-class dirfiles(vtiters.StaticSchemaVT):
-    def getschema(self):
-        return [('c1', 'text'), ('c2', 'text')]
-
-    def open(self, *parsedArgs, **envars):
-
+class dirfiles(vtbase.VT):
+    def VTiter(self, *parsedArgs, **envars):
         def expandedpath(p):
             return os.path.realpath(os.path.abspath(os.path.expanduser(os.path.expandvars(os.path.normcase(os.path.normpath(p))))))
 
-        opts= self.full_parse(parsedArgs)
+        yield [('c1', 'text'), ('c2', 'text')]
 
-        dirname=None
+        opts = self.full_parse(parsedArgs)
+
+        dirname='.'
         recursive=False
 
         if 'rec' in opts[1]:
@@ -62,7 +60,7 @@ class dirfiles(vtiters.StaticSchemaVT):
             recursive=True
 
         if not recursive and len(opts[0])+len(opts[1])>1:
-            if opt[0][0]=='rec' or opt[0][0]=='recursive':
+            if opts[0][0]=='rec' or opts[0][0]=='recursive':
                 recursive=True
                 del opts[0][0]
 
@@ -90,7 +88,7 @@ class dirfiles(vtiters.StaticSchemaVT):
                         yield (fullpathf, f)
 
 def Source():
-    return vtiters.SourceCachefreeVT(dirfiles)
+    return vtbase.VTGenerator(dirfiles)
 
 
 if not ('.' in __name__):
