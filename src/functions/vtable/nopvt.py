@@ -33,60 +33,38 @@ Examples::
 
 """
 import setpath
-from vtiterable import SourceVT
+import vtbase
 import functions
 
 ### Classic stream iterator
 registered=True
        
-class NopCursor:
-    def __init__(self, sqlquery, connection, schema):
-        self.sqlquery=sqlquery
-        self.connection=connection
-        self.c=self.connection.cursor()
-
-        self.iter = iter(self.c.execute(self.sqlquery))
-        if schema==[]:
-            try:
-                schema.extend(list(self.c.getdescription()))
-            except StopIteration:
-                try:
-                    raise
-                finally:
-                    try:
-                        self.c.close()
-                    except:
-                        pass
-
-    def close(self):
-        self.c.close()
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-
-class NopVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.schema = []
+class NopVT(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        largs, dictargs = self.full_parse(parsedArgs)
 
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        if self.schema==[]:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
-        return self.schema
-    def open(self):
-        return NopCursor(self.query, self.envdict['db'] , self.schema, *self.largs,**self.dictargs)
-    def destroy(self):
-        pass
+        query=dictargs['query']
+
+        c=envars['db'].cursor().execute(query)
+
+        try:
+            yield list(c.getdescription())
+        except StopIteration:
+            try:
+                raise
+            finally:
+                try:
+                    c.close()
+                except:
+                    pass
+
+        for r in c:
+            yield r
 
 def Source():
-    return SourceVT(NopVT)
+    return vtbase.VTGenerator(NopVT)
 
 if not ('.' in __name__):
     """
