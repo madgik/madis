@@ -22,7 +22,7 @@ Examples:
     file.py
     flow.py
 
-    >>> sql("select c2 from dirfiles(rec:1 '.') where c2 like 'c%.py'")    # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> sql("select c2 from dirfiles('rec:1','.') where c2 like 'c%.py'")    # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     c2
     ------------
     coltypes.py
