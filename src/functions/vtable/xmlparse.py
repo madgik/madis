@@ -180,7 +180,7 @@ Examples:
     <a><b>row1val3/b></a>
 
 """
-import vtiters
+import vtbase
 import functions
 import htmlentitydefs
 import json
@@ -413,7 +413,7 @@ class schemaobj():
         return relschema
 
 
-class XMLparse(vtiters.SchemaFromArgsVT):
+class XMLparse(vtbase.VT):
     def __init__(self):
         self.schema=None
         self.subtreeroot=None
@@ -550,7 +550,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             else:
                 return [('C1', 'text')]
 
-    def open(self, *parsedArgs, **envars):
+    def VTiter(self, *parsedArgs, **envars):
 
         class inputio():
             def __init__(self, connection, query, fast=False):
@@ -660,6 +660,8 @@ class XMLparse(vtiters.SchemaFromArgsVT):
             def close(self):
                 self.qiter.close()
 
+        yield self.getschema(*parsedArgs,**envars)
+
         rio=inputio(envars['db'], self.query, self.fast)
         etreeended=False
 
@@ -726,7 +728,7 @@ class XMLparse(vtiters.SchemaFromArgsVT):
 
 
 def Source():
-    return vtiters.SourceCachefreeVT(XMLparse)
+    return vtbase.VTGenerator(XMLparse)
 
 
 if not ('.' in __name__):
