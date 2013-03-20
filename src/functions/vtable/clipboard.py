@@ -19,18 +19,15 @@ Examples:
     3    | Saint Kitts and Nevis | 185.00      | 2009 est.
 
 """
-import vtiters
+import vtbase
 
 registered=True
 external_stream=True
 
-class clipboard(vtiters.SchemaFromSampleVT):
+class clipboard(vtbase.VT):
     def __init__(self):
         self.schema=[('C1', 'text')]
         self.count = 0
-
-    def getschema(self,samplerow):
-        return self.schema
 
     def checkfordelimiter(self, delim = '\t'):
         #check for regular schema
@@ -47,7 +44,7 @@ class clipboard(vtiters.SchemaFromSampleVT):
                         break
         return hasschema
 
-    def open(self, *parsedArgs, **envars):
+    def VTiter(self, *parsedArgs, **envars):
         import lib.pyperclip as clip
         data=unicode(clip.getcb(), 'utf_8')
 
@@ -101,10 +98,13 @@ class clipboard(vtiters.SchemaFromSampleVT):
         else:
             data=[[r] for r in data]
 
-        return iter(data)
+        yield self.schema
+
+        for r in data:
+            yield r
 
 def Source():
-    return vtiters.SourceCachefreeVT(clipboard)
+    return vtbase.VTGenerator(clipboard)
 
 
 if not ('.' in __name__):
