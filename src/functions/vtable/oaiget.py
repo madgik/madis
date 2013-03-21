@@ -25,18 +25,15 @@ Examples:
     Operator OAIGET: <urlopen error [Errno -2] Name or service not known>
 
 """
-import vtiters
+import vtbase
 import functions
 import time
 
 registered=True
 external_stream=True
 
-class oaiget(vtiters.StaticSchemaVT):
-    def getschema(self):
-        return [('c1', 'text')]
-
-    def open(self, *parsedArgs, **envars):
+class oaiget(vtbase.VT):
+    def VTiter(self, *parsedArgs, **envars):
 
         import urllib2
         import re
@@ -52,6 +49,8 @@ class oaiget(vtiters.StaticSchemaVT):
              ('Content-type', 'text/xml')
             ]
             return o
+
+        yield [('c1', 'text')]
 
         opts= self.full_parse(parsedArgs)[1]
 
@@ -109,7 +108,7 @@ class oaiget(vtiters.StaticSchemaVT):
 
 
 def Source():
-    return vtiters.SourceCachefreeVT(oaiget)
+    return vtbase.VTGenerator(oaiget)
 
 
 if not ('.' in __name__):
