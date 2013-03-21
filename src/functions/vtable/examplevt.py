@@ -10,44 +10,38 @@ Examples:
 
     >>> sql("select * from examplevt(1, '2', 'var3')")    # doctest:+ELLIPSIS
     varname          | value
-    -------------------------------------------------------------...
-    parsedarg1       | 1
-    parsedarg2       | 2
-    parsedarg3       | var3
-    envar:tablename  | vt_...
+    -------------------------------------------------------------
+    parsedargs       | (u'1', u'2', u'var3')
+    envar:tablename  | vt_773987998
     envar:modulename | examplevt
-    envar:db         | <functions.Connection object at 0x...>
+    ...
     envar:dbname     | temp
 
     >>> sql("select * from (examplevt 'var1' 'var2' v1:test select 5)")    # doctest:+ELLIPSIS
     varname          | value
-    -------------------------------------------------------...
-    parsedarg1       | query:select 5
-    parsedarg2       | var1
-    parsedarg3       | var2
-    parsedarg4       | v1:test
-    envar:tablename  | vt_...
+    --------------------------------------------------------------------
+    parsedargs       | (u'query:select 5', u'var1', u'var2', u'v1:test')
+    envar:tablename  | vt_1975870853
     envar:modulename | examplevt
-    envar:db         | <functions.Connection object at 0x...>
+    ...
     envar:dbname     | temp
 
 """
-import vtiters
+import vtbase
 
 registered=True
 
-class examplevt(vtiters.StaticSchemaVT):
-    def getschema(self):
-        return [('varname', 'text'), ('value', 'text')]
+class examplevt(vtbase.VT):
+    def VTiter(self, *parsedArgs, **envars):
+        yield [('varname', 'text'), ('value', 'text')]
 
-    def open(self, *parsedArgs, **envars):
         yield ["parsedargs", unicode(parsedArgs)]
 
         for x,y in envars.iteritems():
             yield ["envar:"+x, str(y)]
 
 def Source():
-    return vtiters.SourceCachefreeVT(examplevt)
+    return vtbase.VTGenerator(examplevt)
 
 if not ('.' in __name__):
     """
