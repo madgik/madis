@@ -15,8 +15,8 @@ def filterstopwords(*args):
     Examples:
 
     >>> table1('''
-    ... 'this and wood'         'no more words'
-    ... 'no more stop words'    'more free time'
+    ... 'this and wood'         'NO more words'
+    ... 'No more stop words'    'more free time'
     ... ''')
     >>> sql("select filterstopwords(a,b) from table1")
     filterstopwords(a,b)
@@ -26,11 +26,11 @@ def filterstopwords(*args):
     """
 
     if len(args) == 1:
-        return ' '.join([k for k in args[0].lower().split(' ') if k not in stopwords and k!=''])
+        return ' '.join([k for k in args[0].split(' ') if k!='' and k[0].lower()+k[1:] not in stopwords])
 
     out=[]
     for i in args:
-        out.append(' '.join([k for k in i.lower().split(' ') if k not in stopwords and k!='']))
+        out.append(' '.join([k for k in i.split(' ') if k!='' and k[0].lower()+k[1:] not in stopwords]))
 
     return ' '.join(out)
 
