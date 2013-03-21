@@ -8,31 +8,24 @@
 
 Examples:
     
-    >>> sql("select * from webtable('http://en.wikipedia.org/wiki/List_of_countries_by_public_debt',2) limit 3")
-    Rank | Country               | % of GDP[1] | Date      | Continent
-    ----------------------------------------------------------------------
-    1    | Zimbabwe              | 241.60      | 2010 est. | Africa
-    2    | Japan                 | 196.40      | 2010 est. | Asia
-    3    | Saint Kitts and Nevis | 185.00      | 2010 est. | North America
+    >>> sql("select * from webtable('http://en.wikipedia.org/wiki/List_of_countries_by_public_debt',2) order by 2 desc limit 3")
+    Country | Public debt as % of GDP(CIA)[1] | Date1     | Gross government debt as % of GDP(IMF)[2] | Date2     | Region
+    -----------------------------------------------------------------------------------------------------------------------------
+    Belize  | 90.8                            | 2012 est. | 81.003                                    | 2012 est. | North America
+    Sudan   | 89.3                            | 2012 est. | 112.15                                    | 2012 est. | Africa
+    France  | 89.1                            | 2012 est. | 89.97                                     | 2012 est. | Europe
     
 """
 import setpath
-
-
 import functions
 import urllib2
-import vtiters
+import vtbase
 from lib import TableHTMLParser
-
-
 
 registered=True
 external_stream=True
 
-
-
-
-class WebTable(vtiters.SchemaFromSampleVT):
+class WebTable(vtbase.VT):
     def parse(self,*args):
         tableNum=1
         argsnum=len(args)
@@ -46,15 +39,19 @@ class WebTable(vtiters.SchemaFromSampleVT):
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Table number must be integer")
         return (tableUrl, tableNum)
 
-    def getschema(self,samplerow):
-        if 'tuple' in str(type(samplerow)):
-            return [(header,'text') for header in samplerow]
-        else:
-            return [('C'+str(i),'text') for i in range(1, len(samplerow)+1)]
-        
-    def open(self,tableUrl, tableNum,**envars):
-        return TableParse(tableUrl, tableNum)
+    def VTiter(self,tableUrl, tableNum,**envars):
+        tableiter = TableParse(tableUrl, tableNum)
 
+        samplerow = tableiter.next()
+
+        if type(samplerow) == tuple:
+            yield [(header,'text') for header in samplerow]
+        else:
+            yield [('C'+str(i),'text') for i in range(1, len(samplerow)+1)]
+            yield samplerow
+
+        for r in tableiter:
+            yield r
 
 
 class TableParse:
@@ -96,7 +93,7 @@ def linkiter(source,consume):
 
 
 def Source():
-    return vtiters.SourceCachefreeVT(WebTable)
+    return vtbase.VTGenerator(WebTable)
 
 
 if not ('.' in __name__):
