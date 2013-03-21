@@ -13,29 +13,14 @@ Examples::
 """
 
 import setpath
-from vtiterable import SourceVT
+import vtbase
 import functions
 import apsw
 
 registered=True
 
-class QueryPlan:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.envdict=envdict
-        self.dictargs=dictargs
-
-        if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1]," needs query argument ")
-
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        return [('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text')]
-
-    def open(self):
-        connection = self.envdict['db']
-        plan=[]
-
+class QueryPlan(vtbase.VT):
+    def VTiter(self, *parsedArgs, **envars):
         def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
             """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
             SQLITE_IGNORE"""
@@ -48,6 +33,16 @@ class QueryPlan:
             for i in xrange(110):
                 a=list(c.execute("select "+str(i)))
 
+        _, dictargs = self.full_parse(parsedArgs)
+        
+        if 'query' not in dictargs:
+            raise functions.OperatorError(__name__.rsplit('.')[-1]," needs query argument ")
+
+        query=dictargs['query']
+
+        connection = envars['db']
+        plan=[]
+
         buststatementcache()
 
         cursor = connection.cursor()
@@ -56,17 +51,20 @@ class QueryPlan:
 
         connection.setauthorizer(authorizer)
 
-        cursor.execute(self.query)
+        cursor.execute(query)
 
         connection.setauthorizer(None)
 
-        return iter(plan)
+        yield [('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text')]
+
+        for r in plan:
+            yield r
     
     def destroy(self):
         pass
 
 def Source():
-    return SourceVT(QueryPlan)
+    return vtbase.VTGenerator(QueryPlan)
 
 if not ('.' in __name__):
     """
