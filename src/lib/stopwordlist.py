@@ -243,7 +243,7 @@ ur"jenseits", ur"too", ur"być", ur"brachte", ur"algunas", ur"herself", ur"siche
 ur"bez", ur"num", ur"których", ur"azzal", ur"encore", ur"seinem", ur"seinen", ur"elég", ur"ÎÉËÏÇÄÁ", ur"ÔÕÔ", ur"heitä", ur"eusses", ur"blir", ur"have",
 ur"manchmal", ur"båe", ur"sem", ur"seiner", ur"seines", ur"ista", ur"itt", ur"mij", ur"iste", ur"mio", ur"min", ur"mia", ur"ÂÙÔØ", ur"fussiez",
 ur"während", ur"mig", ur"isto", ur"veel", ur"को", ur"übrig", ur"beinahe", ur"के", ur"mir", ur"mit", ur"intentais", ur"कि", ur"का", ur"empleo", ur"tältä",
-ur"dette", ur"कर", ur"senke", ur"where's", ur"jemand", ur"maintenant", ur"nous", ur"sedan", ur"sist", ur"heissä", ur"why", ur"senkt", ur"ingi", ur"veya",
+ur"dette", ur"कर", ur"senke", ur"where's", ur"jemand", ur"nous", ur"sedan", ur"sist", ur"heissä", ur"why", ur"senkt", ur"ingi", ur"veya",
 ur"cima", ur"været", ur"nutzt", ur"muessen", ur"you'll", ur"beþ", ur"कई", ur"ÎÅÌØÚÑ", ur"tuotä", ur"így", ur"gdziekolwiek", ur"जैसे", ur"muy", ur"serías",
 ur"nagy", ur"ismét", ur"niet", ur"zuerst", ur"×ÓÅÈ", ur"ÅÓÔØ", ur"soyez", ur"sådant", ur"dunklen", ur"moet", ur"facevamo", ur"should", ur"nereye", ur"w³a¶nie",
 ur"there's", ur"jak", ur"forem", ur"noin", ur"sonst", ur"intentamos", ur"ayez", ur"begonnen", ur"podia", ur"joina", ur"sinun", ur"deine", ur"sinua",
