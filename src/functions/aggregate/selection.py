@@ -327,7 +327,8 @@ class ontop:
     all  | 120  | all
 
     >>> sql("select ontop(pk) from (select 5 as pk where pk!=5)")
-
+    top
+    -
     """
     registered=True
     multiset=True
