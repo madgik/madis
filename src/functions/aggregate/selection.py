@@ -315,16 +315,17 @@ class ontop:
     top1
     ----
     all
-    >>> sql("select ontop(2,a,b) from table1")
-    top1
-    ----
-    la
-    all
-    >>> sql("select ontop(2,a,b,a,b) from table1")
-    top1 | top2 | top3
-    ------------------
-    la   | 34   | la
-    all  | 120  | all
+    >>> sql("select ontop(2,a,a,b) from table1")
+    top1 | top2
+    -----------
+    120  | all
+    34   | la
+    
+    >>> sql("select ontop(2,a,a,b,a,b) from table1")
+    top1 | top2 | top3 | top4
+    -------------------------
+    120  | all  | 120  | all
+    34   | la   | 34   | la
 
     >>> sql("select ontop(pk) from (select 5 as pk where pk!=5)")
     top
@@ -374,7 +375,7 @@ class ontop:
         else:
             yield ("top",)
 
-        for el in output:
+        for el in reversed(output):
             yield el
 
 
