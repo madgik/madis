@@ -279,5 +279,5 @@ ur"ultimo", ur"geblieben", ur"he", ur"ezért", ur"davor", ur"néha", ur"seit", u
 ur"seid", ur"sein", ur"davon", ur"hvad", ur"braucht", ur"stesse", ur"povo", ur"vuestros", ur"amelyek", ur"innerhalb", ur"ins", ur"vostri", ur"inn", ur"überallhin",
 ur"jag", ur"vostro", ur"ind", ur"vostra", ur"dalsi", ur"mye", ur"piu", ur"aies", ur"arra", ur"tendrán", ur"deires", ur"siano", ur"other", ur"seus", ur"disse",
 ur"prave", ur"sarete", ur"tenhamos", ur"også", ur"után", ur"fois", ur"hubieron", ur"quarto", ur"ese", ur"müßte", ur"há", ur"stai", ur"reagierte", ur"ÎÉÈ",
-ur"trotzdem", ur"ogsÅ", ur"ÎÉÍ", ur"pode", ur"außerdem", ur"estuviste", ur"Ä×Á", ur"allein", ur"parole", ur"mistä"])
+ur"trotzdem", ur"ogsÅ", ur"ÎÉÍ", ur"pode", ur"außerdem", ur"estuviste", ur"Ä×Á", ur"allein", ur"mistä"])
 
