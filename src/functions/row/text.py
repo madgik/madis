@@ -22,6 +22,7 @@ delete_numbers_and_non_letters=re.compile(ur'[\W]',re.UNICODE)
 delete_non_letters=re.compile(ur'[\W]',re.UNICODE)
 delete_word_all=re.compile(ur'\w+\sall',re.UNICODE)
 delete_word_all_and_or=re.compile(ur'\w+\sall\s(?:and|or)',re.UNICODE)
+text_tokens = re.compile(ur'([\d.]+|\w+|\$[\d.]+)', re.UNICODE)
 strip_remove_newlines=re.compile(u'(?:\\s+$|^\\s+|(?<=[^\\s\\d\\w.;,!?])\n+)', re.UNICODE)
 reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 cqlterms=('title', 'subject', 'person', 'enter', 'creator', 'isbn')
@@ -48,20 +49,16 @@ def keywords(*args):
     πρωτο δευτερο τριτο τέταρτο
     πέμπτο all έκτο title all τεστ
     """
+    def token(match):
+        ns.out.append(match.group(0))
 
-    out=[]
+    ns = lambda x:x
+
+    ns.out=[]
     for i in args:
-        o=i.lower()
-        o=delete_numbers_and_non_letters.sub(' ',o)
-        o=reduce_spaces.sub(' ',o)
-        o=o.strip()
-        o=o.split(' ')
+        text_tokens.sub(token, i.lower())
 
-        for k in o:
-            if len(k)>0:
-                out.append(k)
-
-    return ' '.join(out)
+    return ' '.join(ns.out)
 
 keywords.registered=True
 
