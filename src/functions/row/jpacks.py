@@ -336,7 +336,6 @@ def jmerge(*args):
 jmerge.registered=True
 
 def jset(*args):
-
     """
     .. function:: jset(jpacks) -> jpack
 
@@ -354,6 +353,35 @@ def jset(*args):
     return jopts.toj(sorted(set( jopts.fromj(*args) )))
 
 jset.registered=True
+
+def jexcept(*args):
+    """
+    .. function:: jexcept(jpackA, jpackB) -> jpack
+
+    Returns the items of jpackA except the items that appear on jpackB.
+
+    Examples:
+
+    >>> sql("select jexcept('[1,2,3]', '[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
+    jexcept('[1,2,3]', '[1,2,3]')
+    -----------------------------
+    []
+
+    >>> sql("select jexcept('[1,2,3]', '[1,3]')") # doctest: +NORMALIZE_WHITESPACE
+    jexcept('[1,2,3]', '[1,3]')
+    ---------------------------
+    2
+
+    """
+
+    if len(args) < 2:
+        raise functions.OperatorError("jexcept","operator needs at least two inputs")
+
+    b = set(jopts.fromj(args[1]))
+    return jopts.toj([x for x in jopts.fromj(args[0]) if x not in b])
+
+jexcept.registered=True
+
 
 def jsort(*args):
 
