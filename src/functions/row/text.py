@@ -49,16 +49,12 @@ def keywords(*args):
     πρωτο δευτερο τριτο τέταρτο
     πέμπτο all έκτο title all τεστ
     """
-    def token(match):
-        ns.out.append(match.group(0))
 
-    ns = lambda x:x
+    out=text_tokens.findall(args[0].lower())
+    for i in args[1:]:
+        out+=text_tokens.findall(i.lower())
 
-    ns.out=[]
-    for i in args:
-        text_tokens.sub(token, i.lower())
-
-    return ' '.join(ns.out)
+    return ' '.join(out)
 
 keywords.registered=True
 
