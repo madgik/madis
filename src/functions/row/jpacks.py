@@ -481,7 +481,7 @@ def jmergeregexp(*args):
     >>> sql(''' select jmergeregexp('[]') ''') # doctest: +NORMALIZE_WHITESPACE
     jmergeregexp('[]')
     ------------------
-    <BLANKLINE>
+    _^
 
 
     >>> sql(''' select jmergeregexp('["ab",""]') ''') # doctest: +NORMALIZE_WHITESPACE
@@ -501,9 +501,15 @@ def jmergeregexp(*args):
             else:
                 out[x].append(y)
 
-        return '|'.join('(?P<'+ x + '>' + '|'.join(y)+')' for x, y in out.iteritems() if y!='')
+        res = '|'.join('(?P<'+ x + '>' + '|'.join(y)+')' for x, y in out.iteritems() if y!='')
+        if res == '':
+            res = '_^'
+        return res
 
-    return '|'.join('(?:'+x+')' for x in inp if x!='')
+    res = '|'.join('(?:'+x+')' for x in inp if x!='')
+    if res == '':
+        res = '_^'
+    return res
 
 jmergeregexp.registered=True
 
