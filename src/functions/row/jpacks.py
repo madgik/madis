@@ -478,11 +478,22 @@ def jmergeregexp(*args):
     -------------------------------------------------------------
     (?P<neg>n1)|(?P<pos>p1|p2)
 
+    >>> sql(''' select jmergeregexp('[]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jmergeregexp('[]')
+    ------------------
+    <BLANKLINE>
+
+
+    >>> sql(''' select jmergeregexp('["ab",""]') ''') # doctest: +NORMALIZE_WHITESPACE
+    jmergeregexp('["ab",""]')
+    -------------------------
+    (?:ab)
+
     """
 
     inp = jopts.fromj(*args)
 
-    if type(inp[0]) == list:
+    if len(inp)>0 and type(inp[0]) == list:
         out={}
         for x,y in inp:
             if x not in out:
@@ -490,9 +501,9 @@ def jmergeregexp(*args):
             else:
                 out[x].append(y)
 
-        return '|'.join('(?P<'+ x + '>' + '|'.join(y)+')' for x, y in out.iteritems())
+        return '|'.join('(?P<'+ x + '>' + '|'.join(y)+')' for x, y in out.iteritems() if y!='')
 
-    return '|'.join('(?:'+x+')' for x in inp)
+    return '|'.join('(?:'+x+')' for x in inp if x!='')
 
 jmergeregexp.registered=True
 
