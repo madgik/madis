@@ -32,7 +32,7 @@ import time
 registered=True
 external_stream=True
 
-class diavgeiaget(vtbase.StaticSchemaVT):
+class diavgeiaget(vtbase.VT):
     def VTiter(self, *parsedArgs, **envars):
         
         def buildURL(baseurl, opts):
