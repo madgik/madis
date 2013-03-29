@@ -174,10 +174,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
 
     #@echocall #-- Commented out for speed reasons
     def Column(self, col):
-        try:
-            return self.row[col]
-        except IndexError:
-            raise functions.OperatorError(self.envars['modulename'] ,"Not enough data in rowid: %s" %(self.pos+1))
+        return self.row[col]
 
     #@echocall #-- Commented out for speed reasons
     def Next(self):

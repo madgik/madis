@@ -69,8 +69,8 @@ class IGroup(vtbase.VT):
                 except:
                     pass
 
-        for r in c:
-            yield r
+        while True:
+            yield c.next()
 
 def Source():
     return vtbase.VTGenerator(IGroup)
