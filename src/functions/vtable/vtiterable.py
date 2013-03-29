@@ -177,6 +177,7 @@ class Cursor:
     def __init__(self, table,iter):
         self.table=table
         self.iter=iter
+        self.iterNext = self.iter.next
         self.row=None
         self.tablename=table.tablename
         self.firsttime=True
@@ -189,6 +190,7 @@ class Cursor:
 
         if not self.firsttime:
             self.iter=self.table.reset(self.iter)
+            self.iterNext = self.iter.next
         self.firsttime=False
         self.Next()
 
@@ -211,7 +213,7 @@ class Cursor:
 #    @echocall #-- Commented out for speed reasons
     def Next(self):
         try:
-            self.row=self.iter.next()
+            self.row = self.iterNext()
 #            self.pos+=1
         except StopIteration:
             self.row=None
