@@ -24,7 +24,9 @@ Examples:
     3  | 4
     1  | 2
 
-    >>> sql("select * from table1 where a=b")
+    >>> sql("select * from (cache select * from table1) where a=b")
+    a | b
+    -----
 
 
     >>> table2('''
@@ -147,21 +149,18 @@ class LTable: ####Init means setschema and execstatus
 
         self._setschema()
 
-        self.dedupl={}
         self.data=[]
         ro=[]
         for r in q:
             ro=[]
             for i in r:
-                if i not in self.dedupl:
-                    self.dedupl[i]=i
-                    ro.append(i)
+                if type(i) in (str, unicode):
+                    ro.append(intern(i))
                 else:
-                    ro.append(self.dedupl[i])
+                    ro.append(i)
 
             self.data.append(tuple(ro))
 
-        del(self.dedupl)
 
     @echocall
     def _setschema(self):
