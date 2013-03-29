@@ -1,9 +1,10 @@
 """
 
-.. function:: nopvt(query) -> query results
+.. function:: igroup(query) -> query results
 
-Returns the query input results without any change. NOPVT can be as a
-barrier for SQLite's optimizer, for debugging etc.
+Igroup returns its data as they are. The main difference with nopvt, is that
+it signals to the SQLite engine that the results are ordered in whatever order
+SQLite prefers, so a possible group by on the results will happen incrementally.
 
 :Returned table schema:
     Same as input query schema.
@@ -15,21 +16,26 @@ Examples::
     ... Mark    7	3
     ... Lila    74	1
     ... ''')
-    >>> sql("nopvt select * from table1")
-    a     | b  | c
-    --------------
-    James | 10 | 2
-    Mark  | 7  | 3
-    Lila  | 74 | 1
-    
-    >>> sql("nopvt select * from table1 order by c")
-    a     | b  | c
-    --------------
-    Lila  | 74 | 1
-    James | 10 | 2
-    Mark  | 7  | 3
 
-    Note the difference with rowid table column.
+    The following query is calculated incrementally
+    
+    >>> sql("select a, count(*) from (igroup select * from table1) group by a")
+    a     | count(*)
+    ----------------
+    James | 1
+    Mark  | 1
+    Lila  | 1
+  
+    >>> sql("select * from (igroup select * from table1) order by c")
+    a     | b  | c
+    --------------
+    James | 10 | 2
+    Mark  | 7  | 3
+    Lila  | 74 | 1
+
+    Notice that the order by does not work as it should because igroup has
+    fooled the SQLite engine into believing that the order of the results are
+    in the correct order (they aren't).
 
 """
 import setpath
