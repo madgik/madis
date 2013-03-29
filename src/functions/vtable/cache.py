@@ -114,8 +114,7 @@ class Source:
     @echocall
     def Connect(self, db, modulename, dbname, tablename,*args):
         if tablename not in self.tableObjs:
-            dictargs={'tablename':tablename,'db':db,'dbname':dbname,'modulename':modulename}
-            self.tableObjs[tablename]=LTable(self.tableObjs,self.boolargs,self.nonstringargs,self.needsescape,*args,**dictargs)
+            return Create(self, db, modulename, dbname, tablename,*args)
         return [self.tableObjs[tablename].getschema(),self.tableObjs[tablename]]
 
 class LTable: ####Init means setschema and execstatus
