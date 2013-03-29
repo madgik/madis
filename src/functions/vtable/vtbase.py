@@ -88,9 +88,13 @@ class LTable: ####Init means setschema and execstatus
         self.openedIter=openedIter
         self.tableObj=tableObj
         self.cursors = []
+        try:
+            self.BestIndex = tableObj.BestIndex
+        except AttributeError:
+            self.BestIndex = self.defaultBestIndex
 
     @echocall
-    def BestIndex(self, *args):
+    def defaultBestIndex(self, *args):
         return (None, 0, None, False, 1000)
 
     @echocall
