@@ -142,6 +142,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.envars=envars
         self.firsttime = True
         self.openIter=openIter
+        self.iterNext = self.openIter.next
         self.iterFunc=iterFunc
         self.row = []
         self.eof = False
@@ -156,13 +157,14 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
             if hasattr(self.openIter,'close'):
                 self.openIter.close()
             self.openIter=self.iterFunc()
-            self.openIter.next()
+            self.iterNext = self.openIter.next
+            self.iterNext()
         self.firsttime=False
 
         self.Next()
         return
     
-    @echocall #-- Commented out for speed reasons
+    #@echocall #-- Commented out for speed reasons
     def Eof(self):
         return self.eof
 
@@ -170,18 +172,18 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
     def Rowid(self):
         return self.pos
 
-    @echocall #-- Commented out for speed reasons
+    #@echocall #-- Commented out for speed reasons
     def Column(self, col):
         try:
             return self.row[col]
         except IndexError:
             raise functions.OperatorError(self.envars['modulename'] ,"Not enough data in rowid: %s" %(self.pos+1))
 
-    @echocall #-- Commented out for speed reasons
+    #@echocall #-- Commented out for speed reasons
     def Next(self):
         try:
-            self.row=self.openIter.next()
-            self.pos+=1
+            self.row=self.iterNext()
+#            self.pos+=1
         except StopIteration:
             self.row=[]
             self.eof=True
