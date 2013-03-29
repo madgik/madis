@@ -117,7 +117,7 @@ class diavgeiaget(vtbase.VT):
                         raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'To continue, use the following "from" parameter:\n'+str(lastfromv))
 
 def Source():
-    return vtiters.VTGenerator(diavgeiaget)
+    return vtbase.VTGenerator(diavgeiaget)
 
 
 if not ('.' in __name__):
