@@ -25,18 +25,15 @@ Examples:
     Operator OAIGET: <urlopen error [Errno -2] Name or service not known>
 
 """
-from functions.vtable import vtiters
+from functions.vtable import vtbase
 import functions
 import time
 
 registered=True
 external_stream=True
 
-class diavgeiaget(vtiters.StaticSchemaVT):
-    def getschema(self):
-        return [('c1', 'text')]
-
-    def open(self, *parsedArgs, **envars):
+class diavgeiaget(vtbase.StaticSchemaVT):
+    def VTiter(self, *parsedArgs, **envars):
         
         def buildURL(baseurl, opts):
             return '?'.join([ baseurl, '&'.join([x+'='+unicode(y) for x,y in opts if y!=None]) ])
@@ -45,6 +42,8 @@ class diavgeiaget(vtiters.StaticSchemaVT):
         import re
 
         opts= self.full_parse(parsedArgs)[1]
+
+        yield ('c1', 'text')
 
         if 'datefrom' not in opts:
             opts['datefrom']='01-01-1000'
@@ -117,9 +116,8 @@ class diavgeiaget(vtiters.StaticSchemaVT):
                     else:
                         raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+'\n'+'To continue, use the following "from" parameter:\n'+str(lastfromv))
 
-
 def Source():
-    return vtiters.SourceCachefreeVT(diavgeiaget)
+    return vtiters.VTGenerator(diavgeiaget)
 
 
 if not ('.' in __name__):
