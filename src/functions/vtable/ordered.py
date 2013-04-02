@@ -1,6 +1,6 @@
 """
 
-.. function:: igroup(query) -> query results
+.. function:: ordered(query) -> query results
 
 Igroup returns its data as they are. The main difference with nopvt, is that
 it signals to the SQLite engine that the results are ordered in whatever order
@@ -19,14 +19,14 @@ Examples::
 
     The following query is calculated incrementally
     
-    >>> sql("select a, count(*) from (igroup select * from table1) group by a")
+    >>> sql("select a, count(*) from (ordered select * from table1) group by a")
     a     | count(*)
     ----------------
     James | 1
     Mark  | 1
     Lila  | 1
   
-    >>> sql("select * from (igroup select * from table1) order by c")
+    >>> sql("select * from (ordered select * from table1) order by c")
     a     | b  | c
     --------------
     James | 10 | 2
@@ -45,7 +45,7 @@ import functions
 ### Classic stream iterator
 registered=True
        
-class IGroup(vtbase.VT):
+class Ordered(vtbase.VT):
     def BestIndex(self, constraints, orderbys):
         return (None, 0, None, True, 1000)
 
@@ -73,7 +73,7 @@ class IGroup(vtbase.VT):
             yield c.next()
 
 def Source():
-    return vtbase.VTGenerator(IGroup)
+    return vtbase.VTGenerator(Ordered)
 
 if not ('.' in __name__):
     """
