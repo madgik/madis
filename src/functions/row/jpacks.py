@@ -75,6 +75,25 @@ def jsonstrict(*args):
 
 jsonstrict.registered=True
 
+def jzip(*args):
+
+    """
+    .. function:: jzip(args...) -> json string
+
+    It combines the correspinding elements of input jpacks.
+
+    Examples:
+
+    >>> sql('''select jzip('["a", "b"]', '[1,2]','[4,5]')''')
+    jzip('["a", "b"]', '[1,2]','[4,5]')
+    -----------------------------------
+    [["a",1,4],["b",2,5]]
+
+    """
+    return json.dumps([list(x) for x in zip(*jopts.elemfromj(*args))], separators=(',',':'), ensure_ascii=False)
+
+jzip.registered=True
+
 def jlen(*args):
 
     """
