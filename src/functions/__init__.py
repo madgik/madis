@@ -180,8 +180,11 @@ class Cursor(object):
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
-                    self.__permanentvtables[i[0]]=createvirtualsql
-                    raise(e)
+                    try:
+                        self.executetrace(createvirtualsql)
+                    except Exception, e:
+                        self.__permanentvtables[i[0]]=createvirtualsql
+                        raise(e)
 
                 if len(i)==4:
                     self.__permanentvtables[i[0]]=createvirtualsql
@@ -206,6 +209,8 @@ class Cursor(object):
             schema = self.__wrapped.getdescription()
         except apsw.ExecutionCompleteError:
             # Else create a tempview and query the view
+            if not self.__query.strip().lower().startswith('select'):
+                raise apsw.ExecutionCompleteError
             try:
                 list(self.executetrace('create temp view temp.___schemaview as '+ self.__query + ';'))
                 schema = [(x[1], x[2]) for x in list(self.executetrace('pragma table_info(___schemaview);'))]
