@@ -77,6 +77,7 @@ import setpath
 import vtbase
 import functions
 import re
+from lib.sqlitetypes import getElementSqliteType
 
 ### Classic stream iterator
 registered=True
@@ -136,12 +137,24 @@ class Expand(vtbase.VT):
                     nrow += [obj]
 
             if self.nonames:
+                firstbatch = self.exprown(nrow)
+                firstrow = firstbatch.next()
                 for i in ttypes:
+                    if i == 'GUESS':
+                        try:
+                            i = getElementSqliteType(firstrow[i])
+                        except Exception, e:
+                            i = 'text'
+                        if i == None:
+                            i = 'text'
                     types.append(i)
                 for i in nnames:
                     names.append(i)
                 yield [(names[i], types[i]) for i in xrange(len(types))]
                 self.nonames=False
+
+                for exp in firstbatch:
+                    yield exp
 
             for exp in self.exprown(nrow):
                 yield exp
