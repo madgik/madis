@@ -47,7 +47,7 @@ class NopVT(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-        c=envars['db'].cursor().execute(query)
+        c=envars['db'].cursor().execute(query, parse = False)
 
         try:
             yield list(c.getdescription())
