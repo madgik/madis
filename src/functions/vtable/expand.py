@@ -3,17 +3,10 @@
 
 Executes the input query and returns the result expanding any multiset values returned. The returned result is produced iteratively.
 
-.. toadd See also PRODUCTIVITY.. LINK
-
-.. note::
-
-    For queries including functions declared as multiset expand function is called automatically. So there is no need to use this function explicitly in queries.
-
-.. toadd LINK multiset LINK CompBuffer
-
 :Returned table schema:
-    Same as input query schema expanded with multiset functions column naming. When *as* renaming function is used at a multiset function, if the multiset function returns only one column it is named according to the *as* value, differently a positive integer (1,2...n) is appended to the column name indicating column index in the multiset function result.
-
+    Same as input query schema expanded with multiset functions column naming. When *as* renaming function is used at a multiset function,
+    if the multiset function returns only one column it is named according to the *as* value,
+    else a positive integer (1,2...n) is appended to the column name indicating column index in the multiset function result.
 
 Examples::
 
@@ -83,7 +76,6 @@ Examples::
 
 import setpath
 import functions
-from lib.buffer import CompBuffer
 
 from vtiterable import SourceVT
 from lib.iterutils import peekable
@@ -160,27 +152,11 @@ class ExpCursor:
                                 nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
                     nrow += [(obj, oiter)]
                 else:
-                    compressedobj = CompBuffer.deserialize(obj)
-                    if compressedobj:
-                        f = compressedobj.getfile()
-                        if f:
-                            destroylist += [f]
-                        first = compressedobj.next()
-                        if self.nonames:
-                            ttypes+=['GUESS']*len(first)
-                            if noas.match(names[i]):
-                                nnames += list(first)
-                            else:
-                                if len(first)==1:
-                                    nnames +=[names[i]]
-                                else:
-                                    nnames +=[names[i]+str(j) for j in xrange(1,len(first)+1)]
-                        nrow += [compressedobj]
-                    else:
-                        if self.nonames:
-                            ttypes += [types[i]]
-                            nnames += [names[i]]
-                        nrow += [obj]
+                    if self.nonames:
+                        ttypes += [types[i]]
+                        nnames += [names[i]]
+                    nrow += [obj]
+
             if self.nonames:
                 for i in ttypes:
                     self.types.append(i)
