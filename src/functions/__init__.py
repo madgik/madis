@@ -148,7 +148,18 @@ class Cursor(object):
 
     @echofunctionmember
     def executetrace(self,statements,bindings=None):
-        return self.__wrapped.execute(statements,bindings)
+        try:
+            return self.__wrapped.execute(statements,bindings)
+        except Exception, e:
+            if settings['tracing']:
+                traceback.print_exc()
+            try: #avoid masking exception in recover statements
+                raise(e)
+            finally:
+                try:
+                    self.cleanupvts()
+                except:
+                    pass
         
     def execute(self,statements,bindings=None,parse=True, localbindings=None): #overload execute statement
         if localbindings!=None:
@@ -161,19 +172,8 @@ class Cursor(object):
                     bindings.update(variables.__dict__)
 
         if not parse:
-            try:
-                self.__query = statements
-                return self.executetrace(statements,bindings)
-            except Exception, e:
-                if settings['tracing']:
-                    traceback.print_exc()
-                try: #avoid masking exception in recover statements
-                    raise
-                finally:
-                    try:
-                        self.cleanupvts()
-                    except:
-                        pass
+            self.__query = statements
+            return self.executetrace(statements,bindings)
         
         svts=sqltransform.transform(statements, multiset_functions.keys(), functions['vtable'], functions['row'].keys(), substitute=functions['row']['subst'])
         s=svts[0]
