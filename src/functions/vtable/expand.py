@@ -138,7 +138,11 @@ class Expand(vtbase.VT):
 
             if self.nonames:
                 firstbatch = self.exprown(nrow)
-                firstrow = firstbatch.next()
+                try:
+                    firstrow = firstbatch.next()
+                except Exception, e:
+                    firstrow = []
+  
                 for i in ttypes:
                     if i == 'GUESS':
                         try:
@@ -155,9 +159,9 @@ class Expand(vtbase.VT):
 
                 for exp in firstbatch:
                     yield exp
-
-            for exp in self.exprown(nrow):
-                yield exp
+            else:
+                for exp in self.exprown(nrow):
+                    yield exp
 
     def exprown(self, row):
         for i in xrange(len(row)):
