@@ -56,7 +56,7 @@ class Ordered(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-        c=envars['db'].cursor().execute(query)
+        c=envars['db'].cursor().execute(query, parse=False)
 
         try:
             yield list(c.getdescription())
@@ -71,6 +71,7 @@ class Ordered(vtbase.VT):
 
         while True:
             yield c.next()
+
 
 def Source():
     return vtbase.VTGenerator(Ordered)
