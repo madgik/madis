@@ -149,7 +149,7 @@ class Cursor(object):
     @echofunctionmember
     def executetrace(self,statements,bindings=None):
         return self.__wrapped.execute(statements,bindings)
-
+        
     def execute(self,statements,bindings=None,parse=True, localbindings=None): #overload execute statement
         if localbindings!=None:
             bindings=localbindings
@@ -161,8 +161,19 @@ class Cursor(object):
                     bindings.update(variables.__dict__)
 
         if not parse:
-            self.__query = statements
-            return self.executetrace(statements,bindings)
+            try:
+                self.__query = statements
+                return self.executetrace(statements,bindings)
+            except Exception, e:
+                if settings['tracing']:
+                    traceback.print_exc()
+                try: #avoid masking exception in recover statements
+                    raise
+                finally:
+                    try:
+                        self.cleanupvts()
+                    except:
+                        pass
         
         svts=sqltransform.transform(statements, multiset_functions.keys(), functions['vtable'], functions['row'].keys(), substitute=functions['row']['subst'])
         s=svts[0]
@@ -180,11 +191,8 @@ class Cursor(object):
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
-                    try:
-                        self.executetrace(createvirtualsql)
-                    except Exception, e:
-                        self.__permanentvtables[i[0]]=createvirtualsql
-                        raise(e)
+                    self.__permanentvtables[i[0]]=createvirtualsql
+                    raise(e)
 
                 if len(i)==4:
                     self.__permanentvtables[i[0]]=createvirtualsql
