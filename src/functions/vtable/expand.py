@@ -111,7 +111,8 @@ class Expand(vtbase.VT):
             for i in xrange(len(row)):
                 obj=row[i]
                 if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
-                    oiter=self.connection.openiters[str(obj)]
+                    strobj = str(obj)
+                    oiter=self.connection.openiters[strobj]
                     try:
                         first = oiter.next()
                     except StopIteration:
@@ -129,7 +130,7 @@ class Expand(vtbase.VT):
                                 nnames +=[orignames[i]]
                             else:
                                 nnames +=[orignames[i]+str(j) for j in xrange(1,len(first)+1)]
-                    nrow += [(str(obj), oiter)]
+                    nrow += [(strobj, oiter)]
                 else:
                     if self.nonames:
                         ttypes += [origtypes[i]]
