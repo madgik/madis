@@ -56,10 +56,11 @@ class Ordered(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-        c=envars['db'].cursor().execute(query, parse=False)
+        cur = envars['db'].cursor()
+        q = cur.execute(query, parse=False)
 
         try:
-            yield list(c.getdescription())
+            yield list(q.getdescription())
         except StopIteration:
             try:
                 raise
@@ -69,8 +70,9 @@ class Ordered(vtbase.VT):
                 except:
                     pass
 
+        q=cur.execute(query, parse=False)
         while True:
-            yield c.next()
+            yield q.next()
 
 
 def Source():
