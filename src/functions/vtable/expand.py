@@ -129,7 +129,7 @@ class Expand(vtbase.VT):
                                 nnames +=[orignames[i]]
                             else:
                                 nnames +=[orignames[i]+str(j) for j in xrange(1,len(first)+1)]
-                    nrow += [(obj, oiter)]
+                    nrow += [(str(obj), oiter)]
                 else:
                     if self.nonames:
                         ttypes += [origtypes[i]]
