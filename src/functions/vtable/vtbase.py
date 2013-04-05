@@ -1,15 +1,5 @@
 """
-Basis code for Virtual table, without cache.
-
-Static schema Virtual table:
-    subclass StaticSchemaVT
-
-Dynamic schema Virtual table. The schema is extracted from a samplerow:
-    subclass SchemaFromSampleVT
-
-    **Note: to ommit header info from being returned to the system but to be in the sample row,
-    if the iterator returns a tuple it is ignored and not promoted to sqlite. The first row usually independent of the type will be given to getschema function
-
+Basis code for Virtual table. The schema is extracted from firstrow.
 """
 
 import setpath
@@ -88,14 +78,13 @@ class LTable: ####Init means setschema and execstatus
         self.openedIter=openedIter
         self.tableObj=tableObj
         self.cursors = []
-        try:
-            self.BestIndex = tableObj.BestIndex
-        except AttributeError:
-            self.BestIndex = self.defaultBestIndex
 
     @echocall
-    def defaultBestIndex(self, *args):
-        return (None, 0, None, False, 1000)
+    def BestIndex(self, *args):
+        try:
+            return self.tableObj.BestIndex(*args)
+        except AttributeError:
+            return (None, 0, None, False, 1000)
 
     @echocall
     def Open(self):
