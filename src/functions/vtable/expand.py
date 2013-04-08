@@ -158,6 +158,7 @@ class Expand(vtbase.VT):
                 yield [(names[i], types[i]) for i in xrange(len(types))]
                 self.nonames=False
 
+                yield firstrow
                 for exp in firstbatch:
                     yield exp
             else:
