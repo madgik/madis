@@ -148,7 +148,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
             self.openIter=self.iterFunc()
             self.iterNext = self.openIter.next
             self.iterNext()
-        self.firsttime=False
+            self.firsttime=False
 
         self.Next()
         return
