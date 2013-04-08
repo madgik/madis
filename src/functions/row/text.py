@@ -50,9 +50,9 @@ def keywords(*args):
     πέμπτο all έκτο title all τεστ
     """
 
-    out=text_tokens.findall(args[0].lower())
+    out=text_tokens.findall(args[0])
     for i in args[1:]:
-        out+=text_tokens.findall(i.lower())
+        out+=text_tokens.findall(i)
 
     return ' '.join(out)
 
