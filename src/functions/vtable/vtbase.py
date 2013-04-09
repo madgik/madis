@@ -55,6 +55,7 @@ class VTGenerator:
             try:
                 if hasattr(openedIter,'close'):
                     openedIter.close()
+                    openedIter = None
             except:
                 pass
             raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])
@@ -142,7 +143,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.eof=False
         self.pos=0
 
-        if not self.firsttime or self.openIter == None:
+        if not self.firsttime:
             if hasattr(self.openIter,'close'):
                 self.openIter.close()
             self.openIter=self.iterFunc()
