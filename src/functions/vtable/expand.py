@@ -184,34 +184,33 @@ class Expand(vtbase.VT):
                 else:
                     nrow += [val]
 
-            if itercount > 0:
-                while True:
-                    n = 0
-                    irow = []
-                    for i in xrange(len(row)):
-                        val = nrow[i]
-                        if type(val) == tuple:
-                            try:
-                                ival = val[1].next()
-                                lastvals[i] = ival
-                            except StopIteration:
-                                ival = lastvals[i]
-                                itercount -= 1
-                            irow += nrow[n:i]
-                            n = i+1
-                            irow += ival
-                            
-                    irow += nrow[n:]
-                    if itercount == 0:
-                        break
-                    else:
-                        yield irow
-            else:
-                yield row
+#            if itercount > 0:
+#                while True:
+#                    n = 0
+#                    irow = []
+#                    for i in xrange(len(row)):
+#                        val = nrow[i]
+#                        if type(val) == tuple:
+#                            try:
+#                                ival = val[1].next()
+#                                lastvals[i] = ival
+#                            except StopIteration:
+#                                ival = lastvals[i]
+#                                itercount -= 1
+#                            irow += nrow[n:i]
+#                            n = i+1
+#                            irow += ival
+#
+#                    irow += nrow[n:]
+#                    if itercount == 0:
+#                        break
+#                    else:
+#                        yield irow
+#            else:
+#                yield row
 
-
-#            for exp in self.exprown(nrow):
-#                yield exp
+            for exp in self.exprown(nrow):
+                yield exp
 
     def exprown(self, row):
         for i in xrange(len(row)):
