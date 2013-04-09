@@ -164,8 +164,10 @@ class Expand(vtbase.VT):
 
             for val in row:
                 if type(val)==buffer and val[:len(functions.iterheader)]==functions.iterheader:
-                    strobj = str(val)
-                    nrow += [(strobj, self.connection.openiters[strobj])]
+                    striter = str(val)
+                    oiter=self.connection.openiters[striter]
+                    oiter.next()
+                    nrow += [(striter, oiter)]
                 else:
                     nrow += [val]
 
@@ -187,11 +189,6 @@ class Expand(vtbase.VT):
                     pass
                 return
 
-            if hasattr(iobj,'__iter__'):
-                for el in iobj:
-                    for l in self.exprown(row[(i+1):]):
-                        yield list(row[:i])+list(el)+list(l)
-                return
         yield row
 
 def Source():
