@@ -84,6 +84,16 @@ registered=True
 
 noas=re.compile('.*\(.*\).*')
 
+def izip2(*args):
+    # izip_longest('ABCD', 'xy', fillvalue='-') --> Ax By C- D-
+    counter = sum((1 if type(x)==generator else 0 for x in args))
+    iterators = [chain(it, sentinel(), fillers) for it in args]
+    try:
+        while iterators:
+            yield tuple(map(next, iterators))
+    except ZipExhausted:
+        pass
+
 class Expand(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         largs, dictargs = self.full_parse(parsedArgs)
@@ -106,6 +116,7 @@ class Expand(vtbase.VT):
         nrow = []
         nnames = []
         ttypes=[]
+        collen = []
 
         row = c.next()
         for i in xrange(len(row)):
@@ -122,7 +133,6 @@ class Expand(vtbase.VT):
                 if noas.match(orignames[i]):
                     if type(first)!=tuple:
                         nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
-                        oiter=itertools.chain([first], oiter)
                     else:
                         nnames += list(first)
                 else:
@@ -159,20 +169,49 @@ class Expand(vtbase.VT):
         for exp in firstbatch:
             yield exp
 
+        lastvals = [None] * len(nrow)
         for row in c:
             nrow = []
+            itercount = 0
 
             for val in row:
                 if type(val)==buffer and val[:len(functions.iterheader)]==functions.iterheader:
                     striter = str(val)
                     oiter=self.connection.openiters[striter]
                     oiter.next()
+                    itercount += 1
                     nrow += [(striter, oiter)]
                 else:
                     nrow += [val]
 
-            for exp in self.exprown(nrow):
-                yield exp
+            if itercount > 0:
+                while True:
+                    n = 0
+                    irow = []
+                    for i in xrange(len(row)):
+                        val = nrow[i]
+                        if type(val) == tuple:
+                            try:
+                                ival = val[1].next()
+                                lastvals[i] = ival
+                            except StopIteration:
+                                ival = lastvals[i]
+                                itercount -= 1
+                            irow += nrow[n:i]
+                            n = i+1
+                            irow += ival
+                            
+                    irow += nrow[n:]
+                    if itercount == 0:
+                        break
+                    else:
+                        yield irow
+            else:
+                yield row
+
+
+#            for exp in self.exprown(nrow):
+#                yield exp
 
     def exprown(self, row):
         for i in xrange(len(row)):
@@ -190,6 +229,7 @@ class Expand(vtbase.VT):
                 return
 
         yield row
+        
 
 def Source():
     return vtbase.VTGenerator(Expand)
