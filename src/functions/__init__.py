@@ -244,7 +244,7 @@ class Connection(apsw.Connection):
         if 'registered' not in self.__dict__:
             self.registered=True
             register(self)
-        self.openiters={}
+            
         return Cursor(apsw.Connection.cursor(self))
     
     @echofunctionmember
@@ -260,6 +260,7 @@ def register(connection=None):
         else:
             connection=Connection(':memory:')
 
+    connection.openiters = {}
     connection.registered=True
 
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
