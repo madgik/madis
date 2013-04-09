@@ -103,67 +103,74 @@ class Expand(vtbase.VT):
         orignames = [x[0] for x in schema]
         origtypes = [x[1] if len(x)>1 else 'None' for x in schema]
 
+        nrow = []
+        nnames = []
+        ttypes=[]
+
+        row = c.next()
+        for i in xrange(len(row)):
+            obj=row[i]
+            if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
+                strobj = str(obj)
+                oiter=self.connection.openiters[strobj]
+                try:
+                    first = oiter.next()
+                except StopIteration:
+                    first = [None]
+
+                ttypes+=['GUESS']*len(first)
+                if noas.match(orignames[i]):
+                    if type(first)!=tuple:
+                        nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
+                        oiter=itertools.chain([first], oiter)
+                    else:
+                        nnames += list(first)
+                else:
+                    if len(first)==1:
+                        nnames +=[orignames[i]]
+                    else:
+                        nnames +=[orignames[i]+str(j) for j in xrange(1,len(first)+1)]
+                nrow += [(strobj, oiter)]
+            else:
+                ttypes += [origtypes[i]]
+                nnames += [orignames[i]]
+                nrow += [obj]
+
+        firstbatch = self.exprown(nrow)
+        try:
+            firstrow = firstbatch.next()
+        except Exception, e:
+            firstrow = []
+
+        for i in ttypes:
+            if i == 'GUESS':
+                try:
+                    i = getElementSqliteType(firstrow[i])
+                except Exception, e:
+                    i = 'text'
+                if i == None:
+                    i = 'text'
+            types.append(i)
+        for i in nnames:
+            names.append(i)
+        yield [(names[i], types[i]) for i in xrange(len(types))]
+
+        yield firstrow
+        for exp in firstbatch:
+            yield exp
+
         for row in c:
             nrow = []
-            nnames = []
-            ttypes=[]
 
-            for i in xrange(len(row)):
-                obj=row[i]
-                if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
-                    strobj = str(obj)
-                    oiter=self.connection.openiters[strobj]
-                    try:
-                        first = oiter.next()
-                    except StopIteration:
-                        first = [None]
-                    if self.nonames:
-                        ttypes+=['GUESS']*len(first)
-                        if noas.match(orignames[i]):
-                            if type(first)!=tuple:
-                                nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
-                                oiter=itertools.chain([first], oiter)
-                            else:
-                                nnames += list(first)
-                        else:
-                            if len(first)==1:
-                                nnames +=[orignames[i]]
-                            else:
-                                nnames +=[orignames[i]+str(j) for j in xrange(1,len(first)+1)]
-                    nrow += [(strobj, oiter)]
+            for val in row:
+                if type(val)==buffer and val[:len(functions.iterheader)]==functions.iterheader:
+                    strobj = str(val)
+                    nrow += [(strobj, self.connection.openiters[strobj])]
                 else:
-                    if self.nonames:
-                        ttypes += [origtypes[i]]
-                        nnames += [orignames[i]]
-                    nrow += [obj]
+                    nrow += [val]
 
-            if self.nonames:
-                firstbatch = self.exprown(nrow)
-                try:
-                    firstrow = firstbatch.next()
-                except Exception, e:
-                    firstrow = []
-  
-                for i in ttypes:
-                    if i == 'GUESS':
-                        try:
-                            i = getElementSqliteType(firstrow[i])
-                        except Exception, e:
-                            i = 'text'
-                        if i == None:
-                            i = 'text'
-                    types.append(i)
-                for i in nnames:
-                    names.append(i)
-                yield [(names[i], types[i]) for i in xrange(len(types))]
-                self.nonames=False
-
-                yield firstrow
-                for exp in firstbatch:
-                    yield exp
-            else:
-                for exp in self.exprown(nrow):
-                    yield exp
+            for exp in self.exprown(nrow):
+                yield exp
 
     def exprown(self, row):
         for i in xrange(len(row)):
