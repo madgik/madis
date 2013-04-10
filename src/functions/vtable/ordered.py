@@ -70,7 +70,6 @@ class Ordered(vtbase.VT):
                 except:
                     pass
 
-        q=cur.execute(query, parse=False)
         while True:
             yield q.next()
 
