@@ -47,7 +47,7 @@ class doall(object):
     def run(self):        
         c=self.connection.cursor()
         try:
-            cexec = c.execute(self.query)
+            cexec = c.execute(self.query, parse = False)
 
             try:
                 schema = c.getdescription()
