@@ -49,6 +49,7 @@ class VTGenerator:
         parsedArgs = list(TableVT.parse(*uargs))
         iterFunc = lambda:TableVT.VTiter(*parsedArgs,**envars)
         openedIter = iterFunc()
+        
         try:
             schema = openedIter.next()
         except (StopIteration,apsw.ExecutionCompleteError),e:
@@ -59,6 +60,10 @@ class VTGenerator:
             except:
                 pass
             raise functions.DynamicSchemaWithEmptyResultError(envars['modulename'])
+        except apsw.AbortError:
+            openedIter.close()
+            openedIter = iterFunc()
+            schema = openedIter.next()
 
         self.tableObjs[tablename]=(schemaUtils.CreateStatement(schema,tablename),LTable(self.tableObjs, envars, TableVT, iterFunc, openedIter))
         if functions.settings['tracing']:
