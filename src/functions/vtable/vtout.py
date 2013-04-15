@@ -34,6 +34,7 @@ from lib import argsparse
 import functions
 import logging
 import itertools
+import apsw
 
 class doall(object):
     def __init__(self,query,connection,func,returnalways,passconnection,*args,**kargs):
@@ -55,9 +56,18 @@ class doall(object):
                 raise functions.DynamicSchemaWithEmptyResultError("got empty input")
         
             if self.passconnection:
-                self.func(cexec, schema,self.connection,*self.args,**self.kargs)
+                try:
+                    self.func(cexec, schema,self.connection,*self.args,**self.kargs)
+                except apsw.AbortError:
+                    cexec = c.execute(self.query, parse = False)
+                    self.func(cexec, schema,self.connection,*self.args,**self.kargs)
             else:
-                self.func(cexec, schema,*self.args,**self.kargs)
+                try:
+                    self.func(cexec, schema,*self.args,**self.kargs)
+                except apsw.AbortError:
+                    cexec = c.execute(self.query, parse = False)
+                    self.func(cexec, schema,*self.args,**self.kargs)
+
             ret=True
         except Exception,e:
             if functions.settings['logging']:
