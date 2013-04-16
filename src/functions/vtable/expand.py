@@ -108,7 +108,6 @@ class Expand(vtbase.VT):
 
         schema = c.getdescription()
         self.nonames = True
-        names = []
         types = []
         orignames = [x[0] for x in schema]
         origtypes = [x[1] if len(x)>1 else 'None' for x in schema]
@@ -161,9 +160,8 @@ class Expand(vtbase.VT):
                 if i == None:
                     i = 'text'
             types.append(i)
-        for i in nnames:
-            names.append(i)
-        yield [(names[i], types[i]) for i in xrange(len(types))]
+
+        yield [(nnames[i], types[i]) for i in xrange(len(types))]
 
         yield firstrow
         for exp in firstbatch:
