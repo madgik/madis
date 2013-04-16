@@ -115,7 +115,6 @@ class Expand(vtbase.VT):
         nrow = []
         nnames = []
         ttypes=[]
-        collen = []
 
         row = c.next()
         for i in xrange(len(row)):
