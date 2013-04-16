@@ -40,21 +40,21 @@ def keywords(*args):
     >>> table1('''
     ... first(second)   third+fourth
     ... πρωτο(δευτερο)  τριτο+τέταρτο
-    ... 'πέμπτο all'      'έκτο title all τεστ'
+    ... 'πέμπτο all'      'qwer.zxcv'
     ... ''')
     >>> sql("select keywords(a,b) from table1")
     keywords(a,b)
     ---------------------------------------------------
     first second third fourth
     πρωτο δευτερο τριτο τέταρτο
-    πέμπτο all έκτο title all τεστ
+    πέμπτο all qwer zxcv
     """
 
     out=text_tokens.findall(args[0])
     for i in args[1:]:
         out+=text_tokens.findall(i)
 
-    return ' '.join(out)
+    return ' '.join((x for x in out if x != '.'))
 
 keywords.registered=True
 
