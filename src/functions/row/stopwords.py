@@ -10,18 +10,18 @@ def filterstopwords(*args):
     """
     .. function:: filterstopwords(str) -> str
 
-    Returns the input text with the stopwords removed
+    Returns the input text with the stopwords removed. The case of the first letter matters.
 
     Examples:
 
     >>> table1('''
-    ... 'this and wood'         'NO more words'
+    ... 'this and wood'         'NO more No words'
     ... 'No more stop words'    'more free time'
     ... ''')
     >>> sql("select filterstopwords(a,b) from table1")
     filterstopwords(a,b)
     --------------------
-    wood words
+    wood NO words
     stop words free time
     """
 
@@ -35,6 +35,7 @@ def filterstopwords(*args):
     return ' '.join(out)
 
 filterstopwords.registered=True
+
 
 if not ('.' in __name__):
     """
