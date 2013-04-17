@@ -29,6 +29,16 @@ except ImportError:
 
 sys.setcheckinterval(1000)
 
+sqlite_version = apsw.sqlitelibversion()
+
+VTCREATE = 'create virtual table temp.'
+sqlite_version_split = sqlite_version.split('.')
+try:
+    if int(sqlite_version_split[0])==3 and int(sqlite_version_split[1]) == 7 and int(sqlite_version_split[-1]) >= 11:
+        VTCREATE = 'create virtual table if not exists temp.'
+except Exception, e:
+    VTCREATE = 'create virtual table if not exists temp.'
+
 firstimport=True
 test_connection = None
 
@@ -187,7 +197,7 @@ class Cursor(object):
                     sep=','
                 else:
                     sep=''
-                createvirtualsql='create virtual table if not exists temp.'+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
+                createvirtualsql=VTCREATE+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
