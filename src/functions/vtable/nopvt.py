@@ -2,7 +2,7 @@
 
 .. function:: nopvt(query) -> query results
 
-Returns the query input results without any change. NOPVT can be as a
+Returns the query input results without any change. NOPVT can be used as a
 barrier for SQLite's optimizer, for debugging etc.
 
 :Returned table schema:
