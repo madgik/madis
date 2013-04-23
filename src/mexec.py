@@ -10,6 +10,8 @@ def exitwitherror(txt):
     sys.exit()
 
 def main():
+    desc="""Use this module to run madSQL queries to data coming from standard input. You may provide a database to run your queries. Results are streamed to standard output.
+    """
     parser = OptionParser(usage="usage: %prog [options] filename",
                           version="%prog 1.0")
     parser.add_option("-f", "--flow",
