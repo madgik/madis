@@ -10,9 +10,9 @@ def exitwitherror(txt):
     sys.exit()
 
 def main():
-    desc="""Use this module to run madSQL queries to data coming from standard input. You may provide a database to run your queries. Results are streamed to standard output.
+    desc="""Use this program to run madSQL queries on data coming from standard input. You may provide a database to run your queries. Results are streamed to standard output.
     """
-    parser = OptionParser(usage="usage: %prog [options] filename",
+    parser = OptionParser(description=desc, usage="usage: %prog [options] [dbname]",
                           version="%prog 1.0")
     parser.add_option("-f", "--flow",
                       help="flow file to execute")
@@ -45,11 +45,9 @@ def main():
     except Exception, e:
         exitwitherror("Error in opening DB: " + str(dbname) + "\nThe error was: " + str(e))
 
-
     try:
         f = open(options.flow,'r')
     except:
-        f.close()
         exitwitherror("Flow file does not exist")
 
     statement = f.readline()
