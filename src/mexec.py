@@ -4,6 +4,7 @@ from optparse import OptionParser
 import sys
 import apsw
 import madis
+import json
 
 def exitwitherror(txt):
     sys.stderr.write(txt+'\n')
@@ -74,7 +75,10 @@ def main():
                  sys.exit()
         try :
             for row in Connection.cursor().execute(statement):
-                sys.stdout.write(str(row)+"\n")
+                if len(row) > 1:
+                    sys.stdout.write(json.dumps(row, separators=(',',':'), ensure_ascii=False)+"\n")
+                else:
+                    sys.stdout.write(unicode(row[0])+"\n")
             statement = ''
         except Exception, e:
             exitwitherror("Error when executing query: \n"+statement+"\nThe error was: "+ str(e))
