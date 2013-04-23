@@ -12,7 +12,7 @@ def exitwitherror(txt):
 def main():
     desc="""Use this program to run madSQL queries on data coming from standard input. You may provide a database to run your queries. Results are streamed to standard output.
     """
-    parser = OptionParser(description=desc, usage="usage: %prog [options] [dbname]",
+    parser = OptionParser(description=desc, usage="usage: %prog [options] [dbname] [flowname]",
                           version="%prog 1.0")
     parser.add_option("-f", "--flow",
                       help="flow file to execute")
@@ -45,15 +45,23 @@ def main():
     except Exception, e:
         exitwitherror("Error in opening DB: " + str(dbname) + "\nThe error was: " + str(e))
 
+    flowname = None
     try:
-        f = open(options.flow,'r')
+        flowname = args[1]
+    except:
+        pass
+
+    if options.flow != None:
+        flowname = options.flow
+
+    try:
+        f = open(flowname,'r')
     except:
         exitwitherror("Flow file does not exist")
 
     statement = f.readline()
     if not statement:
-         f.close()
-         sys.exit()
+        sys.exit()
 
     while True:
         while not apsw.complete(statement):
@@ -66,7 +74,7 @@ def main():
                  sys.exit()
         try :
             for row in Connection.cursor().execute(statement):
-                    sys.stdout.write(str(row)+"\n")
+                sys.stdout.write(str(row)+"\n")
             statement = ''
         except Exception, e:
             exitwitherror("Error when executing query: \n"+statement+"\nThe error was: "+ str(e))
