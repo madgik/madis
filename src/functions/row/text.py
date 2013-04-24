@@ -441,6 +441,96 @@ def regexprmatches(*args):
 regexprmatches.registered=True
 
 
+def regexpcountwithpositions(pattern,expression,start = 0,min = 0.5,multiply = 1):
+    """
+    .. function:: regexpcountwithpositions(pattern, expression,start = 0,min = 0.5,multiply = 1,)
+
+        Returns a score of positioned matches of pattern in expression.
+
+    Examples:
+
+    >>> sql("regexpcountwithpositions 'start' 'start end start'  ")
+    regexpcountwithpositions('start','start end start')
+    ---------------------------------------------------
+    1.75
+
+    >>> sql("regexpcountwithpositions 'start' 'start end start'  ")
+    regexpcountwithpositions('start','start end start')
+    ---------------------------------------------------
+    1.75
+
+    >>> sql("regexpcountwithpositions 'first' 'first second third fourth'")
+    regexpcountwithpositions('first','first second third fourth')
+    -------------------------------------------------------------
+    0.75
+
+    >>> sql("regexpcountwithpositions 'fourth' 'first second third fourth'")
+    regexpcountwithpositions('fourth','first second third fourth')
+    --------------------------------------------------------------
+    1.5
+
+    >>> sql("regexpcountwithpositions 'fourth' 'first second third fourth' 1")
+    regexpcountwithpositions('fourth','first second third fourth','1')
+    ------------------------------------------------------------------
+    0.5
+    """
+
+    count = 0
+    if start == 0:
+        total = 0
+        for i in re.finditer(pattern+'|(\s)',expression):
+            count += 1
+            if i.group()!=' ':
+                total += count * multiply
+        if total == 0:
+            return 0.0
+        else:
+            if count == 0 :
+                return min
+            return min + total / float(count)
+    else:
+        matches = []
+        total = 0
+        for i in re.finditer(pattern+'|(\s)',expression):
+            count += 1
+            if i.group()!=' ':
+                matches.append(count)
+                total += count * multiply
+        if total == 0:
+            return 0.0
+        else:
+            if count == 0:
+                return min
+            return min + sum(count - i for i in matches) / float(count)
+
+regexpcountwithpositions.registered=True
+
+
+
+def regexpcountwords(*args):
+    """
+    .. function:: regexpcountwords(pattern, expression)
+
+        Returns the number of matches of pattern in expression. If a match includes more than one words then it returns the number of the words.
+
+    Examples:
+
+    >>> sql("regexpcountwords 'start' 'start end start'  ")
+    regexpcountwords('start','start end start')
+    -------------------------------------------
+    2
+
+    >>> sql("regexpcountwords 'start end' 'start end start'  ")
+    regexpcountwords('start end','start end start')
+    -----------------------------------------------
+    2
+    """
+
+    return sum(((i.group().strip().count(' ')+1)  for i in re.finditer(args[0],unicode(args[1]),re.UNICODE) ))
+
+regexpcountwords.registered=True
+
+
 def contains(*args):
     """
     .. function:: contains(str1,str2) -> bool
