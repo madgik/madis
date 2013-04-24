@@ -1,6 +1,6 @@
 """
 
-.. function:: nopvt(query) -> query results
+.. function:: same(query) -> query results
 
 Returns the query input results without any change. NOPVT can be used as a
 barrier for SQLite's optimizer, for debugging etc.
@@ -15,14 +15,14 @@ Examples::
     ... Mark    7	3
     ... Lila    74	1
     ... ''')
-    >>> sql("nopvt select * from table1")
+    >>> sql("same select * from table1")
     a     | b  | c
     --------------
     James | 10 | 2
     Mark  | 7  | 3
     Lila  | 74 | 1
     
-    >>> sql("nopvt select * from table1 order by c")
+    >>> sql("same select * from table1 order by c")
     a     | b  | c
     --------------
     Lila  | 74 | 1
