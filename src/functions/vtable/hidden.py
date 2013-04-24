@@ -1,6 +1,6 @@
 """
 
-.. function:: nullvt(query) -> query results
+.. function:: hidden(query) -> query results
 
 Executes the query, without returning any of its rows.
 
@@ -14,11 +14,11 @@ Examples::
     ... Mark    7	3
     ... Lila    74	1
     ... ''')
-    >>> sql("nullvt select * from table1")
+    >>> sql("hidden select * from table1")
     a | b | c
     ---------
     
-    >>> sql("nullvt select * from table1 order by c")
+    >>> sql("hidden select * from table1 order by c")
     a | b | c
     ---------
 
