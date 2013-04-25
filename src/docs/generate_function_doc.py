@@ -2,10 +2,14 @@ import sys, os
 sys.path.append((os.path.join(sys.path[0],'..')))
 
 import functions
+from shutil import copyfile
+
 functions.register()
 
+curpath = os.path.abspath(sys.path[0])
+
 def gendoc(funtype, toplevelonly=False):
-    file=open(os.path.join(os.path.abspath(sys.path[0]),'source', funtype+'.txt'),'w')
+    file=open(os.path.join(curpath, 'source', funtype+'.txt'),'w')
 
     tmpstr=".. _"+(funtype.lower()+' functions list:').replace(' ','-')+'\n\n'
     tmpstr+=funtype[0].upper()+funtype[1:]+' functions list'
@@ -55,6 +59,7 @@ def gendoc(funtype, toplevelonly=False):
             else:
                 file.write(str(functions.functions[funtype][i.split('.')[-1]].__doc__)+'\n\n')
                 
+copyfile(os.path.join(curpath, '..', 'LICENSE.txt'), os.path.join(curpath, 'source', 'license.txt'))
 gendoc('row')
 gendoc('aggregate')
 gendoc('vtable', True)
