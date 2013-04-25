@@ -57,7 +57,7 @@ Example::
     mterm> select * from (file 'data.csv');
     ....
 
-Toggle is a row function that toggle the value of :ref:`madIS global settings<>`
+Toggle is a row function that toggles the value of :ref:`madIS global settings<>`
 
 Important flags for madIS VT functions
 --------------------------------------
