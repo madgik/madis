@@ -11,6 +11,7 @@ import traceback
 import logging
 import re
 import sys
+import copy
 
 import compiler.consts
 try:
@@ -55,7 +56,6 @@ settings={
 functions = {'row':{},'aggregate':{}, 'vtable':{}}
 multiset_functions = {}
 iterheader='ITER'+chr(30)
-openiters = {}
 
 variables=lambda x:x
 variables.flowname=''
@@ -133,11 +133,11 @@ def echofunctionmember(func):
         return func(*args, **kw)
     return wrapper
 
-def iterwrapper(func, *args):
-    global iterheader, openiters
+def iterwrapper(connection, func, *args):
+    global iterheader
     i=func(*args)
     si=iterheader+str(i)
-    openiters[si]=i
+    connection.openiters[si]=i
     return buffer(si)
 
 class Cursor(object):
@@ -259,6 +259,7 @@ class Connection(apsw.Connection):
         if 'registered' not in self.__dict__:
             self.registered=True
             register(self)
+            self.openiters = {}
             
         return Cursor(apsw.Connection.cursor(self))
     
@@ -275,6 +276,7 @@ def register(connection=None):
         else:
             connection=Connection(':memory:')
 
+    connection.openiters = {}
     connection.registered=True
 
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
@@ -386,12 +388,13 @@ def register_ops(module, connection):
         else:
             return False
 
-    def wraprowiter(opname):
-        return lambda *args: iterwrapper(functions['row'][opname], *args)
+    def wraprowiter(connection, opname):
+        return lambda *args: iterwrapper(connection, functions['row'][opname], *args)
 
-    def wrapagriter(opname):
-        return lambda *args: iterwrapper(functions['aggregate'][opname].__iterated_final__, *args)
+    def wrapagriter(connection, opname):
+        return lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
 
+    multaggr = {}
     for f in module.__dict__:
         fobject = module.__dict__[f]
         if hasattr(fobject, 'registered') and type(fobject.registered).__name__ == 'bool' and fobject.registered == True:
@@ -417,28 +420,37 @@ def register_ops(module, connection):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
                 if isgeneratorfunction(fobject):
-                    fobject=wraprowiter(opname)
+                    fobject=wraprowiter(connection, opname)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
 
             if type(fobject).__name__ == 'classobj':
-                if opexists(opname):
+                if opname in multaggr or (opexists(opname) and 'multiset' not in functions['aggregate'][opname].__dict__):
                     raise MadisError("Extended SQLERROR: Aggregate operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['aggregate'][opname] = fobject
-                if isgeneratorfunction(fobject.final):
-                    fobject.__iterated_final__=fobject.final
-                    fobject.final=wrapagriter(opname)
-                    fobject.multiset=True
 
-                setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
-                connection.createaggregatefunction(opname, fobject.factory)
+                if isgeneratorfunction(fobject.final):
+                    cfobject = copy.copy(fobject)
+                    cfobject.__iterated_final__=fobject.final
+                    cfobject.final=wrapagriter(connection, opname)
+                    fobject.multiset=True
+                    cfobject.multiset=True
+                    multaggr[opname] = cfobject
+
+                    setattr(cfobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
+                    connection.createaggregatefunction(opname, cfobject.factory)
+                else:
+                    setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
+                    connection.createaggregatefunction(opname, fobject.factory)
 
             try:
                 if fobject.multiset == True:
                         multiset_functions[opname]=True
             except:
                 pass
+
+    connection.multaggr = multaggr
 
 def testfunction():
     global test_connection, settings
