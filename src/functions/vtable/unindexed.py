@@ -1,8 +1,8 @@
 """
 
-.. function:: sameas(query) -> query results
+.. function:: unindexed(query) -> query results
 
-Returns the query input results without any change. NOPVT can be used as a
+Returns the query input results without any change. UNINDEXED can be used as a
 barrier for SQLite's optimizer, for debugging etc.
 
 :Returned table schema:
@@ -15,14 +15,14 @@ Examples::
     ... Mark    7	3
     ... Lila    74	1
     ... ''')
-    >>> sql("sameas select * from table1")
+    >>> sql("unindexed select * from table1")
     a     | b  | c
     --------------
     James | 10 | 2
     Mark  | 7  | 3
     Lila  | 74 | 1
     
-    >>> sql("sameas select * from table1 order by c")
+    >>> sql("unindexed select * from table1 order by c")
     a     | b  | c
     --------------
     Lila  | 74 | 1
