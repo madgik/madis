@@ -55,6 +55,7 @@ settings={
 functions = {'row':{},'aggregate':{}, 'vtable':{}}
 multiset_functions = {}
 iterheader='ITER'+chr(30)
+openiters = {}
 
 variables=lambda x:x
 variables.flowname=''
@@ -132,11 +133,11 @@ def echofunctionmember(func):
         return func(*args, **kw)
     return wrapper
 
-def iterwrapper(connection, func, *args):
-    global iterheader
+def iterwrapper(func, *args):
+    global iterheader, openiters
     i=func(*args)
     si=iterheader+str(i)
-    connection.openiters[si]=i
+    openiters[si]=i
     return buffer(si)
 
 class Cursor(object):
@@ -274,7 +275,6 @@ def register(connection=None):
         else:
             connection=Connection(':memory:')
 
-    connection.openiters = {}
     connection.registered=True
 
     connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
@@ -386,11 +386,11 @@ def register_ops(module, connection):
         else:
             return False
 
-    def wraprowiter(connection, opname):
-        return lambda *args: iterwrapper(connection, functions['row'][opname], *args)
+    def wraprowiter(opname):
+        return lambda *args: iterwrapper(functions['row'][opname], *args)
 
-    def wrapagriter(connection, opname):
-        return lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
+    def wrapagriter(opname):
+        return lambda *args: iterwrapper(functions['aggregate'][opname].__iterated_final__, *args)
 
     for f in module.__dict__:
         fobject = module.__dict__[f]
@@ -417,7 +417,7 @@ def register_ops(module, connection):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
                 if isgeneratorfunction(fobject):
-                    fobject=wraprowiter(connection, opname)
+                    fobject=wraprowiter(opname)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
@@ -428,7 +428,7 @@ def register_ops(module, connection):
                 functions['aggregate'][opname] = fobject
                 if isgeneratorfunction(fobject.final):
                     fobject.__iterated_final__=fobject.final
-                    fobject.final=wrapagriter(connection, opname)
+                    fobject.final=wrapagriter(opname)
                     fobject.multiset=True
 
                 setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
