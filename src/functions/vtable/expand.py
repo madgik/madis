@@ -121,7 +121,7 @@ class Expand(vtbase.VT):
             obj=row[i]
             if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
                 strobj = str(obj)
-                oiter=functions.openiters[strobj]
+                oiter=self.connection.openiters[strobj]
                 try:
                     first = oiter.next()
                 except StopIteration:
@@ -176,7 +176,7 @@ class Expand(vtbase.VT):
             for val in row:
                 if type(val)==buffer and val[:len(functions.iterheader)]==functions.iterheader:
                     striter = str(val)
-                    oiter= functions.openiters[striter]
+                    oiter=self.connection.openiters[striter]
                     oiter.next()
                     itercount += 1
                     nrow += [(striter, oiter)]
@@ -219,7 +219,7 @@ class Expand(vtbase.VT):
                     for l in self.exprown(row[(i+1):]):
                         yield list(row[:i])+list(el)+list(l)
                 try:
-                    del(functions.openiters[iobj[0]])
+                    del(self.connection.openiters[iobj[0]])
                 except KeyboardInterrupt:
                     raise
                 except:
