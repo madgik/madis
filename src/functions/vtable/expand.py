@@ -104,7 +104,7 @@ class Expand(vtbase.VT):
                         for l in exprown(row[(i+1):]):
                             yield list(row[:i])+list(el)+list(l)
                     try:
-                        del(oiters[iobj[0]])
+                        del(self.connection.openiters[iobj[0]])
                     except KeyboardInterrupt:
                         raise
                     except:
