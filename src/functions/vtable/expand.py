@@ -96,6 +96,23 @@ def izip2(*args):
 
 class Expand(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
+        def exprown(row):
+            for i in xrange(len(row)):
+                iobj=row[i]
+                if type(iobj)==tuple:
+                    for el in iobj[1]:
+                        for l in exprown(row[(i+1):]):
+                            yield list(row[:i])+list(el)+list(l)
+                    try:
+                        del(oiters[iobj[0]])
+                    except KeyboardInterrupt:
+                        raise
+                    except:
+                        pass
+                    return
+
+            yield row
+
         largs, dictargs = self.full_parse(parsedArgs)
 
         if 'query' not in dictargs:
@@ -103,6 +120,9 @@ class Expand(vtbase.VT):
         query=dictargs['query']
 
         self.connection = envars['db']
+        oiters = self.connection.openiters
+        iterheader = functions.iterheader
+        lenIH = len(iterheader)
 
         c=self.connection.cursor().execute(query, parse = False)
 
@@ -117,11 +137,12 @@ class Expand(vtbase.VT):
         ttypes=[]
 
         row = c.next()
-        for i in xrange(len(row)):
+        rowlen = len(row)
+        for i in xrange(rowlen):
             obj=row[i]
-            if type(obj)==buffer and obj[:len(functions.iterheader)]==functions.iterheader:
+            if type(obj)==buffer and obj[:lenIH]==iterheader:
                 strobj = str(obj)
-                oiter=self.connection.openiters[strobj]
+                oiter=oiters[strobj]
                 try:
                     first = oiter.next()
                 except StopIteration:
@@ -144,7 +165,7 @@ class Expand(vtbase.VT):
                 nnames += [orignames[i]]
                 nrow += [obj]
 
-        firstbatch = self.exprown(nrow)
+        firstbatch = exprown(nrow)
         try:
             firstrow = firstbatch.next()
         except StopIteration:
@@ -168,20 +189,23 @@ class Expand(vtbase.VT):
         for exp in firstbatch:
             yield exp
 
-        lastvals = [None] * len(nrow)
+#        lastvals = [None] * len(nrow)
         for row in c:
-            nrow = []
-            itercount = 0
+            nrow = list(row)
+#            itercount = 0
 
-            for val in row:
-                if type(val)==buffer and val[:len(functions.iterheader)]==functions.iterheader:
+            for i in xrange(rowlen):
+                val = nrow[i]
+                if type(val)==buffer and val[:lenIH]==iterheader:
                     striter = str(val)
-                    oiter=self.connection.openiters[striter]
+                    oiter=oiters[striter]
                     oiter.next()
-                    itercount += 1
-                    nrow += [(striter, oiter)]
-                else:
-                    nrow += [val]
+                    nrow[i] = (striter, oiter)
+#                    itercount += 1
+
+
+            for exp in exprown(nrow):
+                yield exp
 
 #            if itercount > 0:
 #                while True:
@@ -208,26 +232,7 @@ class Expand(vtbase.VT):
 #            else:
 #                yield row
 
-            for exp in self.exprown(nrow):
-                yield exp
 
-    def exprown(self, row):
-        for i in xrange(len(row)):
-            iobj=row[i]
-            if type(iobj)==tuple:
-                for el in iobj[1]:
-                    for l in self.exprown(row[(i+1):]):
-                        yield list(row[:i])+list(el)+list(l)
-                try:
-                    del(self.connection.openiters[iobj[0]])
-                except KeyboardInterrupt:
-                    raise
-                except:
-                    pass
-                return
-
-        yield row
-        
 
 def Source():
     return vtbase.VTGenerator(Expand)
