@@ -32,12 +32,15 @@ sys.setcheckinterval(1000)
 sqlite_version = apsw.sqlitelibversion()
 
 VTCREATE = 'create virtual table temp.'
-sqlite_version_split = sqlite_version.split('.')
+SQLITEAFTER3711 = False
+sqlite_version_split = [int(x) for x in sqlite_version.split('.')]
 try:
-    if int(sqlite_version_split[0])==3 and int(sqlite_version_split[1]) == 7 and int(sqlite_version_split[-1]) >= 11:
+    if sqlite_version_split[0:3] >= [3,7,11]:
         VTCREATE = 'create virtual table if not exists temp.'
+        SQLITEAFTER3711 = True
 except Exception, e:
     VTCREATE = 'create virtual table if not exists temp.'
+    SQLITEAFTER3711 = True
 
 firstimport=True
 test_connection = None
@@ -201,8 +204,9 @@ class Cursor(object):
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
-                    self.__permanentvtables[i[0]]=createvirtualsql
-                    raise(e)
+                    if SQLITEAFTER3711:
+                        self.__permanentvtables[i[0]]=createvirtualsql
+                        raise(e)
 
                 if len(i)==4:
                     self.__permanentvtables[i[0]]=createvirtualsql
