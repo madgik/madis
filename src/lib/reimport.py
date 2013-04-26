@@ -1,5 +1,5 @@
 # MIT Licensed
-# Copyright (c) 2009-2010 Peter Shinners <pete@shinners.org> 
+# Copyright (c) 2009-2010 Peter Shinners <pete@shinners.org>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -43,6 +43,7 @@ __all__ = ["reimport", "modified"]
 import sys
 import os
 import gc
+import imp
 import inspect
 import weakref
 import traceback
@@ -50,7 +51,7 @@ import time
 
 
 
-__version__ = "1.2"
+__version__ = "1.3"
 __author__ = "Peter Shinners <pete@shinners.org>"
 __license__ = "MIT"
 __url__ = "http://code.google.com/p/reimport"
@@ -71,18 +72,18 @@ del _OldClass
 def reimport(*modules):
     """Reimport python modules. Multiple modules can be passed either by
         name or by reference. Only pure python modules can be reimported.
-        
+
         For advanced control, global variables can be placed in modules
         that allows finer control of the reimport process.
-        
+
         If a package module has a true value for "__package_reimport__"
         then that entire package will be reimported when any of its children
         packages or modules are reimported.
-        
+
         If a package module defines __reimported__ it must be a callable
         function that accepts one argument and returns a bool. The argument
         is the reference to the old version of that module before any
-        cleanup has happend. The function should normally return True to
+        cleanup has happened. The function should normally return True to
         allow the standard reimport cleanup. If the function returns false
         then cleanup will be disabled for only that module. Any exceptions
         raised during the callback will be handled by traceback.print_exc,
@@ -104,7 +105,7 @@ def reimport(*modules):
 
         reloadSet.update(_find_reloading_modules(name))
 
-    # Sort module names 
+    # Sort module names
     reloadNames = _package_depth_sort(reloadSet, False)
 
     # Check for SyntaxErrors ahead of time. This won't catch all
@@ -123,75 +124,115 @@ def reimport(*modules):
             data = open(pyname, "rU").read() + "\n"
         except (IOError, OSError):
             continue
-        
+
         compile(data, pyname, "exec", 0, False)  # Let this raise exceptions
 
-    # Move modules out of sys
-    oldModules = {}
-    for name in reloadNames:
-        oldModules[name] = sys.modules.pop(name)
-    ignores = (id(oldModules), id(__builtins__))
-    prevNames = set(sys.modules)
-
-    # Reimport modules, trying to rollback on exceptions
+    # Begin changing things. We "grab the GIL", so other threads
+    # don't get a chance to see our half-baked universe
+    imp.acquire_lock()
+    prevInterval = sys.getcheckinterval()
+    sys.setcheckinterval(min(sys.maxint, 0x7fffffff))
     try:
-        for name in reloadNames:
-            if name not in sys.modules:
-                __import__(name)
 
-    except StandardError:
-        # Try to dissolve any newly import modules and revive the old ones
+        # Python will munge the parent package on import. Remember original value
+        parentValues = []
+        parentPackageDeleted = lambda: None
+        for name in reloadNames:
+            parentPackageName = name.rsplit(".", 1)
+            if len(parentPackageName) == 2:
+                parentPackage = sys.modules.get(parentPackageName[0], None)
+                parentValue = getattr(parentPackage, parentPackageName[1], parentPackageDeleted)
+                if parentValue != sys.modules[name]:
+                    parentValues.append((parentPackage, parentPackageName[1], parentValue))
+                parentPackage = parentValue = None
+
+        # Move modules out of sys
+        oldModules = {}
+        for name in reloadNames:
+            oldModules[name] = sys.modules.pop(name)
+        ignores = (id(oldModules),)
+        prevNames = set(sys.modules)
+
+        # Reimport modules, trying to rollback on exceptions
+        try:
+            try:
+                for name in reloadNames:
+                    if name not in sys.modules:
+                        __import__(name)
+
+            except StandardError:
+                # Try to dissolve any newly import modules and revive the old ones
+                newNames = set(sys.modules) - prevNames
+                newNames = _package_depth_sort(newNames, True)
+                for name in newNames:
+                    backoutModule = sys.modules.pop(name, None)
+                    if backoutModule is not None:
+                        _unimport(backoutModule, ignores)
+                    del backoutModule
+
+                sys.modules.update(oldModules)
+                raise
+
+        finally:
+            # Fix Python automatically shoving of children into parent packages
+            for parentPackage, name, value in parentValues:
+                if value == parentPackageDeleted:
+                    try:
+                        delattr(parentPackage, name)
+                    except AttributeError:
+                        pass
+                else:
+                    setattr(parentPackage, name, value)
+            parentValues = parentPackage = parentPackageDeleted = value = None
+
         newNames = set(sys.modules) - prevNames
         newNames = _package_depth_sort(newNames, True)
+
+        # Update timestamps for loaded time
+        now = time.time() - 1.0
         for name in newNames:
-            _unimport_module(sys.modules[name], ignores)
-            assert name not in sys.modules
+            _module_timestamps[name] = (now, True)
 
-        sys.modules.update(oldModules)
-        raise
+        # Push exported namespaces into parent packages
+        pushSymbols = {}
+        for name in newNames:
+            oldModule = oldModules.get(name)
+            if not oldModule:
+                continue
+            parents = _find_parent_importers(name, oldModule, newNames)
+            pushSymbols[name] = parents
+        for name, parents in pushSymbols.iteritems():
+            for parent in parents:
+                oldModule = oldModules[name]
+                newModule = sys.modules[name]
+                _push_imported_symbols(newModule, oldModule, parent)
 
-    newNames = set(sys.modules) - prevNames
-    newNames = _package_depth_sort(newNames, True)
+        # Rejigger the universe
+        for name in newNames:
+            old = oldModules.get(name)
+            if not old:
+                continue
+            new = sys.modules[name]
+            rejigger = True
+            reimported = getattr(new, "__reimported__", None)
+            if reimported:
+                try:
+                    rejigger = reimported(old)
+                except StandardError:
+                    # What else can we do? the callbacks must go on
+                    # Note, this is same as __del__ behaviour. /shrug
+                    traceback.print_exc()
 
-    # Update timestamps for loaded time
-    now = time.time() - 1.0
-    for name in newNames:
-        _module_timestamps[name] = (now, True)
+            if rejigger:
+                _rejigger_module(old, new, ignores)
+            else:
+                _unimport_module(new, ignores)
 
-    # Push exported namespaces into parent packages
-    pushSymbols = {}
-    for name in newNames:
-        oldModule = oldModules.get(name)
-        if not oldModule:
-            continue
-        parents = _find_parent_importers(name, oldModule, newNames)
-        pushSymbols[name] = parents
-    for name, parents in pushSymbols.iteritems():
-        for parent in parents:
-            oldModule = oldModules[name]
-            newModule = sys.modules[name]
-            _push_imported_symbols(newModule, oldModule, parent)
-
-    # Rejigger the universe
-    for name in newNames:
-        old = oldModules.get(name)
-        if not old:
-            continue
-        new = sys.modules[name]
-        rejigger = True
-        reimported = getattr(new, "__reimported__", None)
-        if reimported:
-            try:
-                rejigger = reimported(old)
-            except StandardError:
-                # What else can we do? the callbacks must go on
-                # Note, this is same as __del__ behaviour. /shrug
-                traceback.print_exc()
-
-        if rejigger:
-            _rejigger_module(old, new, ignores)
-        else:
-            _unimport_module(new, ignores)
+    finally:
+        # Restore the GIL
+        imp.release_lock()
+        sys.setcheckinterval(prevInterval)
+        time.sleep(0)
 
 
 
@@ -201,13 +242,13 @@ def modified(path=None):
         """
     global _previous_scan_time
     modules = []
-    
+
     if path:
         path = os.path.normpath(path) + os.sep
-        
+
     defaultTime = (_previous_scan_time, False)
     pycExt = __debug__ and ".pyc" or ".pyo"
-    
+
     for name, module in sys.modules.items():
         filename = _is_code_module(module)
         if not filename:
@@ -233,13 +274,19 @@ def modified(path=None):
             diskTime = os.path.getmtime(filename)
         except OSError:
             diskTime = None
-                
+
         if diskTime is not None and prevTime < diskTime:
             modules.append(name)
 
     _previous_scan_time = time.time()
     return modules
 
+
+def _safevars(obj):
+    try:
+        return vars(obj)
+    except TypeError:
+        return {}
 
 
 def _is_code_module(module):
@@ -274,7 +321,7 @@ def _find_exact_target(module):
         if len(splitName) <= 1:
             return name, actualModule
         parentName = splitName[0]
-        
+
         parentModule = sys.modules.get(parentName)
         if getattr(parentModule, "__package_reimport__", None):
             name = parentName
@@ -302,10 +349,10 @@ def _package_depth_sort(names, reverse):
 
 
 def _find_module_exports(module):
-    all = getattr(module, "__all__", ())
-    if not all:
-        all = [n for n in dir(module) if n[0] != "_"]
-    return set(all)
+    allNames = getattr(module, "__all__", ())
+    if not allNames:
+        allNames = [n for n in dir(module) if n[0] != "_"]
+    return set(allNames)
 
 
 
@@ -330,8 +377,9 @@ def _find_parent_importers(name, oldModule, newNames):
         parentModule = sys.modules[parent]
         if not exports - set(dir(parentModule)):
             parents.append(parentModule)
-    
+
     return parents
+
 
 
 def _push_imported_symbols(newModule, oldModule, parent):
@@ -343,17 +391,28 @@ def _push_imported_symbols(newModule, oldModule, parent):
     # Delete missing symbols
     for name in oldExports - newExports:
         delattr(parent, name)
-    
+
+    # Find symbols in new module, use placeholder if missing
+    symbols = {}
+    for name in newExports:
+        try:
+            symbols[name] = getattr(newModule, name)
+        except AttributeError:
+            holder = type(name, (_MissingAllReference,),
+                        {"__module__":newModule.__name__})
+            symbols[name] = holder()
+
+
     # Add new symbols
     for name in newExports - oldExports:
-        setattr(parent, name, getattr(newModule, name))
-    
+        setattr(parent, name, symbols[name])
+
     # Update existing symbols
     for name in newExports & oldExports:
         oldValue = getattr(oldModule, name)
         if getattr(parent, name) is oldValue:
-            setattr(parent, name, getattr(newModule, name))
-    
+            setattr(parent, name, symbols[name])
+
 
 
 # To rejigger is to copy internal values from new to old
@@ -363,14 +422,13 @@ def _push_imported_symbols(newModule, oldModule, parent):
 def _rejigger_module(old, new, ignores):
     """Mighty morphin power modules"""
     __internal_swaprefs_ignore__ = "rejigger_module"
-    oldVars = vars(old)
-    newVars = vars(new)
+    oldVars = _safevars(old)
+    newVars = _safevars(new)
     ignores += (id(oldVars),)
     old.__doc__ = new.__doc__
 
     # Get filename used by python code
     filename = new.__file__
-    fileext = os.path.splitext(filename)
 
     for name, value in newVars.iteritems():
         if name in oldVars:
@@ -380,21 +438,22 @@ def _rejigger_module(old, new, ignores):
 
             if _from_file(filename, value):
                 if inspect.isclass(value):
-                    _rejigger_class(oldValue, value, ignores)
-                    
+                    if inspect.isclass(oldValue):
+                        _rejigger_class(oldValue, value, ignores)
+
                 elif inspect.isfunction(value):
-                    _rejigger_func(oldValue, value, ignores)
-        
+                    if inspect.isfunction(oldValue):
+                        _rejigger_func(oldValue, value, ignores)
+
         setattr(old, name, value)
 
-    for name in oldVars.keys():
+    for name, value in oldVars.items():
         if name not in newVars:
-            value = getattr(old, name)
             delattr(old, name)
             if _from_file(filename, value):
                 if inspect.isclass(value) or inspect.isfunction(value):
                     _remove_refs(value, ignores)
-    
+
     _swap_refs(old, new, ignores)
 
 
@@ -411,13 +470,20 @@ def _from_file(filename, value):
 
 def _rejigger_class(old, new, ignores):
     """Mighty morphin power classes"""
-    __internal_swaprefs_ignore__ = "rejigger_class"    
-    oldVars = vars(old)
-    newVars = vars(new)
-    ignores += (id(oldVars),)    
+    __internal_swaprefs_ignore__ = "rejigger_class"
+    oldVars = _safevars(old)
+    newVars = _safevars(new)
+    ignores += (id(oldVars),)
+
+    slotted = hasattr(old, "__slots__") and isinstance(old.__slots__, tuple)
+    ignoreAttrs = ["__dict__", "__doc__", "__weakref__"]
+    if slotted:
+        ignoreAttrs.extend(old.__slots__)
+        ignoreAttrs.append("__slots__")
+    ignoreAttrs = tuple(ignoreAttrs)
 
     for name, value in newVars.iteritems():
-        if name in ("__dict__", "__doc__", "__weakref__"):
+        if name in ignoreAttrs:
             continue
 
         if name in oldVars:
@@ -427,15 +493,14 @@ def _rejigger_class(old, new, ignores):
 
             if inspect.isclass(value) and value.__module__ == new.__module__:
                 _rejigger_class(oldValue, value, ignores)
-            
+
             elif inspect.isfunction(value):
                 _rejigger_func(oldValue, value, ignores)
 
         setattr(old, name, value)
-    
-    for name in oldVars.keys():
+
+    for name, value in oldVars.items():
         if name not in newVars:
-            value = getattr(old, name)
             delattr(old, name)
             _remove_refs(value, ignores)
 
@@ -445,7 +510,7 @@ def _rejigger_class(old, new, ignores):
 
 def _rejigger_func(old, new, ignores):
     """Mighty morphin power functions"""
-    __internal_swaprefs_ignore__ = "rejigger_func"    
+    __internal_swaprefs_ignore__ = "rejigger_func"
     old.func_code = new.func_code
     old.func_doc = new.func_doc
     old.func_defaults = new.func_defaults
@@ -454,11 +519,22 @@ def _rejigger_func(old, new, ignores):
 
 
 
+def _unimport(old, ignores):
+    """Unimport something, mainly used to rollback a reimport"""
+    if isinstance(old, type(sys)):
+        _unimport_module(old, ignores)
+    elif inspect.isclass(old):
+        _unimport_class(old, ignores)
+    else:
+        _remove_refs(old, ignores)
+
+
+
 def _unimport_module(old, ignores):
     """Remove traces of a module"""
     __internal_swaprefs_ignore__ = "unimport_module"
-    oldValues = vars(old).values()
-    ignores += (id(oldValues),)    
+    oldValues = _safevars(old).values()
+    ignores += (id(oldValues),)
 
     # Get filename used by python code
     filename = old.__file__
@@ -469,11 +545,11 @@ def _unimport_module(old, ignores):
     for value in oldValues:
         try: objfile = inspect.getsourcefile(value)
         except TypeError: objfile = ""
-        
+
         if objfile == filename:
             if inspect.isclass(value):
                 _unimport_class(value, ignores)
-                
+
             elif inspect.isfunction(value):
                 _remove_refs(value, ignores)
 
@@ -483,9 +559,9 @@ def _unimport_module(old, ignores):
 
 def _unimport_class(old, ignores):
     """Remove traces of a class"""
-    __internal_swaprefs_ignore__ = "unimport_class"    
-    oldItems = vars(old).items()
-    ignores += (id(oldItems),)    
+    __internal_swaprefs_ignore__ = "unimport_class"
+    oldItems = _safevars(old).items()
+    ignores += (id(oldItems),)
 
     for name, value in oldItems:
         if name in ("__dict__", "__doc__", "__weakref__"):
@@ -493,7 +569,7 @@ def _unimport_class(old, ignores):
 
         if inspect.isclass(value) and value.__module__ == old.__module__:
             _unimport_class(value, ignores)
-            
+
         elif inspect.isfunction(value):
             _remove_refs(value, ignores)
 
@@ -501,13 +577,50 @@ def _unimport_class(old, ignores):
 
 
 
+
+class _MissingAllReference(object):
+    """This is a stub placeholder for objects added to __all__ but
+        are not actually found.
+        """
+    def __str__(self, *args):
+        raise AttributeError("%r missing from module %r" %
+                    (type(self).__name__, type(self).__module__))
+    __nonzero__ = __hash__ = __id__ = __cmp__ = __len__ = __iter__ = __str__
+    __repr__ = __int__ = __getattr__ = __setattr__ = __delattr__ = __str__
+
+
+
 _recursive_tuple_swap = set()
 
+
+def _bonus_containers():
+    """Find additional container types, if they are loaded. Returns
+        (deque, defaultdict).
+        Any of these will be None if not loaded.
+        """
+    deque = defaultdict = None
+    collections = sys.modules.get("collections", None)
+    if collections:
+        deque = getattr(collections, "collections", None)
+        defaultdict = getattr(collections, "defaultdict", None)
+    return deque, defaultdict
+
+
+
+def _find_sequence_indices(container, value):
+    """Find indices of value in container. The indices will
+        be in reverse order, to allow safe editing.
+        """
+    indices = []
+    for i in range(len(container)-1, -1, -1):
+        if container[i] is value:
+            indices.append(i)
+    return indices
 
 
 def _swap_refs(old, new, ignores):
     """Swap references from one object to another"""
-    __internal_swaprefs_ignore__ = "swap_refs"    
+    __internal_swaprefs_ignore__ = "swap_refs"
     # Swap weak references
     refs = weakref.getweakrefs(old)
     if refs:
@@ -520,21 +633,19 @@ def _swap_refs(old, new, ignores):
                 _swap_refs(oldRef, newRef, ignores + (id(refs),))
     del refs
 
+    deque, defaultdict = _bonus_containers()
+
     # Swap through garbage collector
     referrers = gc.get_referrers(old)
     for container in referrers:
         if id(container) in ignores:
             continue
         containerType = type(container)
-        
-        if containerType is list:
-            while True:
-                try:
-                    index = container.index(old)
-                except ValueError:
-                    break
+
+        if containerType is list or containerType is deque:
+            for index in _find_sequence_indices(container, old):
                 container[index] = new
-        
+
         elif containerType is tuple:
             # protect from recursive tuples
             orig = container
@@ -543,18 +654,14 @@ def _swap_refs(old, new, ignores):
             _recursive_tuple_swap.add(id(orig))
             try:
                 container = list(container)
-                while True:
-                    try:
-                        index = container.index(old)
-                    except ValueError:
-                        break
+                for index in _find_sequence_indices(container, old):
                     container[index] = new
                 container = tuple(container)
                 _swap_refs(orig, container, ignores + (id(referrers),))
             finally:
                 _recursive_tuple_swap.remove(id(orig))
-        
-        elif containerType is dict:
+
+        elif containerType is dict or containerType is defaultdict:
             if "__internal_swaprefs_ignore__" not in container:
                 try:
                     if old in container:
@@ -568,66 +675,63 @@ def _swap_refs(old, new, ignores):
         elif containerType is set:
             container.remove(old)
             container.add(new)
-            
-        elif containerType == type:
+
+        elif containerType is type:
             if old in container.__bases__:
                 bases = list(container.__bases__)
                 bases[bases.index(old)] = new
                 container.__bases__ = tuple(bases)
-        
+
         elif type(container) is old:
-            container.__class__ = new
-        
+            try:
+                container.__class__ = new
+            except TypeError:
+                # Type error happens on slotted classes
+                pass
+
         elif containerType is _InstanceType:
             if container.__class__ is old:
                 container.__class__ = new
 
-       
+
 
 def _remove_refs(old, ignores):
     """Remove references to a discontinued object"""
     __internal_swaprefs_ignore__ = "remove_refs"
-    
+
     # Ignore builtin immutables that keep no other references
-    _isinst = isinstance
-    if (old is None or _isinst(old, int) or _isinst(old, basestring)
-                or _isinst(old, float) or _isinst(old, complex)):
+    if old is None or isinstance(old, (int, basestring, float, complex)):
         return
-    
+
+    deque, defaultdict = _bonus_containers()
+
     # Remove through garbage collector
     for container in gc.get_referrers(old):
         if id(container) in ignores:
             continue
         containerType = type(container)
 
-        if containerType == list:
-            while True:
-                try:
-                    container.remove(old)
-                except ValueError:
-                    break
-        
-        elif containerType == tuple:
+        if containerType is list or containerType is deque:
+            for index in _find_sequence_indices(container, old):
+                del container[index]
+
+        elif containerType is tuple:
             orig = container
             container = list(container)
-            while True:
-                try:
-                    container.remove(old)
-                except ValueError:
-                    break
+            for index in _find_sequence_indices(container, old):
+                del container[index]
             container = tuple(container)
             _swap_refs(orig, container, ignores)
-        
-        elif containerType == dict:
+
+        elif containerType is dict or containerType is defaultdict:
             if "__internal_swaprefs_ignore__" not in container:
                 try:
-                    if old in container:
-                        container.pop(old)
+                    container.pop(old, None)
                 except TypeError:  # Unhashable old value
                     pass
                 for k,v in container.items():
                     if v is old:
                         del container[k]
 
-        elif containerType == set:
+        elif containerType is set:
             container.remove(old)
