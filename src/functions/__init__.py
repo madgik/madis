@@ -426,12 +426,12 @@ def register_ops(module, connection):
                 connection.createscalarfunction(opname, fobject)
 
             if type(fobject).__name__ == 'classobj':
-                if opname in multaggr or (opexists(opname) and 'multiset' not in functions['aggregate'][opname].__dict__):
+                if opexists(opname):
                     raise MadisError("Extended SQLERROR: Aggregate operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['aggregate'][opname] = fobject
 
                 if isgeneratorfunction(fobject.final):
-                    cfobject = copy.deepcopy(fobject)
+                    cfobject=copy.deepcopy(fobject)
                     cfobject.__iterated_final__=fobject.final
                     cfobject.final=wrapagriter(connection, opname)
                     fobject.multiset=True
@@ -446,7 +446,7 @@ def register_ops(module, connection):
 
             try:
                 if fobject.multiset == True:
-                        multiset_functions[opname]=True
+                    multiset_functions[opname]=True
             except:
                 pass
 
