@@ -431,7 +431,7 @@ def register_ops(module, connection):
                 functions['aggregate'][opname] = fobject
 
                 if isgeneratorfunction(fobject.final):
-                    cfobject = copy.copy(fobject)
+                    cfobject = copy.deepcopy(fobject)
                     cfobject.__iterated_final__=fobject.final
                     cfobject.final=wrapagriter(connection, opname)
                     fobject.multiset=True
