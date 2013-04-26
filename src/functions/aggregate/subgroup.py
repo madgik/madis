@@ -3,7 +3,7 @@ import Queue
 import functions
 from lib import iso8601
 from operator import itemgetter
-
+from lib import jopts
 from lib.unicodeops import unistr
 
 __docformat__ = 'reStructuredText en'
@@ -11,6 +11,71 @@ __docformat__ = 'reStructuredText en'
 
 def timedelta2millisec(tdelta):
     return tdelta.days*24*60*60*1000+tdelta.seconds*1000+tdelta.microseconds
+
+class subgroup:
+    """
+    .. function:: subgroup(n,col1,col2,col3,....)
+
+    groups by the first n columns of the input, and sums/jsets the rest.
+
+    :Returned schema:
+        Columns are automatically named as col1, col2 ...
+
+    Examples:
+
+    >>> table1('''
+    ... aa  t1 43
+    ... ac  t2 34
+    ... aa  t3 12
+    ... ab  t4 21
+    ... ac  t5 14
+    ... as  t6 23
+    ... ''')
+    >>> sql("select subgroup(1,a,b,c) from table1")
+    c1 | c2          | c3
+    ---------------------
+    ac | ["t2","t5"] | 48
+    aa | ["t1","t3"] | 55
+    ab | t4          | 21
+    as | t6          | 23
+
+    """
+    registered=True
+
+    def __init__(self):
+        self.notchecked = True
+        self.groupsdict = {}
+        self.grouplen = 0
+        self.numofargs = 0
+    def step(self, *args):
+        if self.notchecked:
+            if len(args)<2:
+                raise functions.OperatorError("subgroup","Wrong number of arguments")
+            self.grouplen = args[0]
+            self.numofargs = len(args)
+            self.notchecked = False
+
+        groupkey = args[1:self.grouplen+1]
+        try:
+            group = self.groupsdict[groupkey]
+            j = 0
+            for i in xrange(self.grouplen+1,self.numofargs):
+                group[j].append(args[i])
+                j += 1
+        except KeyError:
+            self.groupsdict[groupkey] = [[x] for x in args[self.grouplen+1:]]
+
+    def final(self):
+        yield tuple('c'+str(i) for i in xrange(1,self.numofargs))
+        for groupkey, sumcols in self.groupsdict.iteritems():
+            cols = list(groupkey)
+            for col in sumcols:
+                try:
+                    cols.append(sum(col))
+                except TypeError:
+                    cols.append(jopts.toj(sorted(set( jopts.fromj(*col) ))))
+            yield cols
+
 
 class condbreak:
     """
@@ -29,7 +94,7 @@ class condbreak:
     .. seealso::
 
        * :ref:`tutmultiset` functions
-    
+
     >>> table1('''
     ... 1 user1  open
     ... 2 user1  read
@@ -139,7 +204,7 @@ class datediffbreak:
     >>> sql("select datediffbreak(b,a,c,10*1000,a,c) from table1 group by b")
     Traceback (most recent call last):
     ...
-    OperatorError: Madis SQLError: 
+    OperatorError: Madis SQLError:
     Operator DATEDIFFBREAK: Wrong date format: 1
     """
     registered=True
@@ -312,10 +377,10 @@ class datedifffilter:
 
     .. function:: datedifffilter(maxdiff, date, C1, C2 ....) -> [date,C1,C2....]
 
-    Returns only a subset of the provided entries, performing a sort of entry clustering based on the entries date difference. Each cluster is 
-    represented by the latest entry. 
+    Returns only a subset of the provided entries, performing a sort of entry clustering based on the entries date difference. Each cluster is
+    represented by the latest entry.
     The first argument defines the time differnece threshold that is employed for entry clustering, and it is provided in seconds.
-    The second argument is assumed to contain the date column. Entries are assumed to be provided in an ascending order by the date column. 
+    The second argument is assumed to contain the date column. Entries are assumed to be provided in an ascending order by the date column.
     Input dates should be in :ref:`ISO 8601 format <iso8601>`.
     All subsequent columns remain unchanged.
 
@@ -401,7 +466,7 @@ class datedifffilter:
             return
 
         yield tuple(["date"]+["C"+str(i) for i in xrange(1, len(self.vals[0]))])
-        
+
         dt=None
         dtpos=0
         diff=0
@@ -508,7 +573,7 @@ class datediffgroup:
         diff=0
 
         for el in self.vals:
-            
+
             if dtpos<self.counter-1:
                 dt = iso8601.parse_date(el[0])
                 dtnew =iso8601.parse_date(self.vals[dtpos+1][0])
@@ -516,7 +581,7 @@ class datediffgroup:
                 yield [str(self.groupIdCounter)]+el
                 if (diff.days*24*60*60+diff.seconds)>self.maxdiff:
                     self.groupIdCounter+=1
-                
+
                 dtpos+=1
                 if dtpos==self.counter-1:
                     yield [str(self.groupIdCounter)]+self.vals[dtpos]
