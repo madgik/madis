@@ -388,11 +388,9 @@ def register_ops(module, connection):
         else:
             return False
 
-    def wraprowiter(connection, opname):
-        return lambda *args: iterwrapper(connection, functions['row'][opname], *args)
 
-    def wrapagriter(connection, opname):
-        return lambda *args: iterwrapper(connection, functions['aggregate'][opname].__iterated_final__, *args)
+    def wrapfunction(connection, opfun):
+        return lambda *args: iterwrapper(connection, opfun, *args)
 
     multaggr = {}
     for f in module.__dict__:
@@ -420,7 +418,7 @@ def register_ops(module, connection):
                     raise MadisError("Extended SQLERROR: Row operator '"+module.__name__+'.'+opname+"' name collision with other operator")
                 functions['row'][opname] = fobject
                 if isgeneratorfunction(fobject):
-                    fobject=wraprowiter(connection, opname)
+                    fobject=wrapfunction(connection, fobject)
                     fobject.multiset=True
                 setattr(rowfuncs, opname, fobject)
                 connection.createscalarfunction(opname, fobject)
@@ -432,8 +430,8 @@ def register_ops(module, connection):
 
                 if isgeneratorfunction(fobject.final):
                     cfobject=copy.deepcopy(fobject)
-                    cfobject.__iterated_final__=fobject.final
-                    cfobject.final=wrapagriter(connection, opname)
+                    cfobject.__iterated_final__=cfobject.final
+                    cfobject.final=wrapfunction(connection, cfobject.__iterated_final__)
                     fobject.multiset=True
                     cfobject.multiset=True
                     multaggr[opname] = cfobject
