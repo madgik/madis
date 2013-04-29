@@ -195,9 +195,8 @@ class Expand(vtbase.VT):
 #            itercount = 0
 
             for i in xrange(rowlen):
-                val = nrow[i]
-                if type(val)==buffer and val[:lenIH]==iterheader:
-                    striter = str(val)
+                if type(nrow[i])==buffer and nrow[i][:lenIH]==iterheader:
+                    striter = str(nrow[i])
                     oiter=oiters[striter]
                     oiter.next()
                     nrow[i] = (striter, oiter)
