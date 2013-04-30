@@ -478,7 +478,7 @@ def regexpcountwithpositions(pattern,expression,start = 0,min = 0.5,multiply = 1
     count = 0
     if start == 0:
         total = 0
-        for i in re.finditer(pattern+'|(\s)',expression):
+        for i in re.finditer(pattern+'|(\s)',expression,re.UNICODE):
             count += 1
             if i.group()!=' ':
                 total += count * multiply
@@ -491,7 +491,7 @@ def regexpcountwithpositions(pattern,expression,start = 0,min = 0.5,multiply = 1
     else:
         matches = []
         total = 0
-        for i in re.finditer(pattern+'|(\s)',expression):
+        for i in re.finditer(pattern+'|(\s)',expression,re.UNICODE):
             count += 1
             if i.group()!=' ':
                 matches.append(count)
