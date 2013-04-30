@@ -12,9 +12,9 @@ __docformat__ = 'reStructuredText en'
 def timedelta2millisec(tdelta):
     return tdelta.days*24*60*60*1000+tdelta.seconds*1000+tdelta.microseconds
 
-class subgroup:
+class groupsum:
     """
-    .. function:: subgroup(n,col1,col2,col3,....)
+    .. function:: groupsum(n,col1,col2,col3,....)
 
     groups by the first n columns of the input, and sums/jsets the rest.
 
@@ -31,7 +31,7 @@ class subgroup:
     ... ac  t5 14
     ... as  t6 23
     ... ''')
-    >>> sql("select subgroup(1,a,b,c) from table1")
+    >>> sql("select groupsum(1,a,b,c) from table1")
     c1 | c2          | c3
     ---------------------
     ac | ["t2","t5"] | 48
@@ -50,7 +50,7 @@ class subgroup:
     def step(self, *args):
         if self.notchecked:
             if len(args)<2:
-                raise functions.OperatorError("subgroup","Wrong number of arguments")
+                raise functions.OperatorError("groupsum","Wrong number of arguments")
             self.grouplen = args[0]
             self.numofargs = len(args)
             self.notchecked = False
@@ -117,6 +117,8 @@ class condbreak:
     user21   | open
     user21   | write
     >>> sql("select condbreak(b,c,c='open',a) from (select 4 as a, 6 as b, 9 as c where c!=9)")
+    bgroupid | C1
+    -----
 
     """
     registered=True
@@ -201,7 +203,7 @@ class datediffbreak:
     bgroupid | C1
     ---------------
     None     | None
-    >>> sql("select datediffbreak(b,a,c,10*1000,a,c) from table1 group by b")
+    >>> sql("select datediffbreak(b,a,c,10*1000,a,c) from table1 group by b") #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
     OperatorError: Madis SQLError:
