@@ -967,9 +967,10 @@ def textwindow(*args):
             for i in xrange(len(g)-window + 1):
                 yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
         else:
+             patt = re.compile(pattern)
              for i in xrange(len(g)-window + 1):
                 mid = ' '.join(g[i+prev:i+pm])
-                if re.search(pattern,mid):
+                if patt.search(mid):
                     yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
 
 textwindow.registered=True
