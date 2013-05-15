@@ -2,7 +2,7 @@
 
 .. function:: ordered(query) -> query results
 
-Igroup returns its data as they are. The main difference with nopvt, is that
+Ordered virtual table returns its data as they are. The main difference with unindexed, is that
 it signals to the SQLite engine that the results are ordered in whatever order
 SQLite prefers, so a possible group by on the results will happen incrementally.
 
