@@ -150,14 +150,18 @@ class Expand(vtbase.VT):
 
                 ttypes+=['GUESS']*len(first)
                 if noas.match(orignames[i]):
-                    if type(first)!=tuple:
-                        nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
-                    else:
-                        for i in first:
-                            if type(i) not in (unicode, str) or i == None:
-                                raise functions.OperatorError(__name__.rsplit('.')[-1],"First yielded row of multirow functions, should contain the schema inside a Python tuple")
+                    badschema = False
+                    if type(first) != tuple:
+                        badschema = True
 
-                        nnames += list(first)
+                    for i in first:
+                        if type(first)!=tuple or type(i) not in (unicode, str) or i == None:
+                            badschema = True
+                            break
+                    if badschema:
+                        raise functions.OperatorError(__name__.rsplit('.')[-1],"First yielded row of multirow functions, should contain the schema inside a Python tuple.\nExample:\n  yield ('C1', 'C2')")
+
+                    nnames += list(first)
                 else:
                     if len(first)==1:
                         nnames +=[orignames[i]]
