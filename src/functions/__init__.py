@@ -207,6 +207,7 @@ class Cursor(object):
                 except Exception, e:
                     strex = mstr(e)
                     if SQLITEAFTER3711 or type(e)!=apsw.SQLError or strex.find('already exists')==-1 or strex.find(i[0])==-1:
+                        self.cleanupvts()
                         raise(e)
                     else:
                         self.__permanentvtables[i[0]]=createvirtualsql
