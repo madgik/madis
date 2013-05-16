@@ -1,7 +1,6 @@
 import urllib2
 import tempfile
 import csv
-import sys
 import re
 import os
 from lib.boolops import xor
