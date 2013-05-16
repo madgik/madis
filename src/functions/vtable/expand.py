@@ -158,6 +158,7 @@ class Expand(vtbase.VT):
                         if type(first)!=tuple or type(i) not in (unicode, str) or i == None:
                             badschema = True
                             break
+                            
                     if badschema:
                         raise functions.OperatorError(__name__.rsplit('.')[-1],"First yielded row of multirow functions, should contain the schema inside a Python tuple.\nExample:\n  yield ('C1', 'C2')")
 
