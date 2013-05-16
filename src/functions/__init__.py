@@ -207,11 +207,9 @@ class Cursor(object):
                 except Exception, e:
                     strex = mstr(e)
                     if SQLITEAFTER3711 or type(e)!=apsw.SQLError or strex.find('already exists')==-1 or strex.find(i[0])==-1:
-                        self.cleanupvts()
                         raise(e)
                     else:
                         self.__permanentvtables[i[0]]=createvirtualsql
-
 
                 if len(i)==4:
                     self.__permanentvtables[i[0]]=createvirtualsql
@@ -252,11 +250,10 @@ class Cursor(object):
         return self.__wrapped.close(force)
 
     def cleanupvts(self):
-        pass
-#        if self.__vtables!=[]:
-#            for t in reversed(self.__vtables):
-#                self.executetrace('drop table if exists ' + 'temp.'+t)
-#            self.__vtables=[]
+        if self.__vtables!=[]:
+            for t in reversed(self.__vtables):
+                self.executetrace('drop table if exists ' + 'temp.'+t)
+            self.__vtables=[]
 
 
 class Connection(apsw.Connection):
