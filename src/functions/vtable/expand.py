@@ -153,6 +153,10 @@ class Expand(vtbase.VT):
                     if type(first)!=tuple:
                         nnames += ['C'+str(j) for j in xrange(1,len(first)+1)]
                     else:
+                        for i in first:
+                            if type(i) not in (unicode, str) or i == None:
+                                raise functions.OperatorError(__name__.rsplit('.')[-1],"First yielded row of multirow functions, should contain the schema inside a Python tuple")
+
                         nnames += list(first)
                 else:
                     if len(first)==1:
