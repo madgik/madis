@@ -202,7 +202,7 @@ class FileCursor:
         self.encoding='utf_8'
         self.fast = False
         self.strict = None
-        
+
         if 'encoding' in rest:
             self.encoding=rest['encoding']
             del rest['encoding']
@@ -293,6 +293,7 @@ class FileCursor:
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
 
+            linelen = 0
             if first and not hasheader:
                 if self.fast:
                     rest['fast'] = True
@@ -302,6 +303,7 @@ class FileCursor:
                     if self.strict == None:
                         self.strict = 1
                 sample=self.iter.peek()
+                linelen = len(sample)
             else: ###not first or header
                 if self.fast:
                     rest['fast'] = True
@@ -310,17 +312,20 @@ class FileCursor:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                     if self.strict == None:
                         self.strict = 1
+                linelen = len(namelist)
+
                 if hasheader:
                     sample=self.iter.next()
+                    linelen = len(sample)
 
             if self.strict == 0:
-                self.iter = strict0(self.iter, len(sample))
+                self.iter = strict0(self.iter, linelen)
 
             if self.strict == 1:
-                self.iter = strict1(self.iter, len(sample))
+                self.iter = strict1(self.iter, linelen)
 
             if self.strict == -1:
-                self.iter = strictminus1(self.iter, len(sample), hasheader)
+                self.iter = strictminus1(self.iter, linelen, hasheader)
                 namelist += [['linenumber', 'int'], ['foundcols', 'int'], ['expectedcols', 'int'],['contents', 'text']]
 
             if first and namelist==[]:
@@ -328,7 +333,7 @@ class FileCursor:
                     for i in sample:
                         namelist.append( [cleanBOM(i), 'text'] )
                 else:
-                    for i in xrange(1,len(sample)+1):
+                    for i in xrange(1, linelen+1):
                         namelist.append( ['C'+str(i), 'text'] )
 
         else: #### Default read lines

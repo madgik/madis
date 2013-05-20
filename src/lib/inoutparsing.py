@@ -5,6 +5,9 @@ import re
 import os
 from lib.boolops import xor
 
+# Set maximum field size to 20MB
+csv.field_size_limit(20000000)
+
 class defaultcsv(csv.Dialect):
     def __init__(self):
         self.delimiter=','
