@@ -16,6 +16,8 @@ except ImportError:
 break_inversion_subquery=re.compile(r"""\s*((?:(?:(?:'[^']*?'|\w+:[^\s]+)\s*)*))((?i)of\s|from\s|)(.*?)\s*$""", re.DOTALL| re.UNICODE)
 find_parenthesis=re.compile(r"""\s*\((.*)\)\s*$""", re.DOTALL| re.UNICODE)
 viewdetector=re.compile(r'(?i)\s*create\s+(?:temp|temporary)\s+view\s+', re.DOTALL| re.UNICODE)
+inlineop = re.compile(r'\s*/\*\*+[\s\n]*((?:def\s+|class\s+).+)[^*]\*\*+/', re.DOTALL| re.UNICODE)
+
 _statement_cache = OrderedDict()
 _statement_cache_size = 1000
 
@@ -24,6 +26,21 @@ if __name__ != "__main__":
     for i in ['EXECUTE', 'NAMES', 'CACHE', 'EXEC', 'OUTPUT']:
         if i in sqlparse.keywords.KEYWORDS:
             del sqlparse.keywords.KEYWORDS[i]
+
+#Parse comments for inline ops
+def opcomments(s):
+
+    if r'/**' not in unicode(s):
+        return []
+
+    out = []
+    for i in s.tokens:
+        if type(i) == sqlparse.sql.Comment:
+            op = inlineop.match(unicode(i))
+            if op != None:
+                out.append(op.groups()[0])
+
+    return out
 
 #Top level transform (runs once)
 def transform(query, multiset_functions=None, vtables=[], row_functions=[], substitute = lambda x:x):
@@ -37,6 +54,10 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
     if subsquery in _statement_cache:
         return _statement_cache[subsquery]
 
+    enableInlineops = False
+    if r'/**' in subsquery:
+        enableInlineops = True
+
     out_vtables=[]
 
     st=sqlparse.parse(subsquery)
@@ -44,12 +65,15 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
     trans=Transclass(multiset_functions,vtables, row_functions)
     s_out=''
     sqp=('', [], [])
+    inlineops = []
 
     for s in st:
         # delete question mark
         strs=re.match(r"(.*?);*\s*$",unicode(s),re.DOTALL| re.UNICODE).groups()[0]
         st1=sqlparse.parse(strs)
         if len(st1)>0:
+            if enableInlineops:
+                inlineops.append(opcomments(st1[0]))
             sqp=trans.rectransform(st1[0])
             strs=unicode(sqp[0])
             s_out+=strs
@@ -61,7 +85,7 @@ def transform(query, multiset_functions=None, vtables=[], row_functions=[], subs
             else:
                 out_vtables+=sqp[1]
 
-    result = (s_out, vt_distinct(out_vtables), sqp[2])
+    result = (s_out, vt_distinct(out_vtables), sqp[2], inlineops)
     
     if len( _statement_cache ) < _statement_cache_size:
         _statement_cache[subsquery] = result
@@ -84,7 +108,6 @@ class Transclass:
 
     #recursive transform
     def rectransform(self, s, s_orig=None):
-
         if not ( re.search(ur'(?i)(select|'+'|'.join([x for x in self.vtables])+'|'+'|'.join(self.multiset_functions)+'|'+'|'.join(self.row_functions)+')',unicode(s), re.UNICODE)):
             return (unicode(s), [], self.direct_exec)
 
@@ -404,6 +427,8 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"exec select a.5 from (flow file 'lala')"]
     sql+=[r"select max( (select 5))"]
     sql+=[r"cache select 5; create temp view as cache select 7; cache select 7"]
+    sql+=[r"select * from /** def lala(x): pass **/ tab"]
+    sql+=[r"select * from /* def lala(x): pass **/ tab"]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
