@@ -946,32 +946,58 @@ def textwindow(*args):
     except IndexError:
         pass
 
-    yield tuple(itertools.chain( ('prev'+str(x) for x in xrange(1,prev+1)),('middle',), ('next'+str(y) for y in xrange(1,nextlen + 1)) ))
+    if pattern == None:
+        prev = abs(prev)
 
+    yield tuple(itertools.chain( ('prev'+str(x) for x in xrange(1,abs(prev)+1)),('middle',), ('next'+str(y) for y in xrange(1,nextlen + 1)) ))
     g = [''] * prev + r.split(' ') + [''] * (nextlen)
 
-    window = prev + nextlen + middle
-    pm = prev+middle
-    im = prev
-    if middle == 1:
-        if pattern == None:
-            for i in xrange(len(g)-window + 1):
-                yield (g[i:i+window])
-        else:
-             for i in xrange(len(g)-window + 1):
-                if re.search(pattern,g[i+im]):
+    if prev >= 0:    
+        window = prev + nextlen + middle
+        pm = prev+middle
+        im = prev
+        if middle == 1:
+            if pattern == None:
+                for i in xrange(len(g)-window + 1):
                     yield (g[i:i+window])
+            else:
+                 patt = re.compile(pattern,re.UNICODE)
+                 for i in xrange(len(g)-window + 1):
+                    if patt.search(g[i+im]):
+                        yield (g[i:i+window])
 
-    else :
-        if pattern == None:
-            for i in xrange(len(g)-window + 1):
-                yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
-        else:
-             patt = re.compile(pattern)
+        else :
+            if pattern == None:
+                for i in xrange(len(g)-window + 1):
+                    yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
+            else:
+                 patt = re.compile(pattern,re.UNICODE)
+                 for i in xrange(len(g)-window + 1):
+                    mid = ' '.join(g[i+prev:i+pm])
+                    if patt.search(mid):
+                        yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
+    elif prev<0:
+        prev = abs(prev)
+        window = nextlen + middle
+        winprev = [''] * prev
+        winprev = deque(winprev, prev)
+        if middle == 1:
+             patt = re.compile(pattern,re.UNICODE)
              for i in xrange(len(g)-window + 1):
-                mid = ' '.join(g[i+prev:i+pm])
-                if patt.search(mid):
-                    yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
+                if patt.search(g[i]):
+                    yield tuple(itertools.chain(winprev,(g[i:i+window])))
+                else:
+                    winprev.append(g[i])
+        else :
+             patt = re.compile(pattern,re.UNICODE)
+             for i in xrange(len(g)-window + 1):
+                mid = ' '.join(g[i:i+middle])
+                if patt.search(g[i]):
+                    yield tuple(itertools.chain(winprev, ([mid] + g[i+middle:i+window]  )))
+                else:
+                    winprev.append(g[i])
+
+
 
 textwindow.registered=True
 
