@@ -689,12 +689,12 @@ class XMLparse(vtbase.VT):
                                 capture=lmatchtag(el.tag.lower(), self.subtreeroot)
 
                             if capture:
-                                addtorowall(xpath, '', el)
                                 if el.attrib!={}:
                                     for k,v in el.attrib.iteritems():
                                         addtorow(xpath+[attribguard, k.lower()], v)
                         else:
                             if capture:
+                                addtorowall(xpath, '', el) # Add all subchildren ("*" op)
                                 if el.text!=None:
                                     eltext=el.text.strip()
                                     if eltext!='':
@@ -713,7 +713,8 @@ class XMLparse(vtbase.VT):
                                 if len(xpath)>0:
                                     xpath.pop()
 
-                            el.clear()
+                            else: # Else is needed for clear to not happen while a possible all (*) op is running
+                                el.clear()
 
                     etreeended=True
                 except etree.ParseError, e:
