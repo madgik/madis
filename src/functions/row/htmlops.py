@@ -195,6 +195,9 @@ def htmlencode(*args):
 
 htmlencode.registered=True
 
+tags = re.compile(r'<([^>]*?)>', re.UNICODE)
+tagNL = re.compile(r'(?:\s|^)(?:br|/p|/div|/head|/table|/tr|ul|/ul|/title|/tfoot|/thead|/span|/ol|/h1|/h2|/h3|/h4|/h5|/h6|/caption)(?:\s|$)', re.UNICODE)
+tagSPACE = re.compile(r'(?:\s|^)(?:wbr|p|div|head|table|/th|tr|title|thead|tfoot|/sub|/sup|span|q|/q|pre|/pre|ol|link|/link|i|/i|h1|h2|h3|h4|h5|h6|em|/em|code|/code|caption|a)(?:\s|^)', re.UNICODE)
 def htmlstriptags(*args):
     """
     .. function:: htmlstriptags(str)
@@ -203,12 +206,11 @@ def htmlstriptags(*args):
 
     Examples:
 
-    >>> sql("select htmlstriptags('<tag1>asdf<>as<br>df<br><p>paragraph</p>anotherline<tag2>') as query")
+    >>> sql("select htmlstriptags('<tag1>asdf<>as< br>df<p class = lala>paragraph</p>anotherline<tag2>') as query")
     query
     -------------------------------
     asdfas
-    df
-    paragraph
+    df paragraph
     anotherline
     
     >>> sql("select htmlstriptags(null) as query")
@@ -217,16 +219,19 @@ def htmlstriptags(*args):
     <BLANKLINE>
     """
     def tagdecode(tag):
-        t=tag.group(1)
-        if re.search(r'^\s*(br|/p\s*$)',t):
+        t=tag.group(1).lower()
+#        print t
+        if tagNL.search(t):
             return u'\n'
+        if tagSPACE.search(t):
+            return u' '
         else: return ''
 
     text=u''
     for i in args:
         if i!=None:
             text+=unicode(i)
-    return re.sub(r'<([^>]*?)>', tagdecode, text)
+    return tags.sub(tagdecode, text)
 
 htmlstriptags.registered=True
 
