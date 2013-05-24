@@ -220,7 +220,6 @@ def htmlstriptags(*args):
     """
     def tagdecode(tag):
         t=tag.group(1).lower()
-#        print t
         if tagNL.search(t):
             return u'\n'
         if tagSPACE.search(t):
