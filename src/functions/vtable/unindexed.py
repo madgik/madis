@@ -35,6 +35,7 @@ Examples::
 import setpath
 import vtbase
 import functions
+import gc
 
 ### Classic stream iterator
 registered=True
