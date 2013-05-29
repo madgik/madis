@@ -78,6 +78,7 @@ import vtbase
 import functions
 import re
 from lib.sqlitetypes import getElementSqliteType
+import gc
 
 ### Classic stream iterator
 registered=True
@@ -198,6 +199,7 @@ class Expand(vtbase.VT):
         for exp in firstbatch:
             yield exp
 
+        gc.disable()
 #        lastvals = [None] * len(nrow)
         for row in c:
             nrow = list(row)
@@ -214,6 +216,7 @@ class Expand(vtbase.VT):
 
             for exp in exprown(nrow):
                 yield exp
+        gc.enable()
 
 #            if itercount > 0:
 #                while True:

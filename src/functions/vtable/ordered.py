@@ -41,6 +41,7 @@ Examples::
 import setpath
 import vtbase
 import functions
+import gc
 
 ### Classic stream iterator
 registered=True
@@ -70,8 +71,10 @@ class Ordered(vtbase.VT):
                 except:
                     pass
 
+        gc.disable()
         while True:
             yield q.next()
+        gc.enable()
 
 
 def Source():

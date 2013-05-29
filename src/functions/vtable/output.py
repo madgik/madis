@@ -79,6 +79,7 @@ from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
 import apsw
+import gc
 from collections import defaultdict
 
 registered=True
@@ -181,9 +182,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 jsfiles = {}
                 splitkeys=defaultdict(cjs)
 
+                gc.disable()
                 for row in diter:
                     key=row[0]
                     print >> splitkeys[key], je(row[1:])
+                gc.enable()
 
                 # Create other parts
                 maxparts = 1
@@ -204,24 +207,32 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             else:
                 fileIter.write( je( {'schema':schema} ) + '\n')
 
+                gc.disable()
                 for row in diter:
                     print >> fileIter, je(row)
+                gc.enable()
                     
         elif formatArgs['mode']=='csv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel',**formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
+                
+            gc.disable()
             for row in diter:
                 csvprinter.writerow(row)
+            gc.enable()
 
         elif formatArgs['mode']=='tsv':
             del formatArgs['mode']
             csvprinter=writer(fileIter,'excel-tab',**formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
+
+            gc.disable()
             for row in diter:
                 csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
+            gc.enable()
 
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
@@ -284,9 +295,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     dbcon = {}
                     splitkeys=defaultdict(cdb)
 
+                    gc.disable()
                     for row in diter:
                         key=row[0]
                         splitkeys[key](ns.insertqueryw, row[1:])
+                    gc.enable()
 
                     for c, cursor in dbcon.values():
                         if c != None:
@@ -304,9 +317,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             prepedqueries.append(t[1].prepare(t[2]))
                             dbcon.append((t[0], t[1]))
 
+                        gc.disable()
                         for row in diter:
                             row0 = row[0]
                             cursors[row0](prepedqueries[row0], row[1:])
+                        gc.enable()
 
                     else:
                         for i in xrange(0,maxparts):
@@ -315,8 +330,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             dbcon.append((t[0], t[1]))
                             insertqueryw = t[2]
 
+                        gc.disable()
                         for row in diter:
                             cursors[row[0]](insertqueryw, row[1:])
+                        gc.enable()
 
                     for c, cursor in dbcon:
                         if c != None:
@@ -325,7 +342,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             else:
                 # Write to db without split
                 c, cursor, insertquery=createdb(where, tablename, schema, page_size)
+
+                gc.disable()
                 cursor.executemany(insertquery, diter)
+                gc.enable()
+
                 list(cursor.execute('commit'))
                 c.close()
         else:

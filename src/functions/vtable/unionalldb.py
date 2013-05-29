@@ -27,6 +27,7 @@ import functions
 import apsw
 import os
 import sys
+import gc
 
 registered=True
 
@@ -98,8 +99,10 @@ class UnionAllDB(vtbase.VT):
             except apsw.CantOpenError,e:
                 raise StopIteration
 
+            gc.disable()
             for row in self.xexec:
                 yield row
+            gc.enable()
 
             self.part += 1
 

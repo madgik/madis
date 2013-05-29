@@ -35,6 +35,7 @@ Examples::
 import setpath
 import vtbase
 import functions
+import gc
 
 ### Classic stream iterator
 registered=True
@@ -60,8 +61,10 @@ class NopVT(vtbase.VT):
                 except:
                     pass
 
+        gc.disable()
         while True:
             yield c.next()
+        gc.enable()
 
 def Source():
     return vtbase.VTGenerator(NopVT)
