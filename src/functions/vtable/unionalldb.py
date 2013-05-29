@@ -27,6 +27,7 @@ import functions
 import apsw
 import os
 import sys
+import gc
 
 registered=True
 

@@ -78,6 +78,7 @@ import vtbase
 import functions
 import re
 from lib.sqlitetypes import getElementSqliteType
+import gc
 
 ### Classic stream iterator
 registered=True
