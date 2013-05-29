@@ -60,8 +60,10 @@ class NopVT(vtbase.VT):
                 except:
                     pass
 
+        gc.disable()
         while True:
             yield c.next()
+        gc.enable()
 
 def Source():
     return vtbase.VTGenerator(NopVT)

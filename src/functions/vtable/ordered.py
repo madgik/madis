@@ -70,8 +70,10 @@ class Ordered(vtbase.VT):
                 except:
                     pass
 
+        gc.disable()
         while True:
             yield q.next()
+        gc.enable()
 
 
 def Source():
