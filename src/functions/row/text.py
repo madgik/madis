@@ -911,6 +911,7 @@ def textwindow(*args):
     This  | is a        | test
     is    | a test      | phrase
     a     | test phrase |
+    test  | phrase      |
 
     >>> sql("select textwindow('This is a test phrase (123) for filtering middle with a number',1,1,'\d+')  ")
     prev1  | middle | next1
@@ -950,7 +951,7 @@ def textwindow(*args):
         prev = abs(prev)
 
     yield tuple(itertools.chain( ('prev'+str(x) for x in xrange(1,abs(prev)+1)),('middle',), ('next'+str(y) for y in xrange(1,nextlen + 1)) ))
-    g = [''] * prev + r.split(' ') + [''] * (nextlen)
+    g = [''] * prev + r.split(' ') + [''] * ((middle-1)+nextlen)
 
     if prev >= 0:    
         window = prev + nextlen + middle
@@ -968,11 +969,11 @@ def textwindow(*args):
 
         else :
             if pattern == None:
-                for i in xrange(len(g)-window + 1):
+                for i in xrange(len(g)-middle-nextlen):
                     yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
             else:
                  patt = re.compile(pattern,re.UNICODE)
-                 for i in xrange(len(g)-window + 1):
+                 for i in xrange(len(g)-middle-nextlen):
                     mid = ' '.join(g[i+prev:i+pm])
                     if patt.search(mid):
                         yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
