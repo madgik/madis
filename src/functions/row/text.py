@@ -969,11 +969,11 @@ def textwindow(*args):
 
         else :
             if pattern == None:
-                for i in xrange(len(g)-middle-nextlen):
+                for i in xrange(len(g)-window+1):
                     yield (  g[i:i+prev] + [' '.join(g[i+prev:i+pm])] + g[i+prev+middle:i+window]  )
             else:
                  patt = re.compile(pattern,re.UNICODE)
-                 for i in xrange(len(g)-middle-nextlen):
+                 for i in xrange(len(g)-window+1):
                     mid = ' '.join(g[i+prev:i+pm])
                     if patt.search(mid):
                         yield (  g[i:i+prev] + [mid] + g[i+pm:i+window]  )
