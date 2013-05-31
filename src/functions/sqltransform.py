@@ -34,12 +34,30 @@ def opcomments(s):
         return []
 
     out = []
+    constr_comm = None
     for i in s.tokens:
+        ui = unicode(i)
         if type(i) == sqlparse.sql.Comment:
-            op = inlineop.match(unicode(i))
+            op = inlineop.match(ui)
             if op != None:
                 out.append(op.groups()[0])
 
+        # Construct comment to work around sqlparse bug
+        if constr_comm != None:
+            constr_comm += ui
+
+        if type(i) == sqlparse.sql.Token:
+            if ui ==u'/*':
+                if constr_comm != None:
+                    constr_comm = None
+                else:
+                    constr_comm = u'/*'
+            elif ui == u'*/':
+                if constr_comm != None:
+                    op = inlineop.match(constr_comm)
+                    if op != None:
+                        out.append(op.groups()[0])
+                    constr_comm = None
     return out
 
 #Top level transform (runs once)
@@ -429,6 +447,8 @@ where iplong>=ipfrom and iplong <=ipto;
     sql+=[r"cache select 5; create temp view as cache select 7; cache select 7"]
     sql+=[r"select * from /** def lala(x): pass **/ tab"]
     sql+=[r"select * from /* def lala(x): pass **/ tab"]
+    sql+=[r"/** def lala():return 6 **/ \n"]
+    sql+=[r"/** def lala():return 6 **/ "]
 
     for s in sql:
         print "====== "+unicode(s)+" ==========="
@@ -437,3 +457,4 @@ where iplong>=ipfrom and iplong <=ipto;
         print "Query Out:", a[0].encode('utf-8')
         print "Vtables:", a[1]
         print "Direct exec:", a[2]
+        print "Inline Ops:", a[3]

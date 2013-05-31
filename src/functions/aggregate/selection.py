@@ -328,7 +328,7 @@ class ontop:
     34   | la   | 34   | la
 
     >>> sql("select ontop(pk) from (select 5 as pk where pk!=5)")
-    top
+    top1
     -
     """
     registered=True
@@ -340,6 +340,7 @@ class ontop:
         self.size=None
         self.lessval=None
         self.stepsnum=0
+        self.argnum = 1
 
     def step(self, *args):
         if not args:
@@ -350,6 +351,7 @@ class ontop:
             try:
                 self.size=int(args[0])
                 self.topn=Queue.PriorityQueue(self.size)
+                self.argnum = len(args)-2
             except ValueError:
                 raise functions.OperatorError("ontop","Wrong type in first argument")
 
@@ -370,10 +372,8 @@ class ontop:
         if self.topn:
             while not self.topn.empty():
                 output+=[self.topn.get_nowait()[1]]
-        if output:
-            yield tuple(["top"+str(i+1) for i in xrange(len(output[0]))])
-        else:
-            yield ("top",)
+
+        yield tuple(["top"+str(i+1) for i in xrange(self.argnum)])
 
         for el in reversed(output):
             yield el
