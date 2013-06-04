@@ -16,8 +16,6 @@ def CreateStatement(description,tablename):
                 types+=['None']
     return schemastr(tablename,names,types)
 
-
-
 def unify(slist):
     if len(set(slist))==len(slist):
         return slist
@@ -42,15 +40,17 @@ def unify(slist):
 
     return uniquelist
 
-import re
 onlyalphnum=re.compile('[a-zA-Z]\w*$')
 
-
-
 def schemastr(tablename,colnames,typenames=None):
-    stripedcolnames=['"'+el+'"' if onlyalphnum.match(el) else '"'+reduce_spaces.sub(' ', el.replace('\n','').replace('\t','')).strip().replace('"','""')+'"' for el in unify(colnames)]
+    stripedcolnames=['"'+el+'"' if onlyalphnum.match(el)
+                                else '"'+reduce_spaces.sub(' ', el.replace('\n','').replace('\t','')).strip().replace('"','""')+'"'
+                                for el in unify(colnames)]
     if not typenames:
         return "create table %s(%s)" %(tablename,','.join([c for c in stripedcolnames]))
     else:
-        stripedtypenames=['' if el.lower()=="none" else el if onlyalphnum.match(el) else '"'+el.replace('"','""')+'"' for el in typenames]
+        stripedtypenames=['' if el.lower()=="none" or el==''
+                            else el if onlyalphnum.match(el)
+                            else '"'+el.replace('"','""')+'"'
+                            for el in typenames]
         return "create table %s(%s)" %(tablename,','.join([c+' '+str(t) for c,t in zip(stripedcolnames,stripedtypenames)]))
