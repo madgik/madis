@@ -61,7 +61,7 @@ class Ordered(vtbase.VT):
         q = cur.execute(query, parse=False)
 
         try:
-            yield list(q.getdescription())
+            yield list(cur.getdescriptionsafe())
         except StopIteration:
             try:
                 raise
