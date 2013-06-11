@@ -58,10 +58,11 @@ class RowidVT(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-        c=envars['db'].cursor().execute(query)
+        cur = envars['db'].cursor()
+        c=cur.execute(query)
 
         try:
-            yield [('rowid', 'integer')] + list(c.getdescription())
+            yield [('rowid', 'integer')] + list(cur.getdescriptionsafe())
         except StopIteration:
             try:
                 raise

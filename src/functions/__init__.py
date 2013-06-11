@@ -228,7 +228,7 @@ class Cursor(object):
                 except:
                     pass
 
-    def getdescription(self):
+    def getdescriptionsafe(self):
         try:
             # Try to get the schema the normal way
             schema = self.__wrapped.getdescription()
