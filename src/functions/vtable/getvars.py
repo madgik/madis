@@ -9,10 +9,9 @@ Returns the defined variables with their values.
     - *value* text
         Variable value
 
-.. toadd See also variables.. LINK ???
+.. toadd See also variables..
 
 Examples:
-
 
     >>> sql("var 'env' 'testing' ")
     var('env','testing')
@@ -28,36 +27,19 @@ Examples:
 
 """
 
-
-from vtiterable import SourceVT
+import vtbase
 import functions
 registered=True
 
-class GetVarsCursor:
-    def __init__(self,list):
-        self.iter=iter(list)
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-    def close(self):
-        pass
-class GetVarsVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-    def getdescription(self):
-        return [('variable',),('value',)]
-    def open(self):
-        return GetVarsCursor([[i,functions.variables.__dict__[i]] for i in functions.variables.__dict__])
-    def disconnect(self):
-        pass
-    def destroy(self):
-        pass
+class GetVars(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        yield [('variable',),('value',)]
+
+        for i in functions.variables.__dict__:
+            yield [i,functions.variables.__dict__[i]]
 
 def Source():
-    return SourceVT(GetVarsVT)
+    return vtbase.VTGenerator(GetVars)
 
 
 
