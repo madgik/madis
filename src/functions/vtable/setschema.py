@@ -25,10 +25,13 @@ Examples::
     col1 | col2
     -----------
     5    | 6
-    >>> sql("select strplitv(q) from (select 5 as q) where q!=5")
+    
+    >>> sql("select strsplitv(q) from (select 5 as q) where q!=5")    #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    SQLError: SQLError: no such function: strplitv
+    DynamicSchemaWithEmptyResultError: Madis SQLError:
+    Operator EXPAND: Cannot initialise dynamic schema virtual table without data
+
     >>> sql("setschema 'a,b' select strsplitv(q) from (select 5 as q) where q!=5")
     a | b
     -----
@@ -42,9 +45,7 @@ Examples::
 
 The query below has constraints preference column to be less than an int value , but preference is text ( outcomes from :func:`~functions.vtable.file.file` are *text*), so an empty result is produced
     
-    >>> sql("select * from (select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3) where preference<634131")
-    userid | colid | preference | usertype
-    -------------
+    >>> sql("select * from (select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3) where cast(preference as int) <634130")
 
 With setschema functions preference column is casted as float.
     
@@ -57,16 +58,14 @@ With setschema functions preference column is casted as float.
 import StringIO
 import setpath
 from lib.sqlitetypes import typestoSqliteTypes
-from vtiterable import SourceVT
+import vtbase
 from lib.iterutils import peekable
 import functions
 import apsw
 from lib.dsv import reader
 from lib.pyparsing import Word, alphas, alphanums, Optional, Group, delimitedList, quotedString , ParseBaseException
 
-
 registered=True
-
 
 ident = Word(alphas+"_",alphanums+"_")
 columnname = ident | quotedString
@@ -77,126 +76,71 @@ def parsesplit(s):
     global listItem
     return delimitedList(listItem).parseString(s,parseAll=True).asList()
 
-
-
-def typed(types,iter):
-    sqlitecoltype=[typestoSqliteTypes(type) for type in types]
-    for el in iter:
-        ret =[]
-        for col,type in zip(el,sqlitecoltype):
-            e=col
-            if type=="INTEGER" or type=="REAL" or type=="NUMERIC":
-                try:
-                    e=int(col)
-                except ValueError:
-                    try:
-                        e=float(col)
-                    except ValueError:
-                        e=col
-            ret+=[e]
-        yield ret
-
 def checkexceptionisfromempty(e):
     e=str(e).lower()
     if 'no' in e and 'such' in e and 'table' in e and 'vt_' in e:
         return True
     return False
 
-class SetschemaCursor:
-    def __init__(self,sqlquery,connection,first,names,types,*largs,**kargs):
+class SetSchema(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
         """
         Works only with one argument splited with ,,,,
         """
-        if first:
-            if len(largs)<1:
-                raise functions.OperatorError(__name__.rsplit('.')[-1]," Schema argument was not provided")
-            try:
-                schema=parsesplit(largs[0])
-            except ParseBaseException:
-                raise functions.OperatorError(__name__.rsplit('.')[-1]," Error in schema definition: %s" %(largs[0]))
-            for el in schema:
-                names.append(el[0])
-                if len(el)>1:
-                    types.append(el[1])
-                else:
-                    types.append('None')
 
-        self.c=connection.cursor()
-        self.openedc=True
+        largs, dictargs = self.full_parse(parsedArgs)
+
+        names = []
+        types = []
+
+        if len(largs)<1:
+            raise functions.OperatorError(__name__.rsplit('.')[-1]," Schema argument was not provided")
         try:
-
-            if first:
-                ### Find names and types
-                execit=peekable(self.c.execute(sqlquery))
-                samplerow=execit.peek()
-                qtypes=[str(v[1]) for v in self.c.getdescription()]
-                if len(qtypes)<len(types):
-                    raise functions.OperatorError(__name__.rsplit('.')[-1],"Setting more columns than result query")
-
-                for i in xrange(len(types)):
-                    if types[i]=="None" and qtypes[i]!="None":
-                        types[i]=qtypes[i]
-                self.iter=typed(types,execit)
+            schema=parsesplit(largs[0])
+        except ParseBaseException:
+            raise functions.OperatorError(__name__.rsplit('.')[-1]," Error in schema definition: %s" %(largs[0]))
+        for el in schema:
+            names.append(el[0])
+            if len(el)>1:
+                types.append(el[1])
             else:
-                self.iter=typed(types,self.c.execute(sqlquery))
-        except StopIteration: ### if exception keep schema
-            try:
-                self.iter=iter([])
-                self.openedc=False
-            finally:
-                try:
-                    self.c.close()
-                except:
-                    pass
-        except apsw.SQLError, e: ### if exception SQLERROR check if it is from empty schema
-            try:
-                if not checkexceptionisfromempty(e):
-                    raise
-                else:
-                    self.iter=iter([])
-                    self.openedc=False
-            finally:
-                try:
-                    self.c.close()
-                except:
-                    pass
+                types.append('None')
 
-    def close(self):
-        if self.openedc:
-            self.c.close()
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
+        query = dictargs['query']
+        c=envars['db'].cursor()
 
-class SetschemaVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.nonames=True
-        self.names=[]
-        self.types=[]
-        if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        if not self.names:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
-        self.nonames=False
-        return [(i,j) for i,j in zip(self.names,self.types)]
-    def open(self):
-        return SetschemaCursor(self.query,self.envdict['db'],self.nonames,self.names,self.types,*self.largs,**self.dictargs)
-    def destroy(self):
-        pass
+        ### Find names and types
+        execit=c.execute(query)
+        qtypes=[str(v[1]) for v in c.getdescriptionsafe()]
 
+        if len(qtypes)<len(types):
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Setting more columns than result query")
 
+        for i in xrange(len(types)):
+            if types[i]=="None" and qtypes[i]!="None":
+                types[i]=qtypes[i]
+
+        yield [(i,j) for i,j in zip(names,types)]
+
+        sqlitecoltype=[typestoSqliteTypes(type) for type in types]
+
+        for row in execit:
+            ret =[]
+            for i,val in enumerate(row):
+                e=val
+                if sqlitecoltype[i] in ("INTEGER", "REAL", "NUMERIC"):
+                    try:
+                        e=int(val)
+                    except ValueError:
+                        try:
+                            e=float(val)
+                        except ValueError:
+                            e=val
+                ret+=[e]
+            yield ret
 
 def Source():
-    return SourceVT(SetschemaVT)
-
-
+    return vtbase.VTGenerator(SetSchema)
 
 if not ('.' in __name__):
     """
