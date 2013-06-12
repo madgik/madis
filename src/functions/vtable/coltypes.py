@@ -33,72 +33,38 @@ Applying coltypes in the result of virtual table func:`typing` function in the s
 """
 
 import setpath
-from vtiterable import SourceVT
+import vtbase
 import functions
 
 registered=True
 
+class ColTypes(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        largs, dictargs = self.full_parse(parsedArgs)
 
-class TypesCursor:
-    def __init__(self,sqlquery,connection,first,results,*resttype,**destypes):
-        if len(resttype)>1:            
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Cannot resolve more than one unbound types")
-
-        self.sqlquery=sqlquery
-        self.connection=connection
-        if first:
-            self.c=self.connection.cursor()
-            execit=self.c.execute(self.sqlquery)
-            try:
-                samplerow=execit.next()
-            except StopIteration:
-                pass
-
-            vals=self.c.getdescription()
-            self.vals=vals
-            self.c.close()
-
-            for i in vals:
-                results.append(i)
-
-        self.iter=iter(results)
-        
-    def close(self):
-        pass
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-
-class TypesVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.nonames=True
-        self.names=["column","type"]
-        self.result=[]
         if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1]," needs query argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        if not self.names:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
-        return [(i,) for i in self.names]
-    def open(self):
-        if self.result!=[]:
-            self.nonames=False
-        return TypesCursor(self.query,self.envdict['db'],self.nonames,self.result,*self.largs,**self.dictargs)
-    def destroy(self):
-        pass
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
 
+        query=dictargs['query']
+        connection=envars['db']
 
+        yield (('column', 'text'), ('type', 'text'))
 
+        cur=connection.cursor()
+        execit=cur.execute(query, parse = False)
+        try:
+            samplerow=execit.next()
+        except StopIteration:
+            pass
+
+        vals=cur.getdescriptionsafe()
+        cur.close()
+
+        for i in vals:
+            yield i
+        
 def Source():
-    return SourceVT(TypesVT,staticschema=True)
-
-
+    return vtbase.VTGenerator(ColTypes)
 
 
 if not ('.' in __name__):
