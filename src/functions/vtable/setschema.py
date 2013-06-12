@@ -55,14 +55,9 @@ With setschema functions preference column is casted as float.
     agr  | a0086 | 634130.0 | agr
 
 """
-import StringIO
-import setpath
 from lib.sqlitetypes import typestoSqliteTypes
 import vtbase
-from lib.iterutils import peekable
 import functions
-import apsw
-from lib.dsv import reader
 from lib.pyparsing import Word, alphas, alphanums, Optional, Group, delimitedList, quotedString , ParseBaseException
 
 registered=True
