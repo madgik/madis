@@ -392,6 +392,11 @@ def regexpr(*args):
     regexpr('\W+','@#$%@$#% tobereplaced @#$%@#$%','nonword')
     ---------------------------------------------------------
     nonwordtobereplacednonword
+
+    >>> sql("select regexpr('(\w+).*?(\w+)', 'one two three')")
+    regexpr('(\w+).*?(\w+)', 'one two three')
+    -----------------------------------------
+    ["one","two"]
     """
     if len(args)<2:
         return
@@ -411,6 +416,35 @@ def regexpr(*args):
 
 regexpr.registered=True
 
+def regexprfindall(*args):
+    """
+    .. function:: regexprfindall(pattern,text)
+
+    This function returns *all* matches of *pattern* in text.
+
+    Examples:
+
+    >>> sql("select regexprfindall('\w+', 'one')")
+    regexprfindall('\w+', 'one')
+    ----------------------------
+    ["one"]
+
+    >>> sql("select regexprfindall('\w+', 'one two three')")
+    regexprfindall('\w+', 'one two three')
+    --------------------------------------
+    ["one","two","three"]
+    """
+    
+    if len(args)!=2:
+        raise functions.OperatorError('regexprfindall', 'Two parameters should be provided')
+
+    a=re.findall(args[0], unicode(args[1]),re.UNICODE)
+    if a!=None:
+        return jopts.tojstrict(a)
+    else:
+        return '[]'
+
+regexprfindall.registered=True
 
 def regexprmatches(*args):
 
