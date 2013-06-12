@@ -438,11 +438,7 @@ def regexprfindall(*args):
     if len(args)!=2:
         raise functions.OperatorError('regexprfindall', 'Two parameters should be provided')
 
-    a=re.findall(args[0], unicode(args[1]),re.UNICODE)
-    if a!=None:
-        return jopts.tojstrict(a)
-    else:
-        return '[]'
+    return jopts.tojstrict(re.findall(args[0], unicode(args[1]),re.UNICODE))
 
 regexprfindall.registered=True
 
