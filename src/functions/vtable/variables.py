@@ -1,5 +1,5 @@
 """
-.. function:: getvars()
+.. function:: variables()
 
 Returns the defined variables with their values.
 
@@ -17,7 +17,7 @@ Examples:
     var('env','testing')
     --------------------
     testing
-    >>> sql("getvars")
+    >>> sql("variables")
     variable | value
     -------------------
     flowname |
@@ -31,15 +31,15 @@ import vtbase
 import functions
 registered=True
 
-class GetVars(vtbase.VT):
+class Variables(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
-        yield [('variable',),('value',)]
+        yield [('variable', 'text'),('value', 'text')]
 
         for i in functions.variables.__dict__:
             yield [i,functions.variables.__dict__[i]]
 
 def Source():
-    return vtbase.VTGenerator(GetVars)
+    return vtbase.VTGenerator(Variables)
 
 
 
