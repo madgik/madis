@@ -32,63 +32,42 @@ Examples::
 """
 
 
-import setpath
 import functions
-from vtiterable import SourceVT
-
+import vtbase
 
 import subprocess
 
 registered=True
 
-class PipeCursor:
-    def __init__(self,command,lines):
+class PipeVT(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        largs, dictargs = self.full_parse(parsedArgs)
+
+        if 'query' not in dictargs:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No command argument ")
+
+        command=dictargs['query']
+        
+        linesplit=True
+        if 'lines' in dictargs and dictargs['lines'][0] in ('f', 'F', '0'):
+            linesplit=False
+
+        yield (('C1', 'text'),)
+
         child=subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output, error = child.communicate()
         if child.returncode!=0:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
         output=unicode(output,'utf-8')
-        if not lines:
-            self.it=iter([[output]])
+
+        if not linesplit:
+            yield [output]
         else:
-            self.it=iter([[i] for i in output.split("\n")])
-    def __iter__(self):
-        return self
-    def next(self):
-        return self.it.next()
-    def close(self):
-        pass
-
-
-
-class PipeVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.names=['C1']
-        self.linesplit=True
-        if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1]," needs command argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-        if 'lines' in dictargs and not dictargs['lines']:
-            self.linesplit=False
-    def getdescription(self):
-        if not self.names:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"VTable getdescription called before initiliazation")
-        return [(i,) for i in self.names]
-    def open(self):
-        return PipeCursor(self.query,self.linesplit)
-    def destroy(self):
-        pass
-
-boolargs=['lines']
+            for i in output.split("\n"):
+                yield [i]
 
 def Source():
-    return SourceVT(PipeVT,boolargs=boolargs,staticschema=True)
-
-
+    return vtbase.VTGenerator(PipeVT)
 
 if not ('.' in __name__):
     """
