@@ -25,11 +25,11 @@ Examples:
         country2 PRIMARY KEY UNIQUE,
         country_name
     );
-    >>> sql("select * from (flow file 'testing/colpref.csv' limit 5) ")
+    >>> sql("select * from (flow file 'testing/colpref.csv' limit 5) ")  #doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
-    ...
-    OperatorError: Madis SQLError: operator flow: Incomplete statement found : userid colid pr ... 41 416900.0 agr
-
+        ...
+    OperatorError: Madis SQLError:
+    Operator FLOW: Incomplete statement found : userid colid pr ... 41 416900.0 agr
 
 Test files:
 
@@ -40,7 +40,7 @@ Test files:
 
 """
 import setpath
-from vtiterable import SourceVT
+import vtbase
 import functions
 import apsw
 import re
@@ -53,65 +53,40 @@ def filterlinecomment(s):
     else:
         return s
 
-def sqlstatement(iter):
-    st=''
-    for row in iter:
-        strow=filterlinecomment(' '.join(row))
-        if strow=='':
-            continue
-        if st!='':
-            st+='\n'+strow
-        else:
-            st+=strow
-        if apsw.complete(st):
-            yield [st]
-            st=''
-    if len(st)>0 and not re.match(r'\s+$', st, re.DOTALL| re.UNICODE):
-        if len(st)>35:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s ... %s" %(st[:15],st[-15:]))
-        else:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s" %(st))
-    return
+class FlowVT(vtbase.VT):
+    def VTiter(self, *parsedArgs,**envars):
+        largs, dictargs = self.full_parse(parsedArgs)
 
-
-
-class PlanCursor:
-    def __init__(self,sqlquery,connection):
-        self.sqlquery=sqlquery
-        self.connection=connection
-        self.c=self.connection.cursor()
-        self.iter=sqlstatement(self.c.execute(self.sqlquery))
-    def close(self):
-        self.c.close()
-    def next(self):
-        return self.iter.next()
-    def __iter__(self):
-        return self
-
-class PlanVT:
-    def __init__(self,envdict,largs,dictargs): #DO NOT DO ANYTHING HEAVY
-        self.largs=largs
-        self.envdict=envdict
-        self.dictargs=dictargs
-        self.nonames=True
-        self.names=['query']
-        self.types=[]
         if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"needs query argument ")
-        self.query=dictargs['query']
-        del dictargs['query']
-    def getdescription(self):
-        return [(i,) for i in self.names]
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
 
-    def open(self):
-        return PlanCursor(self.query,self.envdict['db'])
-    def destroy(self):
-        pass
+        query=dictargs['query']
+        connection=envars['db']
+        
+        yield (('query', 'text'),)
+        cur=connection.cursor()
+        execit=cur.execute(query, parse = False)
 
-
+        st=''
+        for row in execit:
+            strow=filterlinecomment(' '.join(row))
+            if strow=='':
+                continue
+            if st!='':
+                st+='\n'+strow
+            else:
+                st+=strow
+            if apsw.complete(st):
+                yield [st]
+                st=''
+        if len(st)>0 and not re.match(r'\s+$', st, re.DOTALL| re.UNICODE):
+            if len(st)>35:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s ... %s" %(st[:15],st[-15:]))
+            else:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Incomplete statement found : %s" %(st))
 
 def Source():
-    return SourceVT(PlanVT,staticschema=True)
+    return vtbase.VTGenerator(FlowVT)
 
 
 
