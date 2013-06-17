@@ -75,7 +75,7 @@ class MySQL(vtbase.VT):
         db = str(dictargs.get('db', ''))
 
         try:
-            conn = DBAPI.connect(host=host, user=user, password=passwd, database=db, port=port)
+            conn = DBAPI.connect(host=host, user=user, password=passwd, database=db, port=port, socket_timeout=3600)
 
             cur = conn.cursor()
             cur.execute(query)
