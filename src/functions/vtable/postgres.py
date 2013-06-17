@@ -84,6 +84,8 @@ class MySQL(vtbase.VT):
 
             for i in cur:
                 yield i
+
+            cur.close()
         except Exception, e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], ' '.join(str(t) for t in e))
         
