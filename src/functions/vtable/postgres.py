@@ -75,7 +75,6 @@ class MySQL(vtbase.VT):
         db = str(dictargs.get('db', ''))
 
         try:
-#            conn = bpgsql.connect(host=host, username=user, password=passwd, dbname=db, port=port)
             conn = DBAPI.connect(host=host, user=user, password=passwd, database=db, port=port)
 
             cur = conn.cursor()
