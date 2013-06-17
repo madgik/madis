@@ -110,7 +110,7 @@ class RangeVT(vtbase.VT):
             fromv=1
             tov=int(dictargs['query'])+1
 
-        yield [('C1',)]
+        yield [('C1', 'int')]
 
         for i in xrange(fromv,tov,stepv):
             yield [i]
