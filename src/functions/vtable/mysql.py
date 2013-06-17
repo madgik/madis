@@ -1,7 +1,7 @@
 """
 .. function:: mysql(host, port, user, passwd, db, query:None)
 
-Connects to an MySQL and returns the results of query.
+Connects to an MySQL DB and returns the results of query.
 
 Examples:
 
