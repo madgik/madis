@@ -5,7 +5,7 @@ Connects to an PostgreSQL DB and returns the results of query.
 
 Examples:
 
-    >>> sql("select * from (postgres h:127.0.0.1 port:3306 u:root p:rootpw db:mysql select 5 as num, 'test' as text);")
+    >>> sql("select * from (postgres h:127.0.0.1 port:5432 u:root p:rootpw db:testdb select 5 as num, 'test' as text);")
     num | text
     -----------
     5   | test
