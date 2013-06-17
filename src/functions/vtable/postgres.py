@@ -18,7 +18,7 @@ import functions
 
 registered=True
 
-class MySQL(vtbase.VT):
+class Postgres(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         from lib.pg8000 import DBAPI
         DBAPI.warn = lambda x,stacklevel:x
@@ -90,7 +90,7 @@ class MySQL(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1], ' '.join(str(t) for t in e))
         
 def Source():
-    return vtbase.VTGenerator(MySQL)
+    return vtbase.VTGenerator(Postgres)
 
 
 if not ('.' in __name__):
