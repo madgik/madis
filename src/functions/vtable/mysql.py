@@ -79,13 +79,16 @@ class MySQL(vtbase.VT):
                 for i in cur:
                     yield i
 
-            conn.close()
-
         except (pymysql.err.InternalError, pymysql.err.ProgrammingError) as e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], str(e[0]) +': ' + e[1])
         except Exception, e:
             print e, type(e)
             raise functions.OperatorError(__name__.rsplit('.')[-1], str(e))
+        finally:
+            try:
+                conn.close()
+            except:
+                pass
 
         
 def Source():
