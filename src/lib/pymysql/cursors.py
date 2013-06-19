@@ -313,7 +313,10 @@ class SSCursor(Cursor):
     
     def close(self):
         conn = self._get_db()
-        conn._result._finish_unbuffered_query()
+        try:
+            conn._result._finish_unbuffered_query()
+        except AttributeError:
+            pass
         
         try:
             if self._has_next:
