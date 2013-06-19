@@ -704,6 +704,7 @@ class XMLparse(vtbase.VT):
                             taglower = el.tag.lower()
                             if capture:
                                 xpath.append(taglower)
+                                # duplicate nested tag detection
                                 if clmatchtag(taglower, treeroot):
                                     resetrow()
                                     xpath = []
@@ -722,7 +723,6 @@ class XMLparse(vtbase.VT):
                                     if eltext!='':
                                         addtorow(xpath, eltext)
                                 if lmatchtag(el.tag.lower(), treeroot):
-                                    root.clear()
                                     if treeroot==None:
                                         if self.strict>=0 and len(self.rowobj.rowdata)!=0:
                                             yield self.rowobj.row
@@ -731,6 +731,7 @@ class XMLparse(vtbase.VT):
                                         if self.strict>=0:
                                             yield self.rowobj.row
                                     resetrow()
+                                    root.clear()
 
                                 if len(xpath)>0:
                                     xpath.pop()
