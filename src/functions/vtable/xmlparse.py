@@ -179,6 +179,20 @@ Examples:
     <a><b>row1val2</b</a>
     <a><b>row1val3/b></a>
 
+    >>> table5('''
+    ... '<a><b><a><b>row1val1</b></a></b></a>'
+    ... '<a><b>row2val1</b></a>'
+    ... '<a><b>row3val1</b></a>'
+    ... '<a><b>row4val1</b><c>row4val2</c>'
+    ... '</a>'
+    ... ''')
+    >>> sql('''select * from (xmlparse '["a/b", "a/c"]' select * from table5)''')
+    b        | c
+    -------------------
+    row1val1 |
+    row2val1 |
+    row3val1 |
+    row4val1 | row4val2
 """
 import vtbase
 import functions
@@ -675,18 +689,26 @@ class XMLparse(vtbase.VT):
                 resetrow=self.rowobj.resetrow
                 if self.subtreeroot==None:
                     lmatchtag=lambda x,y:True
+                    clmatchtag=lambda x,y:False
                     capture=True
                 else:
                     lmatchtag=matchtag
+                    clmatchtag=matchtag
+
                 try:
+                    treeroot = self.subtreeroot
                     root=etreeparse.next()[1]
 
                     for ev, el in etreeparse:
                         if ev=='start':
+                            taglower = el.tag.lower()
                             if capture:
-                                xpath.append(el.tag.lower())
+                                xpath.append(taglower)
+                                if clmatchtag(taglower, treeroot):
+                                    resetrow()
+                                    xpath = []
                             else:
-                                capture=lmatchtag(el.tag.lower(), self.subtreeroot)
+                                capture=lmatchtag(taglower, treeroot)
 
                             if capture:
                                 if el.attrib!={}:
@@ -699,9 +721,9 @@ class XMLparse(vtbase.VT):
                                     eltext=el.text.strip()
                                     if eltext!='':
                                         addtorow(xpath, eltext)
-                                if lmatchtag(el.tag.lower(), self.subtreeroot):
+                                if lmatchtag(el.tag.lower(), treeroot):
                                     root.clear()
-                                    if self.subtreeroot==None:
+                                    if treeroot==None:
                                         if self.strict>=0 and len(self.rowobj.rowdata)!=0:
                                             yield self.rowobj.row
                                     else:
