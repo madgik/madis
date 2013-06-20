@@ -117,7 +117,7 @@ class OperatorError(MadisError):
 
 class DynamicSchemaWithEmptyResultError(MadisError):
     def __init__(self,opname):
-        self.msg="Operator %s: Cannot initialise dynamic schema virtual table without data" %(mstr(opname.upper()))
+        self.msg="Operator %s: Cannot initialize dynamic schema virtual table without data" %(mstr(opname.upper()))
 
 def echofunctionmember(func):
     def wrapper(*args, **kw):
