@@ -28,7 +28,7 @@ class StdInput(vtbase.VT):
             a = sys.stdin.readline()
             if not a:
                 break
-            yield (a.rstrip('\r\n'),)
+            yield (unicode(a.rstrip('\r\n'), 'utf_8'),)
 
 def Source():
     return vtbase.VTGenerator(StdInput)
