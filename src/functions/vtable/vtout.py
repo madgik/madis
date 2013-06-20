@@ -51,7 +51,7 @@ class doall(object):
             cexec = c.execute(self.query, parse = False)
 
             try:
-                schema = c.getdescription()
+                schema = c.getdescriptionsafe()
             except functions.ExecutionCompleteError:
                 raise functions.DynamicSchemaWithEmptyResultError("got empty input")
         
