@@ -70,19 +70,20 @@ class MySQL(vtbase.VT):
             conn = pymysql.connect(host=host, port=port, user=user, passwd=passwd, db=db, use_unicode = True)
 
             cur = conn.cursor(pymysql.cursors.SSCursor)
-            cit=cur.execute(query)
+            cur.execute(query)
 
-            if cit == 0:
-                yield [('None', '')]
+            desc = cur.description
+            if desc == None:
+                yield [( 'None', )]
             else:
-                yield [( c[0], typetrans.get(c[1], '') ) for c in cur.description]
-                for i in cur:
-                    yield i
+                yield [( c[0], typetrans.get(c[1], '') ) for c in desc]
+
+            for i in cur:
+                yield [unicode(c) if type(c) not in (long, int, float, str, unicode) else c for c in i]
 
         except (pymysql.err.InternalError, pymysql.err.ProgrammingError) as e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], str(e[0]) +': ' + e[1])
         except Exception, e:
-            print e, type(e)
             raise functions.OperatorError(__name__.rsplit('.')[-1], str(e))
         finally:
             try:
