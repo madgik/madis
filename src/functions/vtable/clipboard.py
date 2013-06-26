@@ -74,16 +74,16 @@ class clipboard(vtbase.VT):
                 delim = None
 
         else:
-            if self.checkfordelimiter(' ') and len(data)>1:
-                delim = ' '
-            elif self.checkfordelimiter(':'):
-                delim = ':'
-            elif self.checkfordelimiter(';'):
-                delim = ';'
+            if self.checkfordelimiter('\t'):
+                delim = '\t'
             elif self.checkfordelimiter(','):
                 delim = ','
-            elif self.checkfordelimiter('\t'):
-                delim = '\t'
+            elif self.checkfordelimiter(';'):
+                delim = ';'
+            elif self.checkfordelimiter(':'):
+                delim = ':'
+            elif self.checkfordelimiter(' ') and len(data)>1:
+                delim = ' '
 
         if delim != None:
             data=[i.split(delim) for i in data]
