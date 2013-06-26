@@ -109,7 +109,7 @@ def reloadfunctions():
     tmp_vars=functions.variables
     connection.close()
     try:
-        [lib.reimport.reimport(x) for x in modified if x != '__main__']
+        lib.reimport.reimport(*[x for x in modified if x != '__main__'])
     except ValueError:
         pass
 
