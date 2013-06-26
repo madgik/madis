@@ -27,7 +27,7 @@ external_stream=True
 class clipboard(vtbase.VT):
     def __init__(self):
         self.schema=[('C1', 'text')]
-        self.count = 0
+        self.count = None
 
     def checkfordelimiter(self, delim = '\t'):
         #check for regular schema
@@ -45,6 +45,7 @@ class clipboard(vtbase.VT):
         return hasschema
 
     def VTiter(self, *parsedArgs, **envars):
+        largs, dictargs = self.full_parse(parsedArgs)
         import lib.pyperclip as clip
         data=unicode(clip.getcb(), 'utf_8')
 
@@ -61,25 +62,30 @@ class clipboard(vtbase.VT):
                 break
 
         self.data = data
+        delim = None
 
-        hasschema = False
-        if self.checkfordelimiter('\t'):
-            delim = '\t'
-            hasschema = True
-        elif self.checkfordelimiter(','):
-            delim = ','
-            hasschema = True
-        elif self.checkfordelimiter(';'):
-            delim = ';'
-            hasschema = True
-        elif self.checkfordelimiter(':'):
-            delim = ':'
-            hasschema = True
-        elif self.checkfordelimiter(' ') and len(data)>1:
-            delim = ' '
-            hasschema = True
+        if 'delimiter' in dictargs:
+            delim = dictargs['delimiter']
 
-        if hasschema:
+            if delim == r'\t':
+                delim = '\t'
+
+            if delim == '':
+                delim = None
+
+        else:
+            if self.checkfordelimiter(' ') and len(data)>1:
+                delim = ' '
+            elif self.checkfordelimiter(':'):
+                delim = ':'
+            elif self.checkfordelimiter(';'):
+                delim = ';'
+            elif self.checkfordelimiter(','):
+                delim = ','
+            elif self.checkfordelimiter('\t'):
+                delim = '\t'
+
+        if delim != None:
             data=[i.split(delim) for i in data]
             self.schema = None
             header = False
@@ -93,10 +99,14 @@ class clipboard(vtbase.VT):
                 self.schema = [(c,'text') for c in data[0]]
                 data = data[1:]
             else:
-                self.schema=[('C'+str(i),'text') for i in xrange(1, self.count+2)]
-
+                if self.count == None:
+                    count = len(data[0]) + 1
+                else:
+                    count = self.count + 2
+                    
+                self.schema=[('C'+str(i),'text') for i in xrange(1, count)]
         else:
-            data=[[r] for r in data]
+            data = [[r] for r in data]
 
         yield self.schema
 
