@@ -892,6 +892,11 @@ class pearson:
     pearson(c1,pyfun('math.pow',2,c1))
     ----------------------------------
     0.456349821382
+
+    >>> sql("select pearson(a,b) from (select 1 as a, 2 as b)")
+    pearson(a,b)
+    ------------
+    0
     """
 
     registered=True #Value to define db operator
@@ -924,8 +929,13 @@ class pearson:
         if self.n==0:
             return None
 
-        return (self.n*self.sXY-self.sX*self.sY)/     \
-   (math.sqrt(self.n*self.sX2-self.sX*self.sX)*math.sqrt(self.n*self.sY2-self.sY*self.sY))
+        d = (math.sqrt(self.n*self.sX2-self.sX*self.sX)*math.sqrt(self.n*self.sY2-self.sY*self.sY))
+
+        if d == 0:
+            return 0
+
+        return float((self.n*self.sXY-self.sX*self.sY)/d)
+   
 
 
 if not ('.' in __name__):
