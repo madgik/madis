@@ -740,7 +740,7 @@ while True:
 
             desc = []
             try:
-                desc = cursor.getdescription()
+                desc = cursor.getdescriptionsafe()
                 newcols=[x for x,y in desc]
                 lastcols[0:len(newcols)]=newcols
             except apsw.ExecutionCompleteError, e:
@@ -792,6 +792,7 @@ while True:
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
             emsg=unicode(e)
             if pipedinput:
+                print
                 exitwitherror(functions.mstr(emsg))
             try:
                 if u'Error:' in emsg:
@@ -810,6 +811,7 @@ while True:
                     break
             msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
             if pipedinput:
+                print
                 exitwitherror(functions.mstr(msg))
             print msg
 
