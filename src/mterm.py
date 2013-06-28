@@ -18,6 +18,7 @@ import re
 import apsw
 import functions
 import traceback
+import json
 
 pipedinput=not sys.stdin.isatty()
 
@@ -737,17 +738,28 @@ while True:
         try:
             cexec=cursor.execute(statement)
 
+            desc = []
             try:
-                newcols=[x for x,y in cursor.getdescription()]
+                desc = cursor.getdescription()
+                newcols=[x for x,y in desc]
                 lastcols[0:len(newcols)]=newcols
             except apsw.ExecutionCompleteError, e:
+                desc = []
                 newcols=[]
 
             colorama.init()
             rownum=0
-            for row in cexec:
-                printrow(row)
-                rownum+=1
+            
+            if not pipedinput:
+                for row in cexec:
+                    printrow(row)
+                    rownum+=1
+            else:
+                print(json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False))
+                for row in cexec:
+                    print(json.dumps(row, separators=(',',':'), ensure_ascii=False))
+                print
+
             cursor.close()
 
             after=datetime.datetime.now()
