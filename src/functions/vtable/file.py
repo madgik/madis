@@ -276,7 +276,7 @@ class FileCursor:
             else:
                 raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
 
-            self.iter = itertools.imap(json.loads, self.fileiter)
+            self.iter = itertools.imap( json.loads, (x for x in self.fileiter if x[0]=='[') )
             return
 
         if filenameExt =='.csv':
