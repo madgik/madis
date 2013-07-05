@@ -37,7 +37,7 @@ urllike=re.compile('^((?:http(?:s)?|ftp)://)(?:(?:[A-Z0-9]+(?:-*[A-Z0-9]+)*\.)+[
 urlstart=re.compile('^(http(?:s)?|ftp)', re.IGNORECASE)
 
 boolargs = ['skipinitialspace', 'doublequote']
-nonstringargs = {'quoting':{'QUOTE_ALL':csv.QUOTE_ALL, 'QUOTE_NONE':csv.QUOTE_NONE, 'QUOTE_MINIMAL':csv.QUOTE_MINIMAL, 'QUOTE_NONNUMERIC':csv.QUOTE_NONNUMERIC}, 'dialect':{'line':line(),'tsv':tsv(),'csv':defaultcsv()}}
+nonstringargs = {'quoting':{'QUOTE_ALL':csv.QUOTE_ALL, 'QUOTE_NONE':csv.QUOTE_NONE, 'QUOTE_MINIMAL':csv.QUOTE_MINIMAL, 'QUOTE_NONNUMERIC':csv.QUOTE_NONNUMERIC}, 'dialect':{'line':line(),'tsv':tsv(),'csv':defaultcsv(), 'json':'json'}}
 needsescape=['delimiter','quotechar','lineterminator']
 
 class InputsError(Exception):
