@@ -15,6 +15,7 @@ Examples:
 import setpath
 import vtbase
 import functions
+from types import NoneType
 
 registered=True
 
@@ -83,7 +84,7 @@ class Postgres(vtbase.VT):
             yield [(c[0], typetrans.get(c[1], '')) for c in cur.description]
 
             for i in cur:
-                yield i
+                yield [unicode(c) if type(c) not in (long, int, float, str, unicode, NoneType, bool) else c for c in i]
 
             cur.close()
         except Exception, e:
