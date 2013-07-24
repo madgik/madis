@@ -125,9 +125,10 @@ class Expand(vtbase.VT):
         iterheader = functions.iterheader
         lenIH = len(iterheader)
 
-        c=self.connection.cursor().execute(query, parse = False)
+        cur = self.connection.cursor()
+        c= cur.execute(query, parse = False)
 
-        schema = c.getdescription()
+        schema = cur.getdescriptionsafe()
         self.nonames = True
         types = []
         orignames = [x[0] for x in schema]
@@ -137,8 +138,14 @@ class Expand(vtbase.VT):
         nnames = []
         ttypes=[]
 
-        row = c.next()
+        try:
+            row = c.next()
+        except StopIteration:
+            yield schema
+            return
+
         rowlen = len(row)
+
         for i in xrange(rowlen):
             obj=row[i]
             if type(obj)==buffer and obj[:lenIH]==iterheader:
