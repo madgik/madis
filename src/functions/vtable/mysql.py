@@ -15,6 +15,7 @@ Examples:
 import setpath
 import vtbase
 import functions
+from types import NoneType
 
 registered=True
 
@@ -79,7 +80,7 @@ class MySQL(vtbase.VT):
                 yield [( c[0], typetrans.get(c[1], '') ) for c in desc]
 
             for i in cur:
-                yield [unicode(c) if type(c) not in (long, int, float, str, unicode) else c for c in i]
+                yield [unicode(c) if type(c) not in (long, int, float, str, unicode, NoneType, bool) else c for c in i]
 
         except (pymysql.err.InternalError, pymysql.err.ProgrammingError) as e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], str(e[0]) +': ' + e[1])

@@ -309,7 +309,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 else:
                     cursors = []
                     dbcon = []
-                    if "MSPW" in apsw.apswversion():
+                    if "MSPW" in functions.apsw_version:
                         prepedqueries = []
                         for i in xrange(0,maxparts):
                             t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)

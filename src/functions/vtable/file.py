@@ -231,7 +231,10 @@ class FileCursor:
                 if self.fast or compression or (pathname!=None and ( pathname.endswith('.gz') or pathname.endswith('.gzip') )):
                     self.fileiter=open(filename,"r", buffering=1000000)
                 else:
-                    self.fileiter=open(filename,"rU", buffering=1000000)
+                    if "MSPW" in functions.apsw_version:
+                        self.fileiter=open(filename,"r", buffering=1000000)
+                    else:
+                        self.fileiter=open(filename,"rU", buffering=1000000)
             else:
                 pathname=urlparse.urlparse(filename)[2]
                 req=urllib2.Request(filename,None,extraurlheaders)
