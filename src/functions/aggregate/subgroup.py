@@ -77,6 +77,70 @@ class groupsum:
             yield cols
 
 
+class groupmax:
+    """
+    .. function:: groupsum(n,col1,col2,col3,....)
+
+    groups by the first n columns of the input, and sums/jsets the rest.
+
+    :Returned schema:
+        Columns are automatically named as col1, col2 ...
+
+    Examples:
+
+    >>> table1('''
+    ... aa  t1 43
+    ... ac  t2 34
+    ... aa  t3 12
+    ... ab  t4 21
+    ... ac  t5 14
+    ... as  t6 23
+    ... ''')
+    >>> sql("select groupmax(1,a,b,c) from table1")
+    c1 | c2 | c3
+    ------------
+    ac | t5 | 34
+    aa | t3 | 43
+    ab | t4 | 21
+    as | t6 | 23
+
+    """
+    registered=True
+
+    def __init__(self):
+        self.notchecked = True
+        self.groupsdict = {}
+        self.grouplen = 0
+        self.numofargs = 0
+    def step(self, *args):
+        if self.notchecked:
+            if len(args)<2:
+                raise functions.OperatorError("groupsum","Wrong number of arguments")
+            self.grouplen = args[0]
+            self.numofargs = len(args)
+            self.notchecked = False
+
+        groupkey = args[1:self.grouplen+1]
+        try:
+            group = self.groupsdict[groupkey]
+            j = 0
+            for i in xrange(self.grouplen+1,self.numofargs):
+                group[j].append(args[i])
+                j += 1
+        except KeyError:
+            self.groupsdict[groupkey] = [[x] for x in args[self.grouplen+1:]]
+
+    def final(self):
+        yield tuple('c'+str(i) for i in xrange(1,self.numofargs))
+        for groupkey, sumcols in self.groupsdict.iteritems():
+            cols = list(groupkey)
+            for col in sumcols:
+                cols.append(max(col))
+
+            yield cols
+
+
+
 class condbreak:
     """
 
@@ -117,8 +181,6 @@ class condbreak:
     user21   | open
     user21   | write
     >>> sql("select condbreak(b,c,c='open',a) from (select 4 as a, 6 as b, 9 as c where c!=9)")
-    bgroupid | C1
-    -----
 
     """
     registered=True
