@@ -79,9 +79,9 @@ class groupsum:
 
 class groupmax:
     """
-    .. function:: groupsum(n,col1,col2,col3,....)
+    .. function:: groupmax(n,col1,col2,col3,....)
 
-    groups by the first n columns of the input, and sums/jsets the rest.
+    groups by the first n columns of the input, and max the rest.
 
     :Returned schema:
         Columns are automatically named as col1, col2 ...
