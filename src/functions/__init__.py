@@ -31,6 +31,7 @@ except ImportError:
 sys.setcheckinterval(1000)
 
 sqlite_version = apsw.sqlitelibversion()
+apsw_version = apsw.apswversion()
 
 VTCREATE = 'create virtual table temp.'
 SQLITEAFTER3711 = False

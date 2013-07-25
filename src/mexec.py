@@ -8,7 +8,7 @@ import json
 
 def exitwitherror(txt):
     sys.stderr.write(txt+'\n')
-    sys.exit()
+    sys.exit(1)
 
 def main():
     desc="""Use this program to run madSQL queries on data coming from standard input. You may provide a database to run your queries. Results are streamed to standard output.

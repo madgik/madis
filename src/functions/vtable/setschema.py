@@ -99,7 +99,7 @@ class SetSchema(vtbase.VT):
             if len(el)>1:
                 types.append(el[1])
             else:
-                types.append('None')
+                types.append('')
 
         query = dictargs['query']
         c=envars['db'].cursor()
@@ -108,18 +108,17 @@ class SetSchema(vtbase.VT):
         execit=c.execute(query)
         qtypes=[str(v[1]) for v in c.getdescriptionsafe()]
 
-        if len(qtypes)<len(types):
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Setting more columns than result query")
-
         for i in xrange(len(types)):
-            if types[i]=="None" and qtypes[i]!="None":
+            if types[i]=='' and i<len(qtypes) and qtypes[i]!='':
                 types[i]=qtypes[i]
 
         yield [(i,j) for i,j in zip(names,types)]
 
         sqlitecoltype=[typestoSqliteTypes(type) for type in types]
 
+        namelen = len(names)
         for row in execit:
+            row = row[:namelen] + (None,) * (namelen - len(row))
             ret =[]
             for i,val in enumerate(row):
                 e=val
