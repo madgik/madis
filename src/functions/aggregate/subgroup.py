@@ -16,7 +16,7 @@ class groupsum:
     """
     .. function:: groupsum(n,col1,col2,col3,....)
 
-    groups by the first n columns of the input, and sums/jsets the rest.
+    It groups by the first n columns of the input, and sums/jsets the rest.
 
     :Returned schema:
         Columns are automatically named as col1, col2 ...
@@ -81,7 +81,7 @@ class groupmax:
     """
     .. function:: groupmax(n,col1,col2,col3,....)
 
-    groups by the first n columns of the input, and max the rest.
+    It groups by the first n columns of the input, and returns the maximum value of the rest.
 
     :Returned schema:
         Columns are automatically named as col1, col2 ...
@@ -115,7 +115,7 @@ class groupmax:
     def step(self, *args):
         if self.notchecked:
             if len(args)<2:
-                raise functions.OperatorError("groupsum","Wrong number of arguments")
+                raise functions.OperatorError("groupmax","Wrong number of arguments")
             self.grouplen = args[0]
             self.numofargs = len(args)
             self.notchecked = False
