@@ -196,7 +196,7 @@ Examples:
 """
 import vtbase
 import functions
-from lib import htmlentitydefs
+from lib import htmlentities as htmlentities
 import json
 import cStringIO as StringIO
 import StringIO as unicodeStringIO
@@ -572,7 +572,7 @@ class XMLparse(vtbase.VT):
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.htmlentities=htmlentitydefs.name2codepoint.copy()
+                self.htmlentities=htmlentities.name2codepoint.copy()
                 del(self.htmlentities['amp'])
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
@@ -581,7 +581,10 @@ class XMLparse(vtbase.VT):
                 if self.fast==2:
                     self.header=self.forcedroottag
                 else:
-                    self.header='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])+']>\n'+self.forcedroottag
+                    self.header  ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])
+                    self.header += ''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in htmlentities.html5.iteritems()])
+                    self.header +=']>\n'+self.forcedroottag
+#                print self.header
                 self.replacexmlheaders=re.compile(r'\<\?xml.+?(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.deldoctype=re.compile(r'\<!DOCTYPE[^>]+?\>', re.DOTALL| re.UNICODE)
