@@ -196,7 +196,7 @@ Examples:
 """
 import vtbase
 import functions
-import htmlentitydefs
+from lib import htmlentitydefs
 import json
 import cStringIO as StringIO
 import StringIO as unicodeStringIO
