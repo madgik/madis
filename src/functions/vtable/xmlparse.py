@@ -584,7 +584,6 @@ class XMLparse(vtbase.VT):
                     self.header  ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])
                     self.header += ''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in htmlentities.html5.iteritems()])
                     self.header +=']>\n'+self.forcedroottag
-#                print self.header
                 self.replacexmlheaders=re.compile(r'\<\?xml.+?(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.deldoctype=re.compile(r'\<!DOCTYPE[^>]+?\>', re.DOTALL| re.UNICODE)
