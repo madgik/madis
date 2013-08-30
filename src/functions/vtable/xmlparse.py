@@ -196,7 +196,6 @@ Examples:
 """
 import vtbase
 import functions
-from lib import htmlentities as htmlentities
 import json
 import cStringIO as StringIO
 import StringIO as unicodeStringIO
@@ -568,21 +567,22 @@ class XMLparse(vtbase.VT):
 
         class inputio():
             def __init__(self, connection, query, fast=False):
+                from lib import htmlentities as htmlentities
+
                 self.lastline=''
                 self.read=self.readstart
                 self.qiter=connection.cursor().execute(query)
                 self.fast=fast
-                self.htmlentities=htmlentities.name2codepoint.copy()
-                del(self.htmlentities['amp'])
+                self.htmlentities=htmlentities.entities.copy()
                 del(self.htmlentities['lt'])
                 del(self.htmlentities['gt'])
-                del(self.htmlentities['quot'])
+#                del(self.htmlentities['quot'])
+#                del(self.htmlentities['amp'])
                 self.forcedroottag='<xmlparce-forced-root-element>\n'
                 if self.fast==2:
                     self.header=self.forcedroottag
                 else:
-                    self.header  ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x+' "&#'+str(v)+';">' for x,v in self.htmlentities.iteritems()])
-                    self.header += ''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in htmlentities.html5.iteritems()])
+                    self.header  ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in self.htmlentities.iteritems()])
                     self.header +=']>\n'+self.forcedroottag
                 self.replacexmlheaders=re.compile(r'\<\?xml.+?(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.finddatatag=re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
