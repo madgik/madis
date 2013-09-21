@@ -763,8 +763,7 @@ def jdictsplit(*args):
 
     d=json.loads(args[0])
     if len(args)==1:
-        d=d.items()
-        d.sort(key=operator.itemgetter(1,0))
+        d=sorted(d.items())
         yield tuple([x[0] for x in d])
         yield [jopts.toj(x[1]) for x in d]
     else:
