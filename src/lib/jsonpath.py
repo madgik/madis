@@ -295,7 +295,6 @@ def jsonpath(obj, expr, result_type='VALUE', debug=0, use_eval=True):
     # body of jsonpath()
 
     # Get caller globals so eval can pick up user functions!!!
-    caller_globals = sys._getframe(1).f_globals
     result = []
     if expr and obj:
         cleaned_expr = normalize(expr)
