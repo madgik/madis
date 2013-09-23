@@ -873,8 +873,7 @@ def jcombinations(*args):
     t2 | ["t3","t4"]
 
     >>> sql('''select jcombinations(null,2)''')
-    C1 | C2
-    -----
+
 
     >>> sql('''select jcombinations('["t1","t2","t3","t4"]')''')
     C1
@@ -925,8 +924,6 @@ def jpermutations(*args):
     ["t3","t4"] | t2
 
     >>> sql('''select jpermutations(null,2)''')
-    C1 | C2
-    -----
 
     >>> sql('''select jpermutations('["t1","t2","t3","t4"]')''')
     C1
@@ -991,8 +988,6 @@ def jsonpath(*args):
     ["n1","n2"] | v1
     
     >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.nonexisting') ''')
-    C1
-    -
 
 
     """
