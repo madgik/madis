@@ -998,10 +998,9 @@ def jsonpath(*args):
     """
 
     j = json.loads(args[0])
-    jpargs=args[1:]
 
     yield tuple( ('C'+str(x)for x in xrange( 1,len(args) ) )   )
-    output=[libjsonpath(j, jp, use_eval=False) for jp in jpargs]
+    output=[libjsonpath(j, jp, use_eval=False) for jp in args[1:]]
 
     l=0
     lchanges=0
