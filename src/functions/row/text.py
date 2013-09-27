@@ -907,6 +907,98 @@ def hashmodarchdep(*args):
 
 hashmodarchdep.registered=True
 
+
+def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
+    """
+    >>> table1('''
+    ... eeeeeeeeeeeeee
+    ... gggggggggggggg
+    ... aaaaaaaaaaaaaa
+    ... bbbbbbbbbbbbbb
+    ... aaa_1914_ccccc
+    ... bbb_2014_bbbbb
+    ... dddd_2008_ddddddd
+    ... cccc_2005_ccccc
+    ... ccccc_2014_ccccc
+    ... dddddd_2009_ddddd
+    ... gggggggggggggg
+    ... ''')
+
+    >>> sql("select textreferences(group_concat(a,'\\n'),'(\b|_)(1|2)\d{3,3}(\b|_)',1) as a from table1")
+    a
+    --------------------------------------------------------------------------------------------------
+    aaa_1914_ccccc bbb_2014_bbbbb dddd_2008_ddddddd cccc_2005_ccccc ccccc_2014_ccccc dddddd_2009_ddddd
+    """
+
+
+    exp = re.sub('\r\n','\n',txt)
+    references = []
+    reversedtext = iter(reversed(exp.split('\n')))
+    reversedtext2 = iter(reversed(exp.split('\n')))
+    results = []
+    densities = []
+    winlen = 0
+
+
+    for i in reversedtext:
+        if len(i)>10:
+            if re.search(pattern,i):
+                    results.append(1)
+            else:
+                    results.append(0)
+    tmpmax = 0
+    maximum = 0
+    win = deque(('' for _ in xrange(maxlen)),maxlen)
+    for i in results:
+
+        if winlen<maxlen:
+            winlen+=1
+            win.append(i)
+            tmpmax += i
+        else:
+            tmpmax -= win.popleft()
+            tmpmax += i
+            win.append(i)
+        densities.append(float(tmpmax)/maxlen)
+        if float(tmpmax)/maxlen>maximum:
+            maximum = float(tmpmax)/maxlen
+    #threshold = sorted(densities)[len(densities)/2]
+    threshold =  sum(densities)/len(densities)
+
+    winlen = 0
+    win = deque(('' for _ in xrange(maxlen)),maxlen)
+    current = 0
+    start = 0
+    for i in reversedtext2:
+        if len(i)>10:
+            if  winlen == maxlen and densities[current]>=threshold:
+                if start == 1:
+                    start = 0
+                    for j in xrange(maxlen/2):
+                        references.append(win[j])
+
+                references.append(win[maxlen/2])
+            win.append(i)
+            if winlen<maxlen:
+                winlen+=1
+                if winlen == maxlen:
+                    start = 1
+            else :
+                current+=1
+
+
+    return  ' '.join(reversed(references))
+
+
+
+textreferences.registered=True
+
+
+
+
+
+
+
 def textwindow(*args):
     """
     .. function:: textwindow(text, previous_word_count = 0, next_word_count = 0, middle_word_count = 1, pattern = None)
