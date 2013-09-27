@@ -873,8 +873,7 @@ def jcombinations(*args):
     t2 | ["t3","t4"]
 
     >>> sql('''select jcombinations(null,2)''')
-    C1 | C2
-    -----
+
 
     >>> sql('''select jcombinations('["t1","t2","t3","t4"]')''')
     C1
@@ -925,8 +924,6 @@ def jpermutations(*args):
     ["t3","t4"] | t2
 
     >>> sql('''select jpermutations(null,2)''')
-    C1 | C2
-    -----
 
     >>> sql('''select jpermutations('["t1","t2","t3","t4"]')''')
     C1
@@ -991,17 +988,14 @@ def jsonpath(*args):
     ["n1","n2"] | v1
     
     >>> sql('''select jsonpath('{"d1":[{"name":"n1", "value":"v1"}, {"name":"n2", "value":"v2"}]}', '$.nonexisting') ''')
-    C1
-    -
 
 
     """
 
     j = json.loads(args[0])
-    jpargs=args[1:]
 
     yield tuple( ('C'+str(x)for x in xrange( 1,len(args) ) )   )
-    output=[libjsonpath(j, jp, use_eval=False) for jp in jpargs]
+    output=[libjsonpath(j, jp, use_eval=False) for jp in args[1:]]
 
     l=0
     lchanges=0
