@@ -882,25 +882,25 @@ def hashmodarchdep(*args):
 
     Examples:
 
-    >>> sql("select hashmodarchdep(65,5)")
+    >>> sql("select hashmodarchdep(65,5)") #doctest:+ELLIPSIS
     hashmodarchdep(65,5)
     --------------------
-    1
+    ...
 
-    >>> sql("select hashmodarchdep(6,5)")
+    >>> sql("select hashmodarchdep(6,5)") #doctest:+ELLIPSIS
     hashmodarchdep(6,5)
     -------------------
-    3
+    ...
 
-    >>> sql("select hashmodarchdep(5,5)")
+    >>> sql("select hashmodarchdep(5,5)") #doctest:+ELLIPSIS
     hashmodarchdep(5,5)
     -------------------
-    0
+    ...
 
-    >>> sql("select hashmodarchdep('5',5)")
+    >>> sql("select hashmodarchdep('5',5)") #doctest:+ELLIPSIS
     hashmodarchdep('5',5)
     ---------------------
-    3
+    ...
     """
 
     return hash(tuple(args[:-1])) % args[-1]
@@ -910,6 +910,13 @@ hashmodarchdep.registered=True
 
 def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
     """
+    .. function:: textreferences(text, pattern = (\b|_)(1|2)\d{3,3}(\b|_), maxlen = 5)
+
+    Returns the "Reference" section of documents. To find it, it searches for parts of the document that
+    have a high density of year references.
+
+    Examples:
+
     >>> table1('''
     ... eeeeeeeeeeeeee
     ... gggggggggggggg
@@ -928,8 +935,18 @@ def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
     a
     --------------------------------------------------------------------------------------------------
     aaa_1914_ccccc bbb_2014_bbbbb dddd_2008_ddddddd cccc_2005_ccccc ccccc_2014_ccccc dddddd_2009_ddddd
-    """
 
+
+    If an inadequate amount of newlines is found, it returns the text as is.
+
+    >>> sql("select textreferences(group_concat(a,'.')) from table1")
+    a
+    -
+
+
+    >>> sql("select textreferences('')")
+
+    """
 
     exp = re.sub('\r\n','\n',txt)
     references = []
@@ -989,14 +1006,7 @@ def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
 
     return  ' '.join(reversed(references))
 
-
-
 textreferences.registered=True
-
-
-
-
-
 
 
 def textwindow(*args):
