@@ -963,7 +963,10 @@ def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
         if float(tmpmax)/maxlen>maximum:
             maximum = float(tmpmax)/maxlen
     #threshold = sorted(densities)[len(densities)/2]
-    threshold =  sum(densities)/len(densities)
+    try:
+        threshold =  sum(densities)/len(densities)
+    except:
+        threshold = 0
 
     winlen = 0
     win = deque(('' for _ in xrange(maxlen)),maxlen)
