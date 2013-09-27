@@ -908,13 +908,19 @@ def hashmodarchdep(*args):
 hashmodarchdep.registered=True
 
 
-def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
+def textreferences(txt,maxlen = 5,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)' ):
     """
-    .. function:: textreferences(text, pattern = (\b|_)(1|2)\d{3,3}(\b|_), maxlen = 5)
+    .. function:: textreferences(text, , maxlen = 5, pattern = (\b|_)(1|2)\d{3,3}(\b|_))
 
     Returns the "Reference" section of documents. To find it, it searches for parts of the document that
     have a high density of year references.
 
+    .. parameters:: txt,maxlen,pattern
+       txt: input text.
+       maxlen: the size of the scrolling window over the text in which the density is calculated.
+       pattern: regular expression that is matched against the lines of the text.
+
+    
     Examples:
 
     >>> table1('''
@@ -931,24 +937,35 @@ def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
     ... gggggggggggggg
     ... ''')
 
-    >>> sql("select textreferences(group_concat(a,'\\n'),'(\b|_)(1|2)\d{3,3}(\b|_)',1) as a from table1")
+    >>> sql("select textreferences(group_concat(a,'\\n'),1,'(\b|_)(1|2)\d{3,3}(\b|_)') as a from table1")
     a
     --------------------------------------------------------------------------------------------------
-    aaa_1914_ccccc bbb_2014_bbbbb dddd_2008_ddddddd cccc_2005_ccccc ccccc_2014_ccccc dddddd_2009_ddddd
+    aaa_1914_ccccc
+    bbb_2014_bbbbb
+    dddd_2008_ddddddd
+    cccc_2005_ccccc
+    ccccc_2014_ccccc
+    dddddd_2009_ddddd
 
 
     If an inadequate amount of newlines is found, it returns the text as is.
 
     >>> sql("select textreferences(group_concat(a,'.')) from table1")
-    a
-    -
+    textreferences(group_concat(a,'.'))
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    eeeeeeeeeeeeee.gggggggggggggg.aaaaaaaaaaaaaa.bbbbbbbbbbbbbb.aaa_1914_ccccc.bbb_2014_bbbbb.dddd_2008_ddddddd.cccc_2005_ccccc.ccccc_2014_ccccc.dddddd_2009_ddddd.gggggggggggggg
 
 
     >>> sql("select textreferences('')")
-
+    textreferences('')
+    ------------------
+    <BLANKLINE>
     """
 
     exp = re.sub('\r\n','\n',txt)
+
+    if exp.count('\n')<10:
+        return exp
     references = []
     reversedtext = iter(reversed(exp.split('\n')))
     reversedtext2 = iter(reversed(exp.split('\n')))
@@ -1007,7 +1024,7 @@ def textreferences(txt,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)', maxlen = 5 ):
                 current+=1
 
 
-    return  ' '.join(reversed(references))
+    return  '\n'.join(reversed(references))
 
 textreferences.registered=True
 
