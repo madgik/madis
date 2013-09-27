@@ -910,15 +910,16 @@ hashmodarchdep.registered=True
 
 def textreferences(txt,maxlen = 5,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)' ):
     """
-    .. function:: textreferences(text, , maxlen = 5, pattern = (\b|_)(1|2)\d{3,3}(\b|_))
+    .. function:: textreferences(text, maxlen = 5, pattern = (\b|_)(1|2)\d{3,3}(\b|_))
 
     Returns the "Reference" section of documents. To find it, it searches for parts of the document that
-    have a high density of year references.
+    have a high density of pattern matches.
 
     .. parameters:: txt,maxlen,pattern
        txt: input text.
        maxlen: the size of the scrolling window over the text in which the density is calculated.
-       pattern: regular expression that is matched against the lines of the text.
+       pattern: regular expression that is matched against the lines of the text. By default the pattern matches
+                year occurences so as to extract sections that look like references.
 
     
     Examples:
