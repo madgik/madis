@@ -1162,8 +1162,8 @@ def textwindow(*args):
                 else:
                     winprev.append(g[i])
 
-
 textwindow.registered=True
+
 
 def textwindow2s(*args):
     """
@@ -1219,9 +1219,7 @@ def textwindow2s(*args):
             if patt.search(mid):
                 yield (' '.join(g[max(i-prev,0):i]),mid,' '.join(g[im:im+nextlen]))
 
-
 textwindow2s.registered=True
-
 
 
 if not ('.' in __name__):
