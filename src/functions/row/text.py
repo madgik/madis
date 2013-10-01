@@ -1185,7 +1185,8 @@ def textwindow2s(*args):
     a test  | phrase |
 
     """
-    r = args[0]
+    g = args[0].split(' ')
+    yield tuple(('prev','middle','next'))
     try:
         prev = args[1]
     except IndexError:
@@ -1199,25 +1200,17 @@ def textwindow2s(*args):
     except IndexError:
         nextlen = 0
     try:
-        pattern = args[4]
-    except IndexError:
-        pattern = None
-
-    g = r.split(' ')
-
-    yield tuple(('prev','middle','next'))
-
-    if pattern == None:
-        for i in xrange(len(g)-middle+1):
-            im = i+middle
-            yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
-    else:
-        patt = re.compile(pattern)
+        patt = re.compile(args[4])
         for i in xrange(len(g)-middle+1):
             im = i+middle
             mid = ' '.join(g[i:im])
             if patt.search(mid):
                 yield (' '.join(g[max(i-prev,0):i]),mid,' '.join(g[im:im+nextlen]))
+    except IndexError:
+        for i in xrange(len(g)-middle+1):
+            im = i+middle
+            yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
+        
 
 textwindow2s.registered=True
 
