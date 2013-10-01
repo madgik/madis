@@ -1195,12 +1195,22 @@ def textwindow2s(*args):
     g = args[0].split(' ')
     yield tuple(('prev','middle','next'))
 
-    l = len(args)
-
-    if l > 4:
-        nextlen = args[3]
-        middle = args[2]
+    try:
         prev = args[1]
+    except IndexError:
+        prev = 0
+
+    try:
+        middle = args[2]
+    except IndexError:
+        middle = 1
+
+    try:
+        nextlen = args[3]
+    except IndexError:
+        nextlen = 0
+
+    if len(args) > 4:
         patt = re.compile(args[4])
         for i in xrange(len(g)-middle+1):
             im = i+middle
@@ -1208,17 +1218,6 @@ def textwindow2s(*args):
             if patt.search(mid):
                 yield (' '.join(g[max(i-prev,0):i]),mid,' '.join(g[im:im+nextlen]))
     else:
-        if l > 3:
-            prev, middle, nextlen = args[1:4]
-        elif l > 2:
-            prev, middle = args[1:3]
-            nextlen = 0
-        elif l > 1:
-            prev = args[1]
-            middle, nextlen = (1,0)
-        else:
-            prev, middle, nextlen = (0,1,0)
-
         for i in xrange(len(g)-middle+1):
             im = i+middle
             yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
