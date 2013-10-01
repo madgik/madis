@@ -1037,7 +1037,7 @@ def textwindow(*args):
     Returns a rolling window over the text. The window includes *previous_word_count* words before the middle word
     and next_word_count words after the middleword. Optionally you may choose more than one words to be in the middle, and filter your window with a regular expression pattern
 
-    If the value of prev_word_count or next_word_count is negative, and a pattern exists then the matches of the pattern are
+    If the value of prev_word_count or next_word_count is negative, and a pattern exists then all matches of the pattern are
     filtered out from prev and next output.
 
     Examples:
