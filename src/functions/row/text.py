@@ -1037,6 +1037,9 @@ def textwindow(*args):
     Returns a rolling window over the text. The window includes *previous_word_count* words before the middle word
     and next_word_count words after the middleword. Optionally you may choose more than one words to be in the middle, and filter your window with a regular expression pattern
 
+    If the value of prev_word_count or next_word_count is negative, and a pattern exists then the matches of the pattern are
+    filtered out from prev and next output.
+
     Examples:
 
     >>> sql("select textwindow('This is a test phrase')  ")
@@ -1065,6 +1068,14 @@ def textwindow(*args):
     is    | a test      | phrase
     a     | test phrase |
     test  | phrase      |
+
+    >>> sql("select textwindow('This is a test phrase  with pdb codes: 1abc 2bcd 3cde 4bde ',-2,1,2,'\d\w{3}' )  ")
+    prev1 | prev2  | middle    | next1
+    ----------------------------------
+    pdb   | codes: | 1abc 2bcd | 3cde
+    pdb   | codes: | 2bcd 3cde | 4bde
+    pdb   | codes: | 3cde 4bde |
+    pdb   | codes: | 4bde      |
 
     >>> sql("select textwindow('This is a test phrase (123) for filtering middle with a number',1,1,'\d+')  ")
     prev1  | middle | next1
@@ -1154,6 +1165,67 @@ def textwindow(*args):
 
 
 textwindow.registered=True
+
+def textwindow2s(*args):
+    """
+    .. function:: textwindow2s(text,numberofprev,numberofnext,pattern)
+
+        Returns a rolling window in the text. The window includes numberofprev words before the middle word and numberofnext words after the middleword.
+        You may filter your window using a pattern.
+
+    Examples:
+
+
+    >>> sql("select textwindow2s('This is a test phrase',2,1,1)  ")
+    prev    | middle | next
+    -------------------------
+            | This   | is
+    This    | is     | a
+    This is | a      | test
+    is a    | test   | phrase
+    a test  | phrase |
+
+    """
+    r = args[0]
+    try:
+        prev = args[1]
+    except IndexError:
+        prev = 0
+    try:
+       middle = args[2]
+    except IndexError:
+        middle = 1
+    try:
+        nextlen = args[3]
+    except IndexError:
+        nextlen = 0
+    try:
+        pattern = args[4]
+    except IndexError:
+        pattern = None
+
+    g = r.split(' ')
+
+    yield tuple(('prev','middle','next'))
+
+    if pattern == None:
+        for i in xrange(len(g)-middle+1):
+            im = i+middle
+            yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
+    else:
+        patt = re.compile(pattern)
+        for i in xrange(len(g)-middle+1):
+            im = i+middle
+            mid = ' '.join(g[i:im])
+            if patt.search(mid):
+                yield (' '.join(g[max(i-prev,0):i]),mid,' '.join(g[im:im+nextlen]))
+
+
+
+
+textwindow2s.registered=True
+
+
 
 if not ('.' in __name__):
     """
