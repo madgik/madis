@@ -1184,6 +1184,13 @@ def textwindow2s(*args):
     is a    | test   | phrase
     a test  | phrase |
 
+    >>> sql("select textwindow2s('This is a test phrase',2,1,1, '\w{4}')  ")
+    prev   | middle | next
+    ------------------------
+           | This   | is
+    is a   | test   | phrase
+    a test | phrase |
+
     """
     g = args[0].split(' ')
     yield tuple(('prev','middle','next'))
@@ -1211,7 +1218,6 @@ def textwindow2s(*args):
             im = i+middle
             yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
         
-
 textwindow2s.registered=True
 
 
