@@ -1167,7 +1167,7 @@ textwindow.registered=True
 
 def textwindow2s(*args):
     """
-    .. function:: textwindow2s(text,numberofprev,numberofnext,pattern)
+    .. function:: textwindow2s(text, prev_word_count, middle_word_count, next_word_count, pattern)
 
         Returns a rolling window in the text. The window includes numberofprev words before the middle word and numberofnext words after the middleword.
         You may filter your window using a pattern.
@@ -1194,26 +1194,31 @@ def textwindow2s(*args):
     """
     g = args[0].split(' ')
     yield tuple(('prev','middle','next'))
-    try:
-        prev = args[1]
-    except IndexError:
-        prev = 0
-    try:
-       middle = args[2]
-    except IndexError:
-        middle = 1
-    try:
+
+    l = len(args)
+
+    if l > 4:
         nextlen = args[3]
-    except IndexError:
-        nextlen = 0
-    try:
+        middle = args[2]
+        prev = args[1]
         patt = re.compile(args[4])
         for i in xrange(len(g)-middle+1):
             im = i+middle
             mid = ' '.join(g[i:im])
             if patt.search(mid):
                 yield (' '.join(g[max(i-prev,0):i]),mid,' '.join(g[im:im+nextlen]))
-    except IndexError:
+    else:
+        if l > 3:
+            prev, middle, nextlen = args[1:4]
+        elif l > 2:
+            prev, middle = args[1:3]
+            nextlen = 0
+        elif l > 1:
+            prev = args[1]
+            middle, nextlen = (1,0)
+        else:
+            prev, middle, nextlen = (0,1,0)
+
         for i in xrange(len(g)-middle+1):
             im = i+middle
             yield (' '.join(g[max(i-prev,0):i]),' '.join(g[i:im]),' '.join(g[im:im+nextlen]))
