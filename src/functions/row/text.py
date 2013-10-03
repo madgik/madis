@@ -536,6 +536,32 @@ def regexpcountwithpositions(pattern,expression,start = 0,min = 0.5,multiply = 1
 regexpcountwithpositions.registered=True
 
 
+def regexpcountuniquematches(*args):
+    """
+    .. function:: regexpcountuniquematches(pattern, expression)
+
+        Returns the number of matches of pattern in expression. If a match includes more than one words then it returns the number of the words.
+
+    Examples:
+
+
+
+    >>> sql("regexpcountuniquematches 'start' 'start end start'  ")
+    regexpcountuniquematches('start','start end start')
+    ---------------------------------------------------
+    1
+
+    >>> sql("regexpcountuniquematches 'start end' 'start end start'  ")
+    regexpcountuniquematches('start end','start end start')
+    -------------------------------------------------------
+    1
+
+    """
+
+    return len(set(re.findall(args[0], unicode(args[1]), re.UNICODE)))
+
+regexpcountuniquematches.registered=True
+
 
 def regexpcountwords(*args):
     """
