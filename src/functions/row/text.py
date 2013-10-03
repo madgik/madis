@@ -540,7 +540,7 @@ def regexpcountuniquematches(*args):
     """
     .. function:: regexpcountuniquematches(pattern, expression)
 
-        Returns the number of matches of pattern in expression. If a match includes more than one words then it returns the number of the words.
+        Returns the number of matches of pattern in expression.
 
     Examples:
 
