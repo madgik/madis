@@ -301,13 +301,18 @@ def t2j(*args):
     -------------------
     ["1","2","3"]
 
+    >>> sql("select t2j('asdfasdf')") # doctest: +NORMALIZE_WHITESPACE
+    t2j('asdfasdf')
+    ---------------
+    ["asdfasdf"]
+
     """
     
     fj=[]
     for t in args:
         fj+=t.split('\t')
 
-    return jopts.toj(fj)
+    return json.dumps(fj, separators=(',',':'), ensure_ascii=False)
 
 t2j.registered=True
 
