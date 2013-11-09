@@ -831,7 +831,7 @@ def jdictgroupkey(*args):
     outdict=OrderedDict()
     dlist=json.loads(args[0], object_pairs_hook=OrderedDict)
 
-    if len(args) < 2:
+    if len(args) == 1:
         groupkeys = [iter(dlist[0]).next()]
     else:
         groupkeys = args[1:]
