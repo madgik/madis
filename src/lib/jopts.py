@@ -169,6 +169,15 @@ def elemfromj(*jargs):
                 except:
                     fj+= [j]
                     continue
+            if (j[0]=='{' and j[-1]=='}'):
+                try:
+                    fj+=[json.loads(j, object_pairs_hook = OrderedDict)]
+                    continue
+                except KeyboardInterrupt:
+                    raise
+                except:
+                    fj+= [j]
+                    continue          
             fj+= [j]
     return fj
 
