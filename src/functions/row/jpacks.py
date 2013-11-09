@@ -785,6 +785,63 @@ def jdictsplit(*args):
 
 jdictsplit.registered=True
 
+def jdictgroupkey(*args):
+    """
+    .. function:: jdictgroupkey(list_of_jdicts, groupkey1, groupkey2, ...)
+
+    It groups an array of jdicts into a hierarchical structure. The grouping is done
+    first by groupkey1 then by groupkey2 and so on.
+
+    If no groupkeys are provided, then the first key of array's first jdict is used as a groupkey.
+
+    Examples:
+
+    >>> sql('''select jdictgroupkey('[{"gkey":"v1", "b":1},{"gkey":"v1","b":2},{"gkey":"v2","b":1, "c":2}]') as j''')
+    j
+    ---------------------------------------------
+    {"v1":[{"b":1},{"b":2}],"v2":[{"b":1,"c":2}]}
+
+    >>> sql('''select jdictgroupkey('[{"gkey":"v1", "b":1},{"gkey":"v1","b":2},{"gkey":"v2","b":1, "c":2}]', "gkey") as j''')
+    j
+    ---------------------------------------------
+    {"v1":[{"b":1},{"b":2}],"v2":[{"b":1,"c":2}]}
+
+    >>> sql('''select jdictgroupkey('[{"gkey":"v1", "gkey2":"f1", "b":1},{"gkey":"v1", "gkey2":"f2", "b":2},{"gkey":"v1", "gkey2":"f2", "b":1, "c":2}]', "gkey", "gkey2") as j''')
+    j
+    ----------------------------------------------------
+    {"v1":{"f1":[{"b":1}],"f2":[{"b":2},{"b":1,"c":2}]}}
+
+    """
+
+    def recgroupkey(jdict, gkeys):
+        outdict=OrderedDict()
+
+        for d in jdict:
+            if d[gkeys[0]] not in outdict:
+                outdict[d[gkeys[0]]] = [d]
+            else:
+                outdict[d[gkeys[0]]].append(d)
+            del(d[gkeys[0]])
+
+        if len(gkeys)>1:
+            outdict = OrderedDict([(x, recgroupkey(y, gkeys[1:])) for x,y in outdict.iteritems()])
+
+        return outdict
+
+    outdict=OrderedDict()
+    dlist=json.loads(args[0], object_pairs_hook=OrderedDict)
+
+    if len(args) < 2:
+        groupkeys = [iter(dlist[0]).next()]
+    else:
+        groupkeys = args[1:]
+
+    outdict = recgroupkey(dlist, groupkeys)
+
+    return jopts.toj(outdict)
+
+jdictgroupkey.registered=True
+
 def jsplice(*args):
 
     """
