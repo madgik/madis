@@ -808,8 +808,8 @@ def jdictgroupkey(*args):
 
     >>> sql('''select jdictgroupkey('[{"gkey":"v1", "gkey2":"f1", "b":1},{"gkey":"v1", "gkey2":"f2", "b":2},{"gkey":"v1", "gkey2":"f2", "b":1, "c":2}]', "gkey", "gkey2") as j''')
     j
-    ----------------------------------------------------
-    {"v1":{"f1":[{"b":1}],"f2":[{"b":2},{"b":1,"c":2}]}}
+    --------------------------------------------------------------
+    {"v1":{"gkey2":{"f1":[{"b":1}],"f2":[{"b":2},{"b":1,"c":2}]}}}
 
     """
 
@@ -826,7 +826,7 @@ def jdictgroupkey(*args):
         if len(gkeys)>1:
             outdict = OrderedDict([(x, recgroupkey(y, gkeys[1:])) for x,y in outdict.iteritems()])
 
-        return outdict
+        return {gkeys[0]:outdict}
 
     outdict=OrderedDict()
     dlist=json.loads(args[0], object_pairs_hook=OrderedDict)
@@ -838,7 +838,7 @@ def jdictgroupkey(*args):
 
     outdict = recgroupkey(dlist, groupkeys)
 
-    return jopts.toj(outdict)
+    return jopts.toj(outdict[groupkeys[0]])
 
 jdictgroupkey.registered=True
 
