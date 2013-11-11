@@ -76,7 +76,7 @@ def main():
         try :
             for row in Connection.cursor().execute(statement):
                 if len(row) > 1:
-                    sys.stdout.write(json.dumps(row, separators=(',',':'), ensure_ascii=False)+"\n")
+                    sys.stdout.write(unicode(json.dumps(row, separators=(',',':'), ensure_ascii=False))+"\n")
                 else:
                     sys.stdout.write(unicode(row[0])+"\n")
             statement = ''
