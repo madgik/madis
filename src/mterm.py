@@ -755,9 +755,9 @@ while True:
                     printrow(row)
                     rownum+=1
             else:
-                print(json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False))
+                print(json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 for row in cexec:
-                    print(json.dumps(row, separators=(',',':'), ensure_ascii=False))
+                    print(json.dumps(row, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 print
 
             cursor.close()
