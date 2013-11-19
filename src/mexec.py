@@ -55,11 +55,15 @@ def main():
     if options.flow != None:
         flowname = options.flow
 
-    try:
-        f = open(flowname,'r')
-    except:
+    if flowname == None:
         parser.print_help()
         sys.exit(1)
+
+    try:
+        f = open(flowname,'r')
+    except Exception, e:
+        exitwitherror("Error in opening SQL flow: " + str(e))
+
 
     statement = f.readline()
     if not statement:
