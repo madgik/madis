@@ -77,9 +77,9 @@ def main():
         try :
             for row in Connection.cursor().execute(statement):
                 if len(row) > 1:
-                    sys.stdout.write(unicode(json.dumps(row, separators=(',',':'), ensure_ascii=False))+"\n")
+                    sys.stdout.write(unicode(json.dumps(row, separators=(',',':'), ensure_ascii=False)).encode('utf_8', 'replace')+"\n")
                 else:
-                    sys.stdout.write(unicode(row[0])+"\n")
+                    sys.stdout.write(unicode(row[0]).encode('utf_8', 'replace')+"\n")
             statement = ''
         except Exception, e:
             exitwitherror("Error when executing query: \n"+statement+"\nThe error was: "+ str(e))
