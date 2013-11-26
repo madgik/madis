@@ -83,7 +83,7 @@ def main():
                 if len(row) > 1:
                     print(json.dumps(row, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 else:
-                    print(row[0].encode('utf_8', 'replace'))
+                    print(unicode(row[0]).encode('utf_8', 'replace'))
             statement = ''
         except Exception, e:
             exitwitherror("Error when executing query: \n"+statement+"\nThe error was: "+ str(e))
