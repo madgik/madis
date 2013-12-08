@@ -447,7 +447,7 @@ def printrow(row):
         except KeyboardInterrupt:
             raise
         except:
-            sys.stdout.write(repr(d))
+            sys.stdout.write(d.encode('utf_8', 'replace'))
 
         i1+=1
     sys.stdout.write('\n')
