@@ -57,7 +57,7 @@ class PipeVT(vtbase.VT):
         child=subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
         if linesplit:
-            for line in iter(child.stdout.readline, b''):
+            for line in iter(child.stdout.readline, ''):
                 yield [line[:-1].decode('utf-8', errors='replace')]
         else:
             output, error = child.communicate()
