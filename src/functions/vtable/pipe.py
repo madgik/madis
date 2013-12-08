@@ -55,16 +55,21 @@ class PipeVT(vtbase.VT):
         yield (('C1', 'text'),)
 
         child=subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        output, error = child.communicate()
-        if child.returncode!=0:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
-        output=unicode(output,'utf-8')
 
-        if not linesplit:
-            yield [output]
+        if linesplit:
+            for line in iter(child.stdout.readline, b''):
+                yield [line[:-1].encode('utf-8')]
         else:
-            for i in output.split("\n"):
-                yield [i]
+            output, error = child.communicate()
+            if child.returncode!=0:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
+            output=unicode(output,'utf-8')
+
+            if not linesplit:
+                yield [output]
+            else:
+                for i in output.split("\n"):
+                    yield [i]
 
 def Source():
     return vtbase.VTGenerator(PipeVT)
