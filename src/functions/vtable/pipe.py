@@ -58,7 +58,7 @@ class PipeVT(vtbase.VT):
 
         if linesplit:
             for line in iter(child.stdout.readline, ''):
-                yield [line[:-1].decode('utf-8', errors='replace')]
+                yield [line.rstrip("\r\n").decode('utf-8', errors='replace')]
         else:
             output, error = child.communicate()
             if child.returncode!=0:
