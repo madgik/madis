@@ -16,7 +16,6 @@ Examples::
 """
 import sys
 import vtbase
-import sys
 
 registered=True
 
