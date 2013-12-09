@@ -13,12 +13,12 @@ Examples::
 
 .. doctest::
 
-    >>> sql("pipe wc ./testing/colpref.csv")
+    >>> sql("pipe 'ls ./testing/*.csv' ")
     C1
-    ---------------------------------
-     19  20 463 ./testing/colpref.csv
+    ---------------------
+    ./testing/colpref.csv
 
-    >>> sql("pipe 'wc ./testing/colpref.csv' ")
+    >>> sql("pipe wc ./testing/colpref.csv")
     C1
     ---------------------------------
      19  20 463 ./testing/colpref.csv
