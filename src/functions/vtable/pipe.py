@@ -2,13 +2,12 @@
 
 .. function:: pipe(query:None[,lines:t])
 
-Executes *query* as a shell command and returns the standard output lines as rows of one column table. Setting *lines* parameter to *f* the command output will be returned in one table row.
-
+Executes *query* as a shell command and returns the standard output lines as rows of one column table.
+Setting *lines* parameter to *f* the command output will be returned in one table row.
 
 :Returned table schema:
     - *output* text
         Output of shell command execution
-
 
 Examples::
 
@@ -18,7 +17,11 @@ Examples::
     C1
     ---------------------------------
      19  20 463 ./testing/colpref.csv
-    <BLANKLINE>
+
+    >>> sql("pipe 'wc ./testing/colpref.csv' ")
+    C1
+    ---------------------------------
+     19  20 463 ./testing/colpref.csv
 
 .. doctest::
     :hide:
@@ -43,10 +46,16 @@ class PipeVT(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         largs, dictargs = self.full_parse(parsedArgs)
 
-        if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"No command argument ")
+        command = None
+        
+        if len(largs)>0:
+            command = largs[-1]
+        
+        if 'query' in dictargs:
+            command = dictargs['query']
 
-        command=dictargs['query']
+        if command == None:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No command argument found")
         
         linesplit=True
         if 'lines' in dictargs and dictargs['lines'][0] in ('f', 'F', '0'):
@@ -59,17 +68,15 @@ class PipeVT(vtbase.VT):
         if linesplit:
             for line in iter(child.stdout.readline, ''):
                 yield [line.rstrip("\r\n").decode('utf_8', 'replace')]
+            
+            output, error = child.communicate()
         else:
             output, error = child.communicate()
-            if child.returncode!=0:
-                raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
-            output=unicode(output,'utf-8')
 
-            if not linesplit:
-                yield [output]
-            else:
-                for i in output.split("\n"):
-                    yield [i]
+            yield [output.decode('utf_8', 'replace').rstrip("\r\n")]
+
+        if child.returncode!=0:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
 
 def Source():
     return vtbase.VTGenerator(PipeVT)
