@@ -2,11 +2,13 @@ __docformat__ = 'reStructuredText en'
 
 import lib.jopts as jopts
 import json
+
 try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6
     from lib.collections26 import OrderedDict
+
 
 class jgroup:
     """
@@ -55,20 +57,21 @@ class jgroup:
     [{"a":[1,2],"b":1},{"a":[3,4],"b":1},{"a":[5,6],"b":2},{"a":[7,8],"b":2}]
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=[]
+        self.outgroup = []
 
     def step(self, *args):
-        if len(args)==1:
-            self.outgroup+=( jopts.elemfromj(args[0]) )
+        if len(args) == 1:
+            self.outgroup += (jopts.elemfromj(args[0]))
         else:
-            self.outgroup.append( jopts.elemfromj(*args) )
+            self.outgroup.append(jopts.elemfromj(*args))
 
     def final(self):
         return jopts.toj(self.outgroup)
-    
+
+
 class jgroupunion:
     """
     .. function:: jgroupunion(columns) -> jpack
@@ -95,17 +98,18 @@ class jgroupunion:
 
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=OrderedDict()
-        self.outgroupupdate=self.outgroup.update
+        self.outgroup = OrderedDict()
+        self.outgroupupdate = self.outgroup.update
 
     def step(self, *args):
-        self.outgroupupdate( [ (x,None) for x in jopts.fromj(*args) ] )
+        self.outgroupupdate([(x, None) for x in jopts.fromj(*args)])
 
     def final(self):
         return jopts.toj(list(self.outgroup))
+
 
 class jgroupintersection:
     """
@@ -133,23 +137,24 @@ class jgroupintersection:
 
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=None
-        self.outset=None
+        self.outgroup = None
+        self.outset = None
 
     def step(self, *args):
-        if self.outgroup==None:
-            self.outgroup=OrderedDict([(x,None) for x in jopts.fromj(args[0])])
-            self.outset=set(self.outgroup)
+        if self.outgroup == None:
+            self.outgroup = OrderedDict([(x, None) for x in jopts.fromj(args[0])])
+            self.outset = set(self.outgroup)
         for jp in args:
             for i in self.outset.difference(jopts.fromj(jp)):
-                del(self.outgroup[i])
-            self.outset=set(self.outgroup)
+                del (self.outgroup[i])
+            self.outset = set(self.outgroup)
 
     def final(self):
         return jopts.toj(list(self.outgroup))
+
 
 class jdictgroupunion:
     """
@@ -173,25 +178,25 @@ class jdictgroupunion:
 
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=OrderedDict()
+        self.outgroup = OrderedDict()
 
     def step(self, *args):
         for d in args:
-            for x,v in json.loads(d, object_pairs_hook=OrderedDict).iteritems():
-                vlen=1
+            for x, v in json.loads(d, object_pairs_hook=OrderedDict).iteritems():
+                vlen = 1
                 if type(v) in (list, OrderedDict):
-                    vlen=len(v)
+                    vlen = len(v)
                 try:
                     if vlen > self.outgroup[x]:
-                        self.outgroup[x]=vlen
+                        self.outgroup[x] = vlen
                 except KeyError:
-                    self.outgroup[x]=vlen
+                    self.outgroup[x] = vlen
 
     def final(self):
-        return json.dumps(self.outgroup, separators=(',',':'), ensure_ascii=False)
+        return json.dumps(self.outgroup, separators=(',', ':'), ensure_ascii=False)
 
 
 class jgroupunionkeys:
@@ -218,18 +223,18 @@ class jgroupunionkeys:
     []
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.outgroup=OrderedDict()
-        self.outgroupset=set()
+        self.outgroup = OrderedDict()
+        self.outgroupset = set()
 
     def step(self, *args):
         for arg in args:
             v = json.loads(arg)
             if not set(v).issubset(self.outgroup):
                 self.outgroupset.update(v)
-                self.outgroup.update( [(k, None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys()] )
+                self.outgroup.update([(k, None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys()])
 
     def final(self):
         return jopts.toj(list(self.outgroup))
@@ -256,21 +261,22 @@ class jgroupuniquelimit:
 
     """
 
-    registered=True #Value to define db operator
+    registered = True #Value to define db operator
 
     def __init__(self):
-        self.gset=set()
+        self.gset = set()
         self.k = None
 
     def step(self, *args):
-        if self.k == None:
-            self.gset.update( [ (x,None) for x in jopts.fromj(args[0]) ] )
-            
+        if self.k is None:
+            self.gset.update([(x, None) for x in jopts.fromj(args[0])])
+
             if len(self.gset) >= args[-1]:
                 self.k = args[1]
 
     def final(self):
         return self.k
+
 
 if not ('.' in __name__):
     """
@@ -280,9 +286,11 @@ if not ('.' in __name__):
     import sys
     import setpath
     from functions import *
+
     testfunction()
     if __name__ == "__main__":
         reload(sys)
         sys.setdefaultencoding('utf-8')
         import doctest
+
         doctest.testmod()
