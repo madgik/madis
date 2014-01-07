@@ -21,6 +21,7 @@ import traceback
 import json
 
 pipedinput=not sys.stdin.isatty()
+errorexit = True
 
 if pipedinput:
     # If we get piped input use dummy readline
@@ -462,8 +463,56 @@ def printterm(*args, **kwargs):
 
 def exitwitherror(*args):
     msg=','.join([unicode(x) for x in args])
-    sys.exit(msg)
 
+    if errorexit:
+        print
+        sys.exit(msg)
+    else:
+        print(json.dumps({"error":msg}, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
+        print
+        sys.stdout.flush()
+
+def process_args():
+    global connection, functions, errorexit, db
+
+    args = sys.argv
+
+    # Continue on error when input is piped in
+    if len(args) >= 2 and pipedinput:
+        if args[1] == '-coe':
+            args = args[0:1] + args[2:]
+            errorexit = False
+
+    if len(args) >= 2:
+        db = args[1]
+        if db == "-q":
+            db = ':memory:'
+
+    connection = createConnection(db)
+
+    if db == '' or db == ':memory':
+        functions.variables.execdb = None
+    else:
+        functions.variables.execdb = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
+
+    # Found query in args
+    if len(args)>2:
+        st = ' '.join(args[2:])
+        st = st.decode(output_encoding)
+
+        c = connection.cursor()
+        try:
+            for r in c.execute(st):
+                rawprinter.writerow(r)
+            c.close()
+        except KeyboardInterrupt:
+            sys.exit()
+        finally:
+            try:
+                c.close()
+            except:
+                pass
+        sys.exit()
 
 VERSION='1.0'
 mtermdetails="mTerm - version "+VERSION
@@ -519,40 +568,11 @@ language, output_encoding = locale.getdefaultlocale()
 if output_encoding==None:
     output_encoding='UTF8'
 
-if len(sys.argv) >= 2:
-    db = sys.argv[1]
-    if db=="-q":
-        db=':memory:'
-
-connection = createConnection(db)
-
-if db=='' or db==':memory':
-    functions.variables.execdb=None
-else:
-    functions.variables.execdb=str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(db)))))
-    
 functions.variables.flowname='main'
 
 rawprinter=buildrawprinter(separator)
 
-if len(sys.argv)>2:
-        
-    statement=' '.join(sys.argv[2:])
-    statement = statement.decode(output_encoding)
-        
-    cursor = connection.cursor()
-    try:
-        for row in cursor.execute(statement):
-            rawprinter.writerow(row)
-        cursor.close()
-    except KeyboardInterrupt:
-        sys.exit()
-    finally:
-        try:
-            cursor.close()
-        except:
-            pass
-    sys.exit()
+process_args()
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ', 'distinct', 'exists ']
@@ -759,6 +779,7 @@ while True:
                 for row in cexec:
                     print(json.dumps(row, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 print
+                sys.stdout.flush()
 
             cursor.close()
 
@@ -792,28 +813,31 @@ while True:
         except (apsw.SQLError, apsw.ConstraintError , functions.MadisError), e:
             emsg=unicode(e)
             if pipedinput:
-                print
                 exitwitherror(functions.mstr(emsg))
-            try:
-                if u'Error:' in emsg:
-                    emsgsplit=emsg.split(u':')
-                    print Fore.RED+Style.BRIGHT+ emsgsplit[0] +u':'+Style.RESET_ALL+ u':'.join(emsgsplit[1:])
-                else:
+            else:
+                try:
+                    if u'Error:' in emsg:
+                        emsgsplit=emsg.split(u':')
+                        print Fore.RED+Style.BRIGHT+ emsgsplit[0] +u':'+Style.RESET_ALL+ u':'.join(emsgsplit[1:])
+                    else:
+                        print e
+                except:
                     print e
-            except:
-                print e
+
             continue
         except Exception, e:
             trlines = []
+
             for i in reversed(traceback.format_exc().splitlines()):
                 trlines.append(i)
                 if i.strip().startswith('File'):
                     break
-            msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
+
             if pipedinput:
-                print
                 exitwitherror(functions.mstr(msg))
-            print msg
+            else:
+                msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
+                print msg
 
         finally:
             colorama.deinit()
