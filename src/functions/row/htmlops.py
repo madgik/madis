@@ -201,9 +201,10 @@ tagSPACE = re.compile(r'(?:\s|^)(?:/\w+|wbr|p|div|head|table|tr|title|thead|tfoo
 tagUnderscore = re.compile(r'(?:\s|^)(?:sup|sub)(?:\s|$)', re.UNICODE)
 def htmlstriptags(*args):
     """
-    .. function:: htmlstriptags(str)
+    .. function:: htmlstriptags(str, default_tag_conversion)
 
-    Strips the html tags of input. It also converts "<br>" tags to new lines.
+    Strips the html tags of input. It also converts "<br>" tags to new lines. If a default_tag_conversion is provided
+    then tags that would have been erased are converted to *default_tag_conversion*.
 
     Examples:
 
@@ -213,26 +214,40 @@ def htmlstriptags(*args):
     asdfas
     df spaced paragraph
     anotherline w_3
+
+    >>> sql("select htmlstriptags('<tag1>asdf<>as< br>df<p class = lala>spaced</sp>paragraph</p>anotherline<tag2> w<sup>3</sup>', '***') as query")
+    query
+    ----------------------------------------------------
+    ***asdf***as
+    df spaced paragraph
+    anotherline*** w_3
     
     >>> sql("select htmlstriptags(null) as query")
     query
     -----
     <BLANKLINE>
     """
+
+    default_tag_conversion = u''
+    if len(args) > 1:
+        default_tag_conversion = unicode(args[1])
+
     def tagdecode(tag):
-        t=tag.group(1).lower()
+        t = tag.group(1).lower()
         if tagNL.search(t):
             return u'\n'
         if tagSPACE.search(t):
             return u' '
         if tagUnderscore.search(t):
             return u'_'
-        else: return ''
+        else:
+            return default_tag_conversion
 
-    text=u''
-    for i in args:
-        if i!=None:
-            text+=unicode(i)
+    if args[0] is not None:
+        text = unicode(args[0])
+    else:
+        text = ''
+
     return tags.sub(tagdecode, text)
 
 htmlstriptags.registered=True
