@@ -197,7 +197,7 @@ htmlencode.registered=True
 
 tags = re.compile(r'<([^>]*?)>', re.UNICODE)
 tagNL = re.compile(r'(?:\s|^)(?:br|/p|/div|/head|/table|/tr|ul|/ul|/title|/tfoot|/thead|/span|/ol|/h1|/h2|/h3|/h4|/h5|/h6|/caption)(?:\s|$)', re.UNICODE)
-tagSPACE = re.compile(r'(?:\s|^)(?:/\w+|wbr|p|div|head|table|tr|title|thead|tfoot|span|q|pre|ol|link|i|h1|h2|h3|h4|h5|h6|em|code|caption|a|figure|figcaption)(?:\s|$)', re.UNICODE)
+tagSPACE = re.compile(r'(?:\s|^)(?:/\w+|wbr|p|div|head|table|tr|title|thead|tfoot|source|span|q|pre|ol|link|i|h1|h2|h3|h4|h5|h6|em|code|caption|a|figure|figcaption)(?:\s|$)', re.UNICODE)
 tagUnderscore = re.compile(r'(?:\s|^)(?:sup|sub)(?:\s|$)', re.UNICODE)
 def htmlstriptags(*args):
     """
