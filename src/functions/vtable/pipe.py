@@ -41,6 +41,7 @@ import vtbase
 import subprocess
 
 registered=True
+external_stream=True
 
 class PipeVT(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
