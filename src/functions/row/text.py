@@ -1,4 +1,5 @@
 # coding: utf-8
+import setpath
 import re
 import functions
 import unicodedata
