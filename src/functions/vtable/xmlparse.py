@@ -504,7 +504,7 @@ class XMLparse(vtbase.VT):
                     try:
                         path = path[ path.index(self.subtreeroot)+1: ]
                     except ValueError:
-                        continue
+                        path
 
                     if path==[]:
                         continue
