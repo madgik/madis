@@ -163,7 +163,7 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
     def Eof(self):
         return self.eof
 
-    @echocall
+    #@echocall #-- Commented out for speed reasons
     def Rowid(self):
         return self.pos
 
