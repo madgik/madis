@@ -40,8 +40,8 @@ import vtbase
 
 import subprocess
 
-registered=True
-external_stream=True
+registered = True
+external_stream = True
 
 class PipeVT(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
@@ -49,26 +49,26 @@ class PipeVT(vtbase.VT):
 
         command = None
         
-        if len(largs)>0:
+        if len(largs) > 0:
             command = largs[-1]
         
         if 'query' in dictargs:
             command = dictargs['query']
 
-        if command == None:
+        if command is None:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No command argument found")
         
-        linesplit=True
+        linesplit = True
         if 'lines' in dictargs and dictargs['lines'][0] in ('f', 'F', '0'):
-            linesplit=False
+            linesplit = False
 
         yield (('C1', 'text'),)
 
-        child=subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        child = subprocess.Popen(command, shell=True, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if linesplit:
             for line in iter(child.stdout.readline, ''):
-                yield [line.rstrip("\r\n").decode('utf_8', 'replace')]
+                yield (line.rstrip("\r\n").decode('utf_8', 'replace'), )
             
             output, error = child.communicate()
         else:
@@ -76,8 +76,8 @@ class PipeVT(vtbase.VT):
 
             yield [output.decode('utf_8', 'replace').rstrip("\r\n")]
 
-        if child.returncode!=0:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
+        if child.returncode != 0:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
 
 def Source():
     return vtbase.VTGenerator(PipeVT)
