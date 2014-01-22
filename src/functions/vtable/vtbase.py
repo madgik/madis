@@ -90,7 +90,7 @@ class LTable: ####Init means setschema and execstatus
         try:
             return self.tableObj.BestIndex(*args)
         except AttributeError:
-            return (None, 0, None, False, 1000)
+            return (None, 0, None, False, 1e99)
 
     @echocall
     def Open(self):
