@@ -479,7 +479,7 @@ def process_args():
 
     # Continue on error when input is piped in
     if len(args) >= 2 and pipedinput:
-        if args[1] == '-bailoff':
+        if args[1] == '-bailoff' or args[1] == '-coe':
             args = args[0:1] + args[2:]
             errorexit = False
 
