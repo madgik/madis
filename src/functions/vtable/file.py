@@ -137,7 +137,7 @@ external_stream=True
 
 from vtiterable import SourceVT
 from lib.dsv import reader                
-import lib.gzip32 as gzip
+import lib.gzip34 as gzip
 import urllib2
 import urlparse
 import functions
@@ -253,7 +253,7 @@ class FileCursor:
                     filename = filename[:-3]
                 if filename.endswith('.gzip'):
                     filename = filename[:-5]
-                self.fileiter=gzip.GzipFile(fileobj=self.fileiter)
+                self.fileiter = gzip.GzipFile(mode = 'rb', fileobj=self.fileiter)
 
         except Exception,e:
             raise functions.OperatorError(__name__.rsplit('.')[-1],e)
