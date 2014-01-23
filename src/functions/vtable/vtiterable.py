@@ -173,6 +173,8 @@ class LTable: ####Init means setschema and execstatus
 
 # Represents a cursor
 class Cursor:
+    __slots__ = ("Next", "Close", "Column", "Rowid", "Eof", "pos", "row", "table", "eof", "iterNext", "iter")
+
     @echocall
     def __init__(self, table,iter):
         self.table=table
@@ -182,6 +184,9 @@ class Cursor:
         self.tablename=table.tablename
         self.firsttime=True
         self.pos=0
+        self.Column = lambda col: self.row[col]
+        self.Rowid = lambda: self.pos + 1
+        self.Eof = lambda: self.eof
         
     @echocall
     def Filter(self, *args):
@@ -195,20 +200,20 @@ class Cursor:
         self.Next()
 
 #    @echocall #-- Commented out for speed reasons
-    def Eof(self):
-        return self.eof
+#     def Eof(self):
+#         return self.eof
 
-    @echocall
-    def Rowid(self):
-        return self.pos+1
+    #@echocall
+    # def Rowid(self):
+    #     return self.pos+1
 
 #    @echocall #-- Commented out for speed reasons
     def ColumnStop(self, col):
         raise functions.OperatorError(self.table.envars['modulename'],"Not enough data in input")
 
 #    @echocall #-- Commented out for speed reasons
-    def Column(self, col):
-        return self.row[col]
+#     def Column(self, col):
+#         return self.row[col]
 
 #    @echocall #-- Commented out for speed reasons
     def Next(self):
