@@ -132,6 +132,8 @@ class LTable: ####Init means setschema and execstatus
 
 # Represents a cursor
 class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... if has close
+    __slots__ = ("Next", "Close", "Column", "Rowid", "Eof", "pos", "row", "table", "eof", "iterNext", "iter")
+
     @echocall
     def __init__(self, iterFunc, openIter,envars):
         self.envars=envars
@@ -141,7 +143,10 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         self.iterFunc=iterFunc
         self.row = []
         self.eof = False
-        self.pos=0
+        self.pos = 0
+        self.Column = lambda col: self.row[col]
+        self.Rowid = lambda: self.pos + 1
+        self.Eof = lambda: self.eof
 
     @echocall
     def Filter(self, *args):
@@ -160,16 +165,16 @@ class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... 
         return
     
     #@echocall #-- Commented out for speed reasons
-    def Eof(self):
-        return self.eof
+    # def Eof(self):
+    #     return self.eof
 
     #@echocall #-- Commented out for speed reasons
-    def Rowid(self):
-        return self.pos
+    # def Rowid(self):
+    #     return self.pos
 
     #@echocall #-- Commented out for speed reasons
-    def Column(self, col):
-        return self.row[col]
+    # def Column(self, col):
+    #     return self.row[col]
 
     #@echocall #-- Commented out for speed reasons
     def Next(self):
