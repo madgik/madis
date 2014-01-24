@@ -778,6 +778,7 @@ while True:
                 print(json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 for row in cexec:
                     print(json.dumps(row, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
+                    sys.stdout.flush()
                 print
                 sys.stdout.flush()
 
