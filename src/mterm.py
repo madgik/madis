@@ -476,21 +476,33 @@ def exitwitherror(*args):
 def process_args():
     global connection, functions, errorexit, db, nobuf
 
-    args = sys.argv
+    args = sys.argv[1:]
 
     # Continue on error when input is piped in
-    if len(args) >= 2 and pipedinput:
-        setargs = set(args[1:])
+    if len(args) >= 1 and pipedinput:
+        setargs = set(args)
         if '-bailoff' in setargs or '-coe' in setargs:
-            args = args[0:1] + args[2:]
+            try:
+                setargs.remove('-bailoff')
+            except KeyError:
+                pass
+
+            try:
+                setargs.remove('-coe')
+            except KeyError:
+                pass
+
             errorexit = False
 
         if '-nobuf' in setargs:
+            setargs.remove('-nobuf')
             nobuf = True
 
-    if len(args) >= 2:
+        args = list(setargs)
+
+    if len(args) >= 1:
         db = args[-1]
-        if db == "-q" or db == '':
+        if db == "-q":
             db = ':memory:'
 
     connection = createConnection(db)
