@@ -22,6 +22,7 @@ import json
 
 pipedinput=not sys.stdin.isatty()
 errorexit = True
+nobuf = False
 
 if pipedinput:
     # If we get piped input use dummy readline
@@ -473,15 +474,19 @@ def exitwitherror(*args):
         sys.stdout.flush()
 
 def process_args():
-    global connection, functions, errorexit, db
+    global connection, functions, errorexit, db, nobuf
 
     args = sys.argv
 
     # Continue on error when input is piped in
     if len(args) >= 2 and pipedinput:
-        if args[1] == '-bailoff' or args[1] == '-coe':
+        setargs = set(args[1:])
+        if '-bailoff' in setargs or '-coe' in setargs:
             args = args[0:1] + args[2:]
             errorexit = False
+
+        if '-nobuf' in setargs:
+            nobuf = True
 
     if len(args) >= 2:
         db = args[1]
@@ -778,7 +783,8 @@ while True:
                 print(json.dumps({"schema":desc}, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
                 for row in cexec:
                     print(json.dumps(row, separators=(',',':'), ensure_ascii=False).encode('utf_8', 'replace'))
-                    sys.stdout.flush()
+                    if nobuf:
+                        sys.stdout.flush()
                 print
                 sys.stdout.flush()
 
