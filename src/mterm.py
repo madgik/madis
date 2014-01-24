@@ -489,8 +489,8 @@ def process_args():
             nobuf = True
 
     if len(args) >= 2:
-        db = args[1]
-        if db == "-q":
+        db = args[-1]
+        if db == "-q" or db == '':
             db = ':memory:'
 
     connection = createConnection(db)
