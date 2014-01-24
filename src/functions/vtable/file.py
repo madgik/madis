@@ -278,10 +278,8 @@ class FileCursor:
             else:
                 raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
 
-            #self.iter = jsoniter(self.fileiter)
-
-            jsonload = json.JSONDecoder().raw_decode
-            self.iter = (jsonload(x)[0] for x in self.fileiter)
+            jsonload = json.JSONDecoder().scan_once
+            self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
             return
 
         if filenameExt =='.csv':
