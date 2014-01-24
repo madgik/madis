@@ -363,7 +363,7 @@ class FileCursor:
         try:
             return self.iter.next()
         except UnicodeDecodeError, e:
-            raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not %s encoded" %(self.encoding))
+            raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not UTF8 encoded")
 
     def close(self):
         self.fileiter.close()
