@@ -1,6 +1,6 @@
 """
 
-.. function:: pipe(query:None[,lines:t])
+.. function:: jsonpipe(query:None[,lines:t])
 
 Executes *query* as a shell command and returns the standard output lines as rows of one column table.
 Setting *lines* parameter to *f* the command output will be returned in one table row.
@@ -37,13 +37,14 @@ Examples::
 
 import functions
 import vtbase
-
+import itertools
+import json
 import subprocess
 
 registered = True
 external_stream = True
 
-class PipeVT(vtbase.VT):
+class JSONPipeVT(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         largs, dictargs = self.full_parse(parsedArgs)
 
@@ -58,30 +59,44 @@ class PipeVT(vtbase.VT):
         if command is None:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No command argument found")
         
-        linesplit = True
-        if 'lines' in dictargs and dictargs['lines'][0] in ('f', 'F', '0'):
-            linesplit = False
-
-        yield (('C1', 'text'),)
-
         child = subprocess.Popen(command, shell=True, bufsize=1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if linesplit:
-            pipeiter = iter(child.stdout.readline, '')
-            for line in pipeiter:
-                yield (line.rstrip("\r\n").decode('utf_8', 'replace'), )
-            
-            output, error = child.communicate()
-        else:
-            output, error = child.communicate()
+        jsondecode = json.JSONDecoder().scan_once
+        pipeiter = iter(child.stdout.readline, '')
+        firstline = ''
 
-            yield [output.decode('utf_8', 'replace').rstrip("\r\n")]
+        try:
+            firstline = pipeiter.next()
+        except StopIteration:
+            yield (('C1', 'text'),)
+            raise StopIteration
+            return
+
+        namelist = []
+        schemaline = json.loads(firstline)
+        schemalinetype = type(schemaline)
+
+        if schemalinetype == list:
+            for i in xrange(1, len(schemaline)+1):
+                namelist.append( ['C'+str(i), 'text'] )
+            pipeiter = itertools.chain([firstline], self.fileiter)
+        elif schemalinetype == dict:
+            namelist += schemaline['schema']
+        else:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
+
+        yield tuple(namelist)
+
+        for line in pipeiter:
+            yield jsondecode(line, 0)[0]
+
+        output, error = child.communicate()
 
         if child.returncode != 0:
             raise functions.OperatorError(__name__.rsplit('.')[-1], "Command '%s' failed to execute because:\n%s" %(command,error.rstrip('\n\t ')))
 
 def Source():
-    return vtbase.VTGenerator(PipeVT)
+    return vtbase.VTGenerator(JSONPipeVT)
 
 if not ('.' in __name__):
     """
