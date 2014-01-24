@@ -87,8 +87,12 @@ class JSONPipeVT(vtbase.VT):
 
         yield tuple(namelist)
 
-        for line in pipeiter:
-            yield jsondecode(line, 0)[0]
+        if "MSPW" in functions.apsw_version:
+            for line in pipeiter:
+                yield json.loads(line)
+        else:
+            for line in pipeiter:
+                yield jsondecode(line, 0)[0]
 
         output, error = child.communicate()
 

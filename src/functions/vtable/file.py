@@ -278,8 +278,11 @@ class FileCursor:
             else:
                 raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
 
-            jsonload = json.JSONDecoder().scan_once
-            self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
+            if "MSPW" in functions.apsw_version:
+                self.iter = (json.loads(x) for x in self.fileiter)
+            else:
+                jsonload = json.JSONDecoder().scan_once
+                self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
             return
 
         if filenameExt =='.csv':
