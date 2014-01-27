@@ -321,13 +321,13 @@ class graphtodot:
 
     >>> sql("select graphtodot(null, a,b) from table1")
     graphtodot(null, a,b)
-    ----------------------------------------------------
+    ------------------------------------------------------------------------
     digraph  {
-    1 -> 2;
-    2 -> 3;
-    3 -> 4;
-    4 -> 5;
-    5 -> 3;
+    "1" -> "2";
+    "2" -> "3";
+    "3" -> "4";
+    "4" -> "5";
+    "5" -> "3";
     }
 
     Undirected graph:
@@ -342,13 +342,13 @@ class graphtodot:
 
     >>> sql("select graphtodot(null, null, a,b) from table2")
     graphtodot(null, null, a,b)
-    --------------------------------------------------
+    ----------------------------------------------------------------------
     graph  {
-    1 -- 3;
-    2 -- 5;
-    3 -- 4;
-    4 -- 1;
-    5 -- 4;
+    "1" -- "3";
+    "2" -- "5";
+    "3" -- "4";
+    "4" -- "1";
+    "5" -- "4";
     }
 
     Graph with details:
@@ -360,13 +360,13 @@ class graphtodot:
 
     >>> sql("select graphtodot('chem_comp_1', null, a, b, c, d, e) from table5")
     graphtodot('chem_comp_1', null, a, b, c, d, e)
-    ----------------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------------------------------
     graph chem_comp_1 {
-    1 [label="O"];
-    1 -- 2 [label="="];
-    2 [label="C"];
-    2 -- 3 [label="="];
-    3 [label="O"];
+    "1" [label="O"];
+    "1" -- "2" [label="="];
+    "2" [label="C"];
+    "2" -- "3" [label="="];
+    "3" [label="O"];
     }
 
     """
@@ -436,14 +436,14 @@ class graphtodot:
         
         for n,v in self.nodes.iteritems():
             if v[1]!=None:
-                dot+=unicode(n)+' [label="'+unicode(v[1]).replace('"',"'")+'"];\n'
+                dot+='"' + unicode(n)+'" [label="'+unicode(v[1]).replace('"',"'")+'"];\n'
             for e in v[0]:
-                dot+=unicode(n)+ ' '
+                dot+='"' + unicode(n)+ '" '
                 if self.directed:
-                    dot+='-> '
+                    dot+='-> "'
                 else:
-                    dot+='-- '
-                dot+=unicode(e[0])
+                    dot+='-- "'
+                dot+=unicode(e[0]) + '"'
                 if e[1]!=None:
                     dot+=u' [label="'+unicode(e[1]).replace('"',"'")+'"]'
                 dot+=u';\n'
