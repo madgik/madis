@@ -1,6 +1,6 @@
 """
 
-.. function:: timeslidingwindow(window) -> query results
+.. function:: timeslidingwindow(timewindow, timecolumn) -> query results
 
 Returns the query input results annotated with the window id as an extra column.
 The following arguments can be passed as parameters:
@@ -12,11 +12,8 @@ timecolumn: It is the index of the temporal column (starting from 0) For
 the moment, we assume that the data is ordered by the temporal column that
  the user gives as input in ascending order.  
 
-dateformat: The default format of the timestamps is: %d/%m/%Y %H:%M:%S
-but if the date part is represented otherwise, it can be passed as a parameter.
 
-:Returned table schema:
-    Same as input query schema.
+
 
     Examples::
 
@@ -68,65 +65,16 @@ but if the date part is represented otherwise, it can be passed as a parameter.
     3   | 12.05.2010 00:05:00
 
     >>> table2('''
-    ... "12.05.2010 00:00:00"
-    ... "12.05.2010 00:01:00"
-    ... "12.05.2010 00:01:00"
-    ... "12.05.2010 00:02:00"
-    ... "12.05.2010 00:03:00"
-    ... "12.05.2010 00:04:00"
-    ... "12.05.2010 00:07:00"
-    ... ''')
-
-    ... ''')
-    >>> sql("timeslidingwindow timewindow:180 timecolumn:0 select * from table2")
-    wid | a
-    -------------------------
-    0   | 12.05.2010 00:00:00
-    0   | 12.05.2010 00:01:00
-    0   | 12.05.2010 00:01:00
-    0   | 12.05.2010 00:02:00
-    0   | 12.05.2010 00:03:00
-    1   | 12.05.2010 00:01:00
-    1   | 12.05.2010 00:01:00
-    1   | 12.05.2010 00:02:00
-    1   | 12.05.2010 00:03:00
-    1   | 12.05.2010 00:04:00
-    2   | 12.05.2010 00:04:00
-    2   | 12.05.2010 00:07:00
-
-    >>> table2('''
-    ... "12/05/2010 00:00:00"
-    ... "12/05/2010 00:01:00"
-    ... "12/05/2010 00:02:00"
-    ... "12/05/2010 00:03:00"
-    ... "12/05/2010 00:04:00"
-    ... ''')
-
-    ... ''')
-    >>> sql("timeslidingwindow timewindow:180 timecolumn:0 dateformat:'%d/%m/%Y' select * from table2")
-    wid | a
-    -------------------------
-    0   | 12/05/2010 00:00:00
-    0   | 12/05/2010 00:01:00
-    0   | 12/05/2010 00:02:00
-    0   | 12/05/2010 00:03:00
-    1   | 12/05/2010 00:01:00
-    1   | 12/05/2010 00:02:00
-    1   | 12/05/2010 00:03:00
-    1   | 12/05/2010 00:04:00
-
-    >>> table2('''
-    ... "12/05/2010 00:00:00"
     ... "12/05/2010 00:00:00"
     ... "12/05/2010 00:01:00"
     ... "12/05/2010 00:02:00"
     ... ''')
 
+
     ... ''')
-    >>> sql("timeslidingwindow timewindow:120 timecolumn:0 dateformat:'%d/%m/%Y' select * from table2")
+    >>> sql("timeslidingwindow timewindow:180 timecolumn:0  select * from table2")
     wid | a
     -------------------------
-    0   | 12/05/2010 00:00:00
     0   | 12/05/2010 00:00:00
     0   | 12/05/2010 00:01:00
     0   | 12/05/2010 00:02:00
@@ -140,6 +88,7 @@ import gc
 from collections import deque
 import datetime
 import time
+from dateutil import parser
 
 ### Classic stream iterator
 registered = True
@@ -163,12 +112,6 @@ class TimeSlidingWindow(vtbase.VT):
         else:
             timecolumn = int(dictargs['timecolumn'])
 
-        if 'dateformat' not in dictargs:
-            fmt = "%d.%m.%Y %H:%M:%S"
-        else:
-            temp = dictargs['dateformat'].strip('\'')
-            fmt = temp + " %H:%M:%S"
-
         cur = envars['db'].cursor()
 
         c = cur.execute(query, parse=False)
@@ -187,7 +130,8 @@ class TimeSlidingWindow(vtbase.VT):
         wid = 0
         secs = 0
         row = c.next()
-        firstTime = int(time.mktime(datetime.datetime.strptime(row[timecolumn], fmt).timetuple()))
+        firstTime = int(time.mktime(parser.parse(row[timecolumn], fuzzy=True).timetuple()))
+
         head = {firstTime: [row]}
         window = deque([])
         while row:
@@ -205,7 +149,8 @@ class TimeSlidingWindow(vtbase.VT):
                             for t in rl[k]:
                                 yield (wid,) + t
                 break
-            secs = int(time.mktime(datetime.datetime.strptime(row[timecolumn], fmt).timetuple()))
+
+            secs = int(time.mktime(parser.parse(row[timecolumn], fuzzy=True).timetuple()))
 
             if secs <= firstTime + winlen:
                 if prev[0] == row[timecolumn] and window:

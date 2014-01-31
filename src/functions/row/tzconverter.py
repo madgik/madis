@@ -1,31 +1,20 @@
 from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
+from dateutil import parser
+
 
 
 
 def tzconverter(*args):
 
     """
-    .. function:: jaccard(jpack1,jpack2)
+    .. function:: tzconverter(timestamp,sourcetz, targettz,format)
 
-    Return jaccard similarity value of two jpacks.
+    Returns timestamps converted from source timezone to target timezone. The timestamps are returned in ISO format
 
-    Example:
 
-    >>> table1('''
-    ... "12/05/2010 00:00:00"
-    ... "12/05/2010 00:01:00"
-    ... "12/05/2010 00:02:00"
-    ... ''')
-
-    ... ''')
-    >>> sql("select a, tzconverter(a,'Europe/Berlin','UTC','%d/%m/%Y %H:%M:%S')  from table1 ")
-    a                   | tzconverter(a,'Europe/Berlin','UTC','%d/%m/%Y %H:%M:%S')
-    ------------------------------------------------------------------------------
-    12/05/2010 00:00:00 | 11/05/2010 23:00:00
-    12/05/2010 00:01:00 | 11/05/2010 23:01:00
-    12/05/2010 00:02:00 | 11/05/2010 23:02:00
+    Example::
 
     >>> table1('''
     ... "12.05.2010 00:00:00"
@@ -37,9 +26,9 @@ def tzconverter(*args):
     >>> sql("select a, tzconverter(a,'Europe/Berlin','UTC')  from table1 ")
     a                   | tzconverter(a,'Europe/Berlin','UTC')
     ----------------------------------------------------------
-    12.05.2010 00:00:00 | 11.05.2010 23:00:00
-    12.05.2010 00:01:00 | 11.05.2010 23:01:00
-    12.05.2010 00:02:00 | 11.05.2010 23:02:00
+    12.05.2010 00:00:00 | 2010-12-04T23:00:00+00:00
+    12.05.2010 00:01:00 | 2010-12-04T23:01:00+00:00
+    12.05.2010 00:02:00 | 2010-12-04T23:02:00+00:00
 
 
     """
@@ -49,15 +38,11 @@ def tzconverter(*args):
     source_tz = timezone(args[1])
     target_tz = timezone(args[2])
 
-    try:
-        fmt = args[3]
-    except IndexError:
-        fmt = "%d.%m.%Y %H:%M:%S"
+    date = parser.parse(date_str, fuzzy=True)
 
-    datetime_obj = datetime.strptime(date_str, fmt)
-    datetime_obj_berlin = datetime_obj.replace(tzinfo=source_tz)
+    datetime_obj_converted = date.replace(tzinfo=source_tz)
 
-    result = datetime_obj_berlin.astimezone(target_tz).strftime(fmt);
+    result = datetime_obj_converted.astimezone(target_tz).isoformat();
 
     return result
 
