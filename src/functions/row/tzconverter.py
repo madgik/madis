@@ -1,48 +1,80 @@
 from datetime import datetime, timedelta
-from pytz import timezone
-import pytz
-from dateutil import parser
-
-
+import setpath
+from lib import iso8601
 
 
 def tzconverter(*args):
 
     """
-    .. function:: tzconverter(timestamp,sourcetz, targettz,format)
+    .. function:: tzconverter(timestamp,offset)
 
-    Returns timestamps converted from source timezone to target timezone. The timestamps are returned in ISO format
+    Returns timestamps converted from UTC to target timezone, indicated by the offset parameter.
 
 
     Example::
 
     >>> table1('''
-    ... "12.05.2010 00:00:00"
-    ... "12.05.2010 00:01:00"
-    ... "12.05.2010 00:02:00"
+    ... "2010-12-05T00:00:00+00:00"
+    ... "2010-12-05T00:01:00+00:00"
+    ... "2010-12-05T00:02:00+00:00"
     ... ''')
 
     ... ''')
-    >>> sql("select a, tzconverter(a,'Europe/Berlin','UTC')  from table1 ")
-    a                   | tzconverter(a,'Europe/Berlin','UTC')
-    ----------------------------------------------------------
-    12.05.2010 00:00:00 | 2010-12-04T23:00:00+00:00
-    12.05.2010 00:01:00 | 2010-12-04T23:01:00+00:00
-    12.05.2010 00:02:00 | 2010-12-04T23:02:00+00:00
+    >>> sql("select a, tzconverter(a,'-01:00')  from table1 ")
+    a                         | tzconverter(a,'-01:00')
+    -----------------------------------------------------
+    2010-12-05T00:00:00+00:00 | 2010-12-04T23:00:00-01:00
+    2010-12-05T00:01:00+00:00 | 2010-12-04T23:01:00-01:00
+    2010-12-05T00:02:00+00:00 | 2010-12-04T23:02:00-01:00
+
+    ... ''')
+    >>> sql("select a, tzconverter(a,'-01')  from table1 ")
+    a                         | tzconverter(a,'-01')
+    --------------------------------------------------
+    2010-12-05T00:00:00+00:00 | 2010-12-04T23:00:00-01
+    2010-12-05T00:01:00+00:00 | 2010-12-04T23:01:00-01
+    2010-12-05T00:02:00+00:00 | 2010-12-04T23:02:00-01
+
+    >>> sql("select a, tzconverter(a,'-0100')  from table1 ")
+    a                         | tzconverter(a,'-0100')
+    ----------------------------------------------------
+    2010-12-05T00:00:00+00:00 | 2010-12-04T23:00:00-0100
+    2010-12-05T00:01:00+00:00 | 2010-12-04T23:01:00-0100
+    2010-12-05T00:02:00+00:00 | 2010-12-04T23:02:00-0100
+
+    >>> sql("select a, tzconverter(a,'+00:30')  from table1 ")
+    a                         | tzconverter(a,'+00:30')
+    -----------------------------------------------------
+    2010-12-05T00:00:00+00:00 | 2010-12-05T00:30:00+00:30
+    2010-12-05T00:01:00+00:00 | 2010-12-05T00:31:00+00:30
+    2010-12-05T00:02:00+00:00 | 2010-12-05T00:32:00+00:30
 
 
     """
 
-    date_str = args[0]
+    date = iso8601.parse_date(args[0])
+    sign = args[1][0]
 
-    source_tz = timezone(args[1])
-    target_tz = timezone(args[2])
+    tz = args[1].replace(':','')
+    mins = int(tz[1])*600 + int(tz[2])*60
 
-    date = parser.parse(date_str, fuzzy=True)
+    size = len(tz)
+    i=3
+    while (i<size):
+        if i == 3:
+            mins += int(tz[3])*10
+        elif i == 4:
+            mins += int(tz[4])
+        i+=1
+    if sign == '+':
+        tz = args[1].replace('+', '')
+        result = date + timedelta(minutes = mins)
 
-    datetime_obj_converted = date.replace(tzinfo=source_tz)
+    elif sign == '-':
+        tz = args[1].replace('-', '')
+        result = date - timedelta(minutes = mins)
 
-    result = datetime_obj_converted.astimezone(target_tz).isoformat();
+    result =  str(result).replace(" ","T").replace("+00:00", args[1])
 
     return result
 
