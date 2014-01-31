@@ -5,6 +5,7 @@
 \.conflict\~$
 ^src/tests/(?!readme.txt$).*$
 ^nbproject/.*$
+^.idea/.*$
 ^src/docs/build/_static/.*$
 ^/src/docs/build/_static/.*$
 ^src/docs/build/_sources/.*$
