@@ -1,9 +1,12 @@
 __docformat__ = 'reStructuredText en'
 
+import setpath
 import json
 from hashlib import md5
 from binascii import b2a_base64
 import math
+import collections
+import functions
 
 class graphpowerhash:
     """
@@ -550,6 +553,71 @@ class graphtotgf:
                 tgf+=clearname(n)+ ' ' + clearname(e[0])+ ' '+ (clearname(e[1]) if e[1]!=None else '') + '\n'
 
         return tgf
+
+class graphcliques:
+    """
+    .. function:: graphcliques(node1, node2) -> graph cliques
+
+    Finds and returns the cliques in the graph defined by the node1<->node2 links.
+
+    Examples:
+
+    >>> table1('''
+    ... n1   n2
+    ... n2   n3
+    ... n1   n3
+    ... n3   n4
+    ... n4   n5
+    ... n5   n3
+    ... n1   n6
+    ... ''')
+
+    >>> sql("select graphcliques(a,b) from table1")  # doctest: +NORMALIZE_WHITESPACE
+    cliqueid | nodeid
+    -----------------
+    0        | n1
+    0        | n2
+    0        | n3
+    1        | n3
+    1        | n4
+    1        | n5
+
+    """
+
+    registered=True
+
+    def __init__(self):
+        self.G = collections.defaultdict(set)
+
+    def step(self, *args):
+        if len(args)!=2:
+            raise functions.OperatorError('graphcliques', 'Two parameters should be provided')
+
+        self.G[args[0]].add(args[1])
+        self.G[args[1]].add(args[0])
+
+    def _bors_kerbosch(self, R, P, X):
+        if not P and not X:  # if both are empty
+            if len(R) > 2:
+                yield sorted(R)
+            return
+
+        pivot = max(((len(self.G[v]), v) for v in P.union(X)))[1]
+
+        for v in P.difference(self.G[pivot]):
+            for c in self._bors_kerbosch(R.union((v,)), P.intersection(self.G[v]), X.intersection(self.G[v])):
+                yield c
+            P.remove(v)
+            X.add(v)
+
+    def final(self):
+        cid = 0
+
+        yield ('cliqueid', 'nodeid')
+        for c in self._bors_kerbosch(set([]), set(self.G.keys()), set([])):
+            for n in c:
+                yield cid, n
+            cid += 1
 
 if not ('.' in __name__):
     """
