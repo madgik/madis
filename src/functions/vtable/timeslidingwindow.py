@@ -84,11 +84,9 @@ the moment, we assume that the data is ordered by the temporal column that
 import setpath
 import vtbase
 import functions
-import gc
 from collections import deque
-import datetime
 import time
-from dateutil import parser
+from lib.dateutil import parser
 
 ### Classic stream iterator
 registered = True

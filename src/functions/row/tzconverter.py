@@ -53,25 +53,31 @@ def tzconverter(*args):
     """
 
     date = iso8601.parse_date(args[0])
-    sign = args[1][0]
+    mins = 0
+    sign = ''
+    result = ''
+    c = 0
 
-    tz = args[1].replace(':','')
-    mins = int(tz[1])*600 + int(tz[2])*60
+    for i in args[1]:
+        if c == 0:
+            sign = args[1][0]
+        elif c == 1:
+            mins += int(args[1][1])*600
+        elif c == 2:
+            mins += int (args[1][2])*60
+        elif c == 3 and args[1][3] == ':': #in this case i know what's next
+            mins += int(args[1][4])*10 + int(args[1][5])
+            break;
+        elif c == 3:
+            mins += int(args[1][3])*10
+        elif c == 4:
+            mins += int (args[1][4])
+        c+=1
 
-    size = len(tz)
-    i=3
-    while (i<size):
-        if i == 3:
-            mins += int(tz[3])*10
-        elif i == 4:
-            mins += int(tz[4])
-        i+=1
     if sign == '+':
-        tz = args[1].replace('+', '')
         result = date + timedelta(minutes = mins)
 
     elif sign == '-':
-        tz = args[1].replace('-', '')
         result = date - timedelta(minutes = mins)
 
     result =  str(result).replace(" ","T").replace("+00:00", args[1])
