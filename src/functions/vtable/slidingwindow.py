@@ -59,8 +59,8 @@ class SlidingWindow(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-	if 'window' not in dictargs:
-	    raise functions.OperatorError(__name__.rsplit('.')[-1],"No window argument ")
+        if 'window' not in dictargs:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No window argument ")
 
         cur=envars['db'].cursor()
         c=cur.execute(query, parse = False)
@@ -76,7 +76,6 @@ class SlidingWindow(vtbase.VT):
                 except:
                     pass
 
-        gc.disable()
         wid=0
         window=deque([], int(dictargs['window']))
         while True:
@@ -84,8 +83,6 @@ class SlidingWindow(vtbase.VT):
             for r in window:
                 yield (wid,) + r
             wid+=1
-        gc.enable()
-
 
 def Source():
     return vtbase.VTGenerator(SlidingWindow)
