@@ -4,8 +4,6 @@ import os.path
 import setpath
 import sys
 import imp
-vtout = imp.load_source('vtout', '/home/johnfouf/NetBeansProjects/madis/src/functions/vtable/vtout.py')
-from vtout import SourceNtoOne
 from lib.dsv import writer
 import gzip
 from lib.ziputils import ZipIter
