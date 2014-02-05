@@ -26,6 +26,12 @@ import vtbase
 import functions
 import struct
 from array import array
+import vtbase
+import functions
+import apsw
+import os
+import sys
+import gc
 #import marshal
 import gc
 import re
@@ -36,7 +42,7 @@ registered=True
 BLOCK_SIZE = 32768000
 
 
-class NopVT(vtbase.VT):
+class UnionAllRC(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
@@ -120,7 +126,7 @@ class NopVT(vtbase.VT):
 
 
 def Source():
-    return vtbase.VTGenerator(NopVT)
+    return vtbase.VTGenerator(UnionAllRC)
 
 if not ('.' in __name__):
     """
