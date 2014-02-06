@@ -34,7 +34,6 @@ import gc
 import gc
 import re
 import zlib
-import bz2
 ### Classic stream iterator
 registered=True
 BLOCK_SIZE = 32768000
