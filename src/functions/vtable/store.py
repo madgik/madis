@@ -26,7 +26,7 @@ import zlib
 from collections import OrderedDict
 from array import array
 from itertools import chain
-import bz2
+import zlib
 
 
 
@@ -135,9 +135,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         listoflens = [0 for _ in xrange(colnum)]
         start = 0
         dictsize = 65536
@@ -238,8 +238,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(marshal.dumps(towrite.keys(),2)))
-                                output.write(bz2.compress(array(indextype,towrite.values()).tostring()))
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
                             listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
                         #output.write(compressorlistcols[i].compress(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl] ).tostring()))
 #
@@ -251,12 +251,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(marshal.dumps(l)))
+#                        output.write(zlib.compress(marshal.dumps(l)))
 
                 for x in li:
-                       output.write(bz2.compress(marshal.dumps(sorted(x),2)))
+                       output.write(zlib.compress(marshal.dumps(sorted(x),2)))
 
 
                 headindex[i+1] = output.tell()+ prev
@@ -283,9 +283,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         listoflens = [0 for _ in xrange(colnum)]
         start = 0
         dictsize = 65536
@@ -356,7 +356,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         if (len(setcol[i])>55000):
                             paxcols.append(i)
                             #s =  [val for subl in [x[i] for x in listofnditers] for val in subl]
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         else:
                             prevsets[i] = set(setcol[i]).copy()
@@ -368,15 +368,15 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             else:
                                 indextype='H'
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(marshal.dumps(s,2)))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i] ]).tostring()))
+                            output.write(zlib.compress(marshal.dumps(s,2)))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i] ]).tostring()))
                 else:
 
                     for i in xrange(colnum):
                         headindex[i] = output.tell() + prev
                         if i in paxcols:
                             #s =  [val for subl in [x[i] for x in listofnditers] for val in subl]
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         else:
                             difnew = list(setcol[i]-prevsets[i])
@@ -400,16 +400,16 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(marshal.dumps(towrite.keys(),2)))
-                                output.write(bz2.compress(array(indextype,towrite.values()).tostring()))
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
 
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(l.tostring()))
+#                        output.write(zlib.compress(l.tostring()))
 
 
 
@@ -436,9 +436,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         listoflens = [0 for _ in xrange(colnum)]
         start = 0
         dictsize = 65536
@@ -514,7 +514,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         if (len(setcol[i])>55000):
                             paxcols.append(i)
                             print i
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         else:
                             prevsets[i] = set(setcol[i]).copy()
@@ -526,8 +526,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             else:
                                 indextype='H'
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(marshal.dumps(s,2)))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(marshal.dumps(s,2)))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                             #l = [coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]
                             #z = [coldict[val] for val in listofvals[i]]
                             #print l
@@ -542,7 +542,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         headindex[i] = output.tell() + prev
                         if i in paxcols:
                             s =  [val for subl in [x[i] for x in listofnditers] for val in subl]
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         else:
                             difnew = list(setcol[i]-prevsets[i])
@@ -566,16 +566,16 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(marshal.dumps(towrite.keys(),2)))
-                                output.write(bz2.compress(array(indextype,towrite.values()).tostring()))
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
 
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(l.tostring()))
+#                        output.write(zlib.compress(l.tostring()))
 
 
 
@@ -603,9 +603,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         listoflens = [0 for _ in xrange(colnum)]
         start = 0
         dictsize = 65536
@@ -703,7 +703,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 #                            paxcols.append(i)
 #                            output.write(compressorlistdicts[i].compress(marshal.dumps(s,2)))
                         if i in paxcols:
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         elif i in firstgroup and check == 0:
 
@@ -714,13 +714,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 coldicts[i] = dict(((x,y) for y,x in enumerate(corelset[i])))
                                 coldict = coldicts[i]
                                 s = zip(*corelset[i])
-                                output.write(bz2.compress(marshal.dumps(s[0],2)))
-                                output.write(bz2.compress(marshal.dumps(s[1],2)))
+                                output.write(zlib.compress(marshal.dumps(s[0],2)))
+                                output.write(zlib.compress(marshal.dumps(s[1],2)))
                                 if len(corelset[i])<256:
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
+                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
 
                         elif i in correlated or (i in firstgroup and check==1):
                                     pass
@@ -734,8 +734,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             else:
                                 indextype='H'
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(marshal.dumps(s,2)))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(marshal.dumps(s,2)))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                 else:
 #                    listofnditers1 = zip(*listofnditers)
 #                    listofnditers1.sort(key=lambda listofnditers1: listofnditers1[paxcols[0]])
@@ -744,7 +744,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     for i in xrange(colnum):
                         headindex[i] = output.tell() + prev
                         if i in paxcols:
-                            output.write(bz2.compress(marshal.dumps(listofvals[i],2)))
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
                             #listofarrays.append(s)
                         elif i in firstgroup and check == 0:
                             check=1
@@ -770,13 +770,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 coldict = coldicts[i]
                                 s = zip(*towrite.keys())
                                 if len(s)>0:
-                                    output.write(bz2.compress(marshal.dumps(s[0],2)))
-                                    output.write(bz2.compress(marshal.dumps(s[1],2)))
+                                    output.write(zlib.compress(marshal.dumps(s[0],2)))
+                                    output.write(zlib.compress(marshal.dumps(s[1],2)))
                                 if len(corelset[i])<256:
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
+                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
                         elif i in correlatedcols.values() or (i in firstgroup and check==1):
                                     pass
                         else:
@@ -801,16 +801,16 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(marshal.dumps(towrite.keys(),2)))
-                                output.write(bz2.compress(array(indextype,towrite.values()).tostring()))
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
 
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(l.tostring()))
+#                        output.write(zlib.compress(l.tostring()))
 
 
 
@@ -838,9 +838,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         firstgroup = set()
         correlatedcols = {}
         correlated = set()
@@ -930,12 +930,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
                             sortedlist = sorted(listofvals[i])
-                            output.write(bz2.compress(marshal.dumps(sortedlist,2)))
+                            output.write(zlib.compress(marshal.dumps(sortedlist,2)))
                             indextype = 'H'
                             indexeslist = []
                             for value in sortedlist:
                                 indexeslist.append(listofvals[i].index(value))
-                            output.write(bz2.compress(array(indextype,indexeslist).tostring()))
+                            output.write(zlib.compress(array(indextype,indexeslist).tostring()))
                             l[0] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
@@ -947,13 +947,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 coldicts[i] = dict(((x,y) for y,x in enumerate(corelset[i])))
                                 coldict = coldicts[i]
                                 s = zip(*corelset[i])
-                                output.write(bz2.compress(marshal.dumps(s[0],2)))
-                                output.write(bz2.compress(marshal.dumps(s[1],2)))
+                                output.write(zlib.compress(marshal.dumps(s[0],2)))
+                                output.write(zlib.compress(marshal.dumps(s[1],2)))
                                 if len(corelset[i])<256:
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
+                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
 
                         elif i in correlated:
                                     pass
@@ -967,10 +967,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 #                                coldicts[i] = dict(((x,y) for y,x in enumerate(corelset)))
 #                                coldict = coldicts[i]
 #                                s = zip(*corelset)
-#                                output.write(bz2.compress(marshal.dumps(s[0],2)))
-#                                output.write(bz2.compress(marshal.dumps(s[1],2)))
+#                                output.write(zlib.compress(marshal.dumps(s[0],2)))
+#                                output.write(zlib.compress(marshal.dumps(s[1],2)))
 #                                indextype='B'
-#                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
+#                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
                         else:
                             prevsets[i] = list(set(setcol[i]).copy())
                             coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
@@ -983,9 +983,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = [0 for _ in xrange(3)]
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
-                            output.write(bz2.compress(marshal.dumps(prevsets[i],2)))
+                            output.write(zlib.compress(marshal.dumps(prevsets[i],2)))
                             l[0] = output.tell()
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                             l[1] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
@@ -1003,12 +1003,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
                             sortedlist = sorted(listofvals[i])
-                            output.write(bz2.compress(marshal.dumps(sortedlist,2)))
+                            output.write(zlib.compress(marshal.dumps(sortedlist,2)))
                             indextype = 'H'
                             indexeslist = []
                             for value in sortedlist:
                                 indexeslist.append(listofvals[i].index(value))
-                            output.write(bz2.compress(array(indextype,indexeslist).tostring()))
+                            output.write(zlib.compress(array(indextype,indexeslist).tostring()))
                             l[0] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
@@ -1039,10 +1039,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 #                                coldict = coldicts[i]
 #                                s = zip(*towrite.keys())
 #                                if len(s)>0:
-#                                    output.write(bz2.compress(marshal.dumps(s[0],2)))
-#                                    output.write(bz2.compress(marshal.dumps(s[1],2)))
+#                                    output.write(zlib.compress(marshal.dumps(s[0],2)))
+#                                    output.write(zlib.compress(marshal.dumps(s[1],2)))
 #                                indextype='B'
-#                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
+#                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
                         elif i in correlatedcols:
                                 corellated = zip(listofvals[i],listofvals[correlatedcols[i]])
                                 corelset1 = set(corellated)
@@ -1065,13 +1065,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 coldict = coldicts[i]
                                 s = zip(*towrite.keys())
                                 if len(s)>0:
-                                    output.write(bz2.compress(marshal.dumps(s[0],2)))
-                                    output.write(bz2.compress(marshal.dumps(s[1],2)))
+                                    output.write(zlib.compress(marshal.dumps(s[0],2)))
+                                    output.write(zlib.compress(marshal.dumps(s[1],2)))
                                 if len(corelset[i])<256:
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
+                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset[i]] ).tostring()))
                         elif i in correlated :
                                     pass
                         else:
@@ -1107,21 +1107,21 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 else:
                                     indextype='H'
 
-                                output.write(bz2.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
                                 l[0] = output.tell()
-                                output.write(bz2.compress(array(indextype,towrite.values()).tostring()))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
                                 l[1] = output.tell()
                             #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
-                            output.write(bz2.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                             l[2] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
                             output.seek(l[2])
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(l.tostring()))
+#                        output.write(zlib.compress(l.tostring()))
 
 
 
@@ -1151,9 +1151,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
         setcol = [set([]) for _ in xrange(colnum)]
-#        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-#        compressorlistvals = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         listoflens = [0 for _ in xrange(colnum)]
         start = 0
         dictsize = 65536
@@ -1175,14 +1175,14 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         compress = zlib.compress
 
         while True:
-            maxlen = 0
+            maxlen = 0.5
             ret = False
             z = zip(*itertools.islice(diter, 0, step))
 
             if z==[]:
                 ret = True
             else:
-                if blocknum==0 or blocknum==1:
+                if blocknum==0:
                     for c in z:
                         for v in c:
 
@@ -1203,7 +1203,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         if l > maxlen:
                             maxlen = l
 
-                print maxlen
+
                 if blocknum>1:
                     listofvals = []
                     listofvals.append([val for subl in [x[paxcols[0]] for x in listofnditers] for val in subl])
@@ -1240,6 +1240,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
                             output.seek(l[0])
+
                             #listofarrays.append(s)
 #                        elif i==8 or i==9:
 #                            if i==8:
@@ -1250,12 +1251,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 #                                coldicts[i] = dict(((x,y) for y,x in enumerate(corelset)))
 #                                coldict = coldicts[i]
 #                                s = zip(*corelset)
-#                                output.write(bz2.compress(marshal.dumps(s[0],2)))
-#                                output.write(bz2.compress(marshal.dumps(s[1],2)))
+#                                output.write(zlib.compress(marshal.dumps(s[0],2)))
+#                                output.write(zlib.compress(marshal.dumps(s[1],2)))
 #                                indextype='B'
-#                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
+#                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
                         else:
-                            prevsets[i] = list(set(setcol[i]).copy())
+                            prevsets[i] = sorted(list(set(setcol[i]).copy()))
                             coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
                             coldict = coldicts[i]
                             if len(prevsets[i])<256:
@@ -1273,7 +1274,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
                             output.seek(l[1])
-                            print l
                 else:
 #                    listofnditers1 = zip(*listofnditers)
 #                    listofnditers1.sort(key=lambda listofnditers1: listofnditers1[paxcols[0]])
@@ -1289,7 +1289,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
                             output.seek(l[0])
-                            rowlimit = len(listofvals[i])
+                            if rowlimit==0:
+                                rowlimit = len(listofvals[i])
+                            
                             #listofarrays.append(s)
 #                        elif i==8 or i==9:
 #                            if i==8:
@@ -1316,10 +1318,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 #                                coldict = coldicts[i]
 #                                s = zip(*towrite.keys())
 #                                if len(s)>0:
-#                                    output.write(bz2.compress(marshal.dumps(s[0],2)))
-#                                    output.write(bz2.compress(marshal.dumps(s[1],2)))
+#                                    output.write(zlib.compress(marshal.dumps(s[0],2)))
+#                                    output.write(zlib.compress(marshal.dumps(s[1],2)))
 #                                indextype='B'
-#                                output.write(bz2.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
+#                                output.write(zlib.compress(array(indextype,[coldict[val] for val in corelset] ).tostring()))
                         else:
 
                             pset = set(prevsets[i])
@@ -1337,9 +1339,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     d+=1
                                     
                             prevsets[i] = s
-                            #le = len(difold)
                             towritevalues = (x for x in xrange(len(coldicts[i]), len(coldicts[i]) + len(difnew)))
-
                             coldicts[i] = dict(((x,y) for y,x in enumerate(s)))
                             coldict = coldicts[i]
                             l = [0 for _ in xrange(3)]
@@ -1350,7 +1350,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-
+                                if len(difnew)>10:
+                                    difnew, towritevalues = zip(*sorted(zip(difnew, towritevalues)))
                                 output.write(compress(marshal.dumps(difnew,2)))
                                 l[0] = output.tell()
                                 output.write(compress(array(indextype,towritevalues).tostring()))
@@ -1362,9 +1363,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             output.seek(l[2])
 #                for i,l in enumerate(listofarrays):
 #                    if i in paxcols:
-#                        output.write(bz2.compress(marshal.dumps(sorted(l),2)))
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
 #                    else:
-#                        output.write(bz2.compress(l.tostring()))
+#                        output.write(zlib.compress(l.tostring()))
 
 
                         
@@ -1374,7 +1375,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 count=0
                 output.flush()
                 fileIter.write(struct.pack('L'*len(headindex), *headindex))
-                print 'lala' + str(fileIter.tell())
                 fileIter.write(output.getvalue())
                 listoflens = [0 for _ in xrange(colnum)]
                 for s in setcol:
@@ -1399,8 +1399,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         marshal.dump(schema,fileIter,2)
 
         setcol = [set([]) for _ in xrange(colnum)]
-        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-        compressorlistcols = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
+        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
         start = 0
         step = 65535
         bsize = 0
@@ -1449,8 +1449,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         colnum = len(schema)
         fastPickler.dump(schema)
         listptr = [array('H') for _ in xrange(colnum) ]
-        compressorlistdicts = [bz2.BZ2Compressor(9) for _ in xrange(colnum)]
-        compressorcols = bz2.BZ2Compressor(9)
+        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+        compressorcols = zlib.BZ2Compressor(9)
         listofdicts = [{} for _ in xrange(colnum) ]
         listoflens = [-1 for _ in xrange(colnum)]
         start = 0
@@ -1796,6 +1796,170 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             gc.enable()
             pass
 
+    def spac(fileObject):
+        colnum = len(schema)-1
+        marshal.dump(schema[1:],fileObject,2)
+        setcol = [set([]) for _ in xrange(colnum)]
+        dictsize = 65536
+        paxcols = []
+        indextype = 'H'
+        index_init = [0 for _ in xrange(3)]
+        step = dictsize
+        stopstep = int(dictsize/20)
+        bsize = 0
+        listofnditers = []
+        coldicts = [{} for _ in xrange(colnum)]
+        prevsets =  [[] for _ in xrange(colnum)]
+        count = 0
+        blocknum = 0
+        bsize = 0
+        rowlimit = 0
+        compress = zlib.compress
+        
+
+        while True:
+            maxlen = 0
+            exitGen = False
+            rows = []
+            try:
+                for i in xrange(step):
+                    rows.append((yield))
+            except GeneratorExit:
+                exitGen = True
+            z = zip(*rows)
+
+            if z!=[]:
+                if blocknum==0:
+                    for c in z:
+                        for v in c:
+                            bsize += getSize(v)
+                listofnditers.append(z)
+                count += len(listofnditers[-1][0])
+                
+
+                for i,col in enumerate(listofnditers[-1]):
+                    if i not in paxcols:
+                        setcol[i].update(col)
+                        l = len(setcol[i])
+                        if l > maxlen:
+                            maxlen = l
+
+                if blocknum>=1:
+                    listofvals = []
+                    listofvals.append([val for subl in [x[paxcols[0]] for x in listofnditers] for val in subl])
+                    if len(listofvals[0]) > rowlimit:
+                        bsize = 30000001
+
+
+            step = dictsize - maxlen
+            if step < stopstep or exitGen or bsize>30000000:
+                bsize=0
+                prev = fileObject.tell() + 8*(colnum+2)
+                output = cStringIO.StringIO()
+                headindex = [0 for _ in xrange(colnum+2)]
+                listofvals = []
+                for j in xrange(colnum):
+                    listofvals.append([val for subl in [x[j] for x in listofnditers] for val in subl])
+
+                if blocknum == 0:
+                    for i in xrange(colnum):
+                        headindex[i] = output.tell() + prev
+                        if (len(setcol[i])*1.0/maxlen>0.67):
+                            paxcols.append(i)
+                            l = index_init[:]
+                            t = output.tell()
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.write(compress(marshal.dumps(listofvals[i],2)))
+                            l[0] = output.tell()
+                            output.seek(t)
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.seek(l[0])
+                            if rowlimit == 0:
+                                rowlimit = len(listofvals[i])
+                        else:
+                            prevsets[i] = list(set(setcol[i]).copy())
+                            coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
+                            coldict = coldicts[i]
+                            if len(prevsets[i])<256:
+                                indextype='B'
+                            else:
+                                indextype='H'
+                            l = index_init[:]
+                            t = output.tell()
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.write(compress(marshal.dumps(prevsets[i],2)))
+                            l[0] = output.tell()
+                            output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            l[1] = output.tell()
+                            output.seek(t)
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.seek(l[1])
+                else:
+                    for i in xrange(colnum):
+                        headindex[i] = output.tell() + prev
+                        if i in paxcols:
+                            l = index_init[:]
+                            t = output.tell()
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.write(compress(marshal.dumps(listofvals[i],2)))
+                            l[0] = output.tell()
+                            output.seek(t)
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.seek(l[0])
+                            
+                        else:
+                            pset = set(prevsets[i])
+                            difnew = list(setcol[i] - pset)
+ #                           s = []
+                            s = prevsets[i] + difnew
+                            d = 0
+                            if len(s) > dictsize:
+                                difold = list(pset - setcol[i])
+                                while len(s)>dictsize:
+                                    s.remove[difold[d]]
+                                    d+=1
+
+                            prevsets[i] = s
+                            towritevalues = (x for x in xrange(len(coldicts[i]), len(coldicts[i]) + len(difnew)))
+
+                            coldicts[i] = dict(((x,y) for y,x in enumerate(s)))
+                            coldict = coldicts[i]
+                            l = index_init[:]
+                            t = output.tell()
+                            output.write(struct.pack('L'*len(l), *l))
+                            if len(prevsets[i]) != 0 :
+                                if len(prevsets[i])<256:
+                                    indextype='B'
+                                else:
+                                    indextype='H'
+
+                                output.write(compress(marshal.dumps(difnew,2)))
+                                l[0] = output.tell()
+                                output.write(compress(array(indextype,towritevalues).tostring()))
+                                l[1] = output.tell()
+                            output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                            l[2] = output.tell()
+                            output.seek(t)
+                            output.write(struct.pack('L'*len(l), *l))
+                            output.seek(l[2])
+
+                headindex[i+1] = output.tell()+ prev
+                headindex[i+2] = count
+                count=0
+                fileObject.write(struct.pack('L'*len(headindex), *headindex))
+                fileObject.write(output.getvalue())
+                for s in setcol:
+                    s.clear()
+                listofnditers = []
+                gc.collect()
+                step = dictsize
+                blocknum+=1
+
+            if exitGen:
+                fileObject.close()
+                break
+
+
     def rcfile(fileObject):
         colnum = len(schema) - 1
         structHeader = 'L' * (len(schema)+1)
@@ -1902,6 +2066,23 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     bsize = 0
 
 
+    if mode == 'spac1':
+        if 'split' in formatArgs:
+            filesNum = int(formatArgs['split'])
+            filesList = [None]*filesNum
+            for key in xrange(int(formatArgs['split'])) :
+                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+
+            spacgen = [spac(x) for x in filesList]
+            spacgensend = [x.send for x in spacgen]
+            for j in spacgensend:
+                j(None)
+            for row in diter:
+                spacgensend[row[0]](row[1:])
+            for j in spacgen:
+                j.close()
+        else :
+            rcfilenonsplit()
 
     if mode == 'rcfile':
         if 'split' in formatArgs:
@@ -1940,7 +2121,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             todisk = [[] for _ in xrange(colnum)]
             start = 0
             step = 1024
-            compr = bz2.BZ2Compressor(9)
+            compr = zlib.BZ2Compressor(9)
             currentblock = fileIter.tell()
             myD=[{} for _ in xrange(colnum)]
             bsize = 0
@@ -1986,7 +2167,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     for col in todisk:
                         ind += 1
                         index[ind] = prev + index_loc
-                        output.write(bz2.compress(cPickle.dumps(col),9))
+                        output.write(zlib.compress(cPickle.dumps(col),9))
                         prev = output.tell()
                     index[ind+1] = prev + index_loc
                     currentblock = prev+index_loc
