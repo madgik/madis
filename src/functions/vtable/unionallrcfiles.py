@@ -65,13 +65,7 @@ class UnionAllRC(vtbase.VT):
         if 'end' in dictargs:
             end = int(dictargs['end'])
 
-
-        filename, ext=os.path.splitext(os.path.basename(where))
         fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
-        mstr  = "UNIONALLRCFILE-filename:",
-        mstr1  = "UNIONALLRCFILE-fullpath:",fullpath
-        print >> sys.stderr , mstr
-        raise  functions.OperatorError(__name__.rsplit('.')[-1],os.listdir('.'))
         fileIterlist = []
         for x in xrange(start,end+1):
             try:
