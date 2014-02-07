@@ -2017,6 +2017,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 todisk = [[] for _ in xrange(len(schema)-1)]
                 bsize = 0
             rows = []
+        fileObject.close()
 
     def rcfilenonsplit(fileObject=fileIter,colnum = (len(schema))):
             structHeader = 'L' * (colnum+2)
