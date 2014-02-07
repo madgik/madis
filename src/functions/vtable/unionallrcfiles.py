@@ -104,8 +104,8 @@ class UnionAllRC(vtbase.VT):
                 if ind[colnum+1][0] == 1:
                     ENDFILE = 1
 
-                d2 = [marshal.loads(zlib.decompress(fileObject.read(ind[col+1][0]-ind[col][0])))
-                      for col in xrange(colnum)]
+                d2 = tuple(marshal.loads(zlib.decompress(fileObject.read(ind[col+1][0]-ind[col][0])))
+                           for col in xrange(colnum))
 
                 rowcount = len(d2[0])
                 for row in xrange(rowcount):
