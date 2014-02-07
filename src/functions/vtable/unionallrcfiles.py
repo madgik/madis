@@ -110,22 +110,9 @@ class UnionAllRC(vtbase.VT):
                     obj = fileObject.read(ind[col+1][0]-ind[col][0])
                     d2[col] = marshal.loads(zlib.decompress(obj))
 
-                while True:
-                    tup = []
-                    for col in xrange(colnum):
-                        try:
-                            tup.append(d2[col][row])
-                        except :
-                            d = 1
-                            break
-                    if d == 1:
-                        break
-                    yield tup
-                    tup = []
-                    row+=1
-
-
-
+                rowcount = len(d2[0])
+                for row in xrange(rowcount):
+                    yield tuple(d2[col][row] for col in xrange(colnum))
 
         try:
             for fileObject in fileIterlist:
