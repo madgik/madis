@@ -61,9 +61,9 @@ class UnionAllRC(vtbase.VT):
 
 
         filename, ext=os.path.splitext(os.path.basename(where))
-        fullpath=os.path.split(where)[0]
+        fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
         if 'start' in dictargs and 'end' in dictargs:
-            fileIterlist=[open(where+"."+str(x), "rb") for x in xrange(int(dictargs['start']),int(dictargs['end'])+1)]
+            fileIterlist=[open(fullpath+"."+str(x), "rb") for x in xrange(int(dictargs['start']),int(dictargs['end'])+1)]
         else:
             fileIterlist = [open(where, "rb")]
 
