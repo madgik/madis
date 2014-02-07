@@ -68,7 +68,8 @@ class UnionAllRC(vtbase.VT):
 
         filename, ext=os.path.splitext(os.path.basename(where))
         fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
-
+        print "filename:",where
+        print "fullpath:",fullpath
         fileIterlist = []
         for x in xrange(start,end+1):
             try:
