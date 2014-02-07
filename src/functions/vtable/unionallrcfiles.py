@@ -98,17 +98,14 @@ class UnionAllRC(vtbase.VT):
                     except EOFError:
                         break
 
-
                 for i in xrange(colnum+2):
                     ind[i] = struct.unpack('L',fileObject.read(8))
+
                 if ind[colnum+1][0] == 1:
                     ENDFILE = 1
 
-                d2 = [[] for _ in xrange(colnum)]
-
-                for col in xrange(colnum):
-                    obj = fileObject.read(ind[col+1][0]-ind[col][0])
-                    d2[col] = marshal.loads(zlib.decompress(obj))
+                d2 = [marshal.loads(zlib.decompress(fileObject.read(ind[col+1][0]-ind[col][0])))
+                      for col in xrange(colnum)]
 
                 rowcount = len(d2[0])
                 for row in xrange(rowcount):
