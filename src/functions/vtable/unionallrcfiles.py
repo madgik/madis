@@ -58,14 +58,29 @@ class UnionAllRC(vtbase.VT):
             column = [x for x in a if x != '']
         else:
             col = 1
+        start = 0
+        end = sys.maxint-1
+        if 'start' in dictargs:
+            start = int(dictargs['start'])
+        if 'end' in dictargs:
+            end = int(dictargs['end'])
 
 
         filename, ext=os.path.splitext(os.path.basename(where))
         fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
-        if 'start' in dictargs and 'end' in dictargs:
-            fileIterlist=[open(fullpath+"."+str(x), "rb") for x in xrange(int(dictargs['start']),int(dictargs['end'])+1)]
-        else:
-            fileIterlist = [open(where, "rb")]
+
+        fileIterlist = []
+        for x in xrange(start,end+1):
+            try:
+                fileIterlist.append(open(fullpath+"."+str(x), "rb"))
+            except:
+                break
+
+        if fileIterlist == []:
+            try:
+                fileIterlist = [open(where, "rb")]
+            except :
+                raise  functions.OperatorError(__name__.rsplit('.')[-1],"No such file")
 
         for filenum,fileObject in enumerate(fileIterlist):
             schema = marshal.load(fileObject)
