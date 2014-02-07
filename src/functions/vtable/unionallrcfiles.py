@@ -68,8 +68,10 @@ class UnionAllRC(vtbase.VT):
 
         filename, ext=os.path.splitext(os.path.basename(where))
         fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
-        print "filename:",where
-        print "fullpath:",fullpath
+        mstr  = "UNIONALLRCFILE-filename:",where
+        mstr1  = "UNIONALLRCFILE-fullpath:",fullpath
+        print >> sys.stderr , mstr
+        print >> sys.stderr , mstr1
         fileIterlist = []
         for x in xrange(start,end+1):
             try:
