@@ -1977,13 +1977,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             todisk = zip(*rows)
                
             index = indexinit[:]
-            ind = -1
             output.truncate(0)
             indi = fileObject.tell()
             output.write(struct.pack(structHeader, *index))
             for i,col in enumerate(todisk):
                 index[i] = output.tell()+indi
-                output.write(zlib.compress(marshal.dumps(col,2)))
+                output.write(marshal.dumps(col,2))
                 index[i+1] = output.tell()+indi
                 if exitGen:
                     index[colnum+1] = 1
@@ -2081,7 +2080,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
             lencols , rows = calclencols()
-            print lencols
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
 
