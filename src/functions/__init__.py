@@ -35,11 +35,11 @@ apsw_version = apsw.apswversion()
 
 VTCREATE = 'create virtual table temp.'
 SQLITEAFTER3711 = False
-SQLITEAFTER3717 = False
+SQLITEAFTER380 = False
 sqlite_version_split = [int(x) for x in sqlite_version.split('.')]
 
-if sqlite_version_split[0:3] >= [3,7,17]:
-    SQLITEAFTER3717 = True
+if sqlite_version_split[0:3] >= [3,8,0]:
+    SQLITEAFTER380 = True
 
 try:
     if sqlite_version_split[0:3] >= [3,7,11]:
