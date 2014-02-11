@@ -90,7 +90,7 @@ class LTable: ####Init means setschema and execstatus
         try:
             return self.tableObj.BestIndex(*args)
         except AttributeError:
-            if functions.SQLITEAFTER3717:
+            if functions.SQLITEAFTER380:
                 return (None, 0, None, False, 1e99)
             else:
                 return (None, 0, None, False, 1000)
