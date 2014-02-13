@@ -21,7 +21,7 @@ def echocall(func):
         return func(*args, **kw)
     return wrapper
 
-class VT():
+class VT(object):
     def parse(self,*args):
         return args
     def full_parse(self,args,boolargs=None,nonstringargs=None,needsescape=None, notsplit=None):
@@ -33,7 +33,7 @@ class VT():
     def destroy(self):
         pass
 
-class VTGenerator:
+class VTGenerator(object):
     def __init__(self,fobj): ####parse auto argument and throw!!!!
         self.tableObjs=dict()
         self.fobj=fobj
@@ -75,7 +75,7 @@ class VTGenerator:
             return self.Create( db, modulename, dbname, tablename,*args)
         return self.tableObjs[tablename]
 
-class LTable: ####Init means setschema and execstatus
+class LTable(object): ####Init means setschema and execstatus
     @echocall
     def __init__(self, tblist, envars, tableObj , iterFunc ,openedIter=None): # tablename, auto , cursorfunc, ommit tuple OPTIONAL []
         self.tblist=tblist
@@ -90,7 +90,7 @@ class LTable: ####Init means setschema and execstatus
         try:
             return self.tableObj.BestIndex(*args)
         except AttributeError:
-            if functions.SQLITEAFTER3717:
+            if functions.SQLITEAFTER380:
                 return (None, 0, None, False, 1e99)
             else:
                 return (None, 0, None, False, 1000)
@@ -134,12 +134,13 @@ class LTable: ####Init means setschema and execstatus
             self.tableObj.destroy()
 
 # Represents a cursor
-class Cursor: ##### Needs Cursor Function , Iterator instance, tablename ...... if has close
-    __slots__ = ("Next", "Close", "Column", "Rowid", "Eof", "pos", "row", "table", "eof", "iterNext", "iter")
+class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename ...... if has close
+    __slots__ = ("Next", "Close", "Column", "Rowid", "Eof", "pos", "row", "table", "eof", "iterNext", "iter", "envars", "firsttime",
+    "openIter", "iterNext", "iterFunc")
 
     @echocall
-    def __init__(self, iterFunc, openIter,envars):
-        self.envars=envars
+    def __init__(self, iterFunc, openIter, envars):
+        self.envars = envars
         self.firsttime = True
         self.openIter=openIter
         self.iterNext = self.openIter.next
