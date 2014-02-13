@@ -1962,35 +1962,37 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
     def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
-        structHeader = 'L' * (len(schema)+1)
-        indexinit = [0 for _ in xrange(len(schema)+1)]
+        structHeader = 'L' * len(schema)
+        indexinit = [0 for _ in xrange(len(schema))]
+        fileObject.write(struct.pack('B', 0))
         marshal.dump(schema[1:], fileObject,2)
-        rows = []
-        output = cStringIO.StringIO()
+        
         exitGen = False
+
+        if lencols == 0:
+            (yield)
+
         while not exitGen:
+            rows = []
             try:
-                for _ in xrange(lencols):
+                for i in xrange(lencols):
                     rows.append((yield))
             except GeneratorExit:
                 exitGen = True
-            todisk = zip(*rows)
-               
+                
             index = indexinit[:]
-            output.truncate(0)
-            indi = fileObject.tell()
+            output = cStringIO.StringIO()
+            output.write(struct.pack('B', 1))
             output.write(struct.pack(structHeader, *index))
-            for i,col in enumerate(todisk):
-                index[i] = output.tell()+indi
-                output.write(marshal.dumps(col,2))
-                index[i+1] = output.tell()+indi
-                if exitGen:
-                    index[colnum+1] = 1
-            output.seek(0)
+            for i,col in enumerate(izip(*rows)):
+                index[i] = output.tell()
+                output.write(zlib.compress(marshal.dumps(col,2),5))
+                index[i+1] = output.tell()
+            output.seek(1)
             output.write(struct.pack(structHeader, *index))
-            fileObject.write(output.getvalue())
-            
-            rows = []
+            print >> fileObject,output.getvalue()
+
+
         fileObject.close()
 
     def rcfilenonsplit(fileObject=fileIter,colnum = (len(schema))):
@@ -2046,7 +2048,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
             for key in xrange(int(formatArgs['split'])) :
-                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'a')
 
             spacgen = [spac(x) for x in filesList]
             spacgensend = [x.send for x in spacgen]
@@ -2071,8 +2073,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     bsize += sum((getSize(v) for v in row[1:]))
             except StopIteration:
                 pass
-   
-            return count , rows
+
+            return count+10*count/100 , rows
 
 
     if mode == 'rcfile':
@@ -2082,6 +2084,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             lencols , rows = calclencols()
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+
 
             rcgen = [rcfile(x,lencols) for x in filesList]
             rcgensend = [x.send for x in rcgen]
@@ -2096,7 +2099,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 j.close()
         else :
             rcfilenonsplit()
-    
+
 
 
     if mode == 'itertools':
