@@ -26,7 +26,7 @@ import zlib
 from collections import OrderedDict
 from array import array
 from itertools import chain
-import zlib
+import bz2
 
 
 
@@ -1814,7 +1814,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         blocknum = 0
         bsize = 0
         rowlimit = 0
-        compress = zlib.compress
+        compress = bz2.compress
         
 
         while True:
@@ -1910,20 +1910,20 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         else:
                             pset = set(prevsets[i])
                             difnew = list(setcol[i] - pset)
- #                           s = []
                             s = prevsets[i] + difnew
                             d = 0
                             if len(s) > dictsize:
                                 difold = list(pset - setcol[i])
                                 while len(s)>dictsize:
-                                    s.remove[difold[d]]
+                                    s.remove(difold[d])
                                     d+=1
 
                             prevsets[i] = s
-                            towritevalues = (x for x in xrange(len(coldicts[i]), len(coldicts[i]) + len(difnew)))
-
                             coldicts[i] = dict(((x,y) for y,x in enumerate(s)))
                             coldict = coldicts[i]
+                            towritevalues = (x for x in xrange(len(coldict)-d, len(coldict)))
+
+                            
                             l = index_init[:]
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
@@ -1932,11 +1932,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-
                                 output.write(compress(marshal.dumps(difnew,2)))
                                 l[0] = output.tell()
                                 output.write(compress(array(indextype,towritevalues).tostring()))
                                 l[1] = output.tell()
+
                             output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                             l[2] = output.tell()
                             output.seek(t)
@@ -1960,63 +1960,39 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 break
 
 
-    def rcfile(fileObject):
+    def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
-        structHeader = 'L' * (len(schema)+1)
-        indexinit = [0 for _ in xrange(len(schema)+1)]
+        structHeader = 'L' * len(schema)
+        indexinit = [0 for _ in xrange(len(schema))]
+        fileObject.write(struct.pack('B', 0))
         marshal.dump(schema[1:], fileObject,2)
-        todisk = [[] for _ in xrange(colnum)]
-        start = 0
-        step = 1024
-        currentblock = fileObject.tell()
-        bsize = 0
-        rows = []
+        
         exitGen = False
-        lencols = 0
-        blocknum = 0
+
+        if lencols == 0:
+            (yield)
+
         while not exitGen:
-            #nditer = zip(*itertools.islice(diter, 0, step))
+            rows = []
             try:
-                for i in xrange(step):
+                for i in xrange(lencols):
                     rows.append((yield))
             except GeneratorExit:
                 exitGen = True
+                
+            index = indexinit[:]
+            output = cStringIO.StringIO()
+            output.write(struct.pack('B', 1))
+            output.write(struct.pack(structHeader, *index))
+            for i,col in enumerate(izip(*rows)):
+                index[i] = output.tell()
+                output.write(zlib.compress(marshal.dumps(col,2),5))
+                index[i+1] = output.tell()
+            output.seek(1)
+            output.write(struct.pack(structHeader, *index))
+            print >> fileObject,output.getvalue()
 
-            nditer = zip(*rows)
 
-            i = 0
-            check = 0
-            for col in nditer:
-                check=1
-                todisk[i] += col
-                if blocknum == 0:
-                    for val in col:
-                        bsize += getSize(val)
-                elif i == 0 and len(todisk[0]) >= lencols:
-                    bsize = BLOCK_SIZE+1
-                i+=1
-            if bsize>BLOCK_SIZE or exitGen:
-                if blocknum==0:
-                    lencols = len(todisk[0])
-                blocknum += 1
-                index = indexinit[:]
-                ind = -1
-                output = cStringIO.StringIO()
-                indi = fileObject.tell()
-                output.write(struct.pack(structHeader, *index))
-                for i,col in enumerate(todisk):
-                    ind += 1
-                    index[ind] = output.tell()+indi
-                    output.write(zlib.compress(marshal.dumps(col,2)))
-                    index[ind+1] = output.tell()+indi
-                    if exitGen:
-                        index[colnum+1] = 1
-                output.seek(0)
-                output.write(struct.pack(structHeader, *index))
-                fileObject.write(output.getvalue())
-                todisk = [[] for _ in xrange(len(schema)-1)]
-                bsize = 0
-            rows = []
         fileObject.close()
 
     def rcfilenonsplit(fileObject=fileIter,colnum = (len(schema))):
@@ -2072,7 +2048,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
             for key in xrange(int(formatArgs['split'])) :
-                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'a')
 
             spacgen = [spac(x) for x in filesList]
             spacgensend = [x.send for x in spacgen]
@@ -2085,24 +2061,45 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         else :
             rcfilenonsplit()
 
+    def calclencols():
+            count = 0
+            bsize = 0
+            rows = []
+            try:
+                while bsize<BLOCK_SIZE:
+                    row = diter.next()
+                    rows.append(row)
+                    count += 1
+                    bsize += sum((getSize(v) for v in row[1:]))
+            except StopIteration:
+                pass
+
+            return count+10*count/100 , rows
+
+
     if mode == 'rcfile':
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
+            lencols , rows = calclencols()
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
 
-            rcgen = [rcfile(x) for x in filesList]
+
+            rcgen = [rcfile(x,lencols) for x in filesList]
             rcgensend = [x.send for x in rcgen]
             for j in rcgensend:
                 j(None)
+            for row in rows:
+                rcgensend[row[0]](row[1:])
+            del(rows)
             for row in diter:
                 rcgensend[row[0]](row[1:])
             for j in rcgen:
                 j.close()
         else :
             rcfilenonsplit()
-    
+
 
 
     if mode == 'itertools':
