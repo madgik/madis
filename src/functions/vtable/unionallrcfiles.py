@@ -3,6 +3,7 @@
 import os.path
 import setpath
 import sys
+import io
 import imp
 from lib.dsv import writer
 import gzip
@@ -16,7 +17,7 @@ from collections import defaultdict
 import json
 from itertools import izip
 import itertools
-import marshal as marshal
+#import marshal as marshal
 import cPickle
 import pickle
 import setpath
@@ -68,7 +69,7 @@ class UnionAllRC(vtbase.VT):
         fileIterlist = []
         for x in xrange(start,end+1):
             try:
-                fileIterlist.append(open(fullpath+"."+str(x), "rb",2000000000))
+                fileIterlist.append(open(fullpath+"."+str(x), "rb"))
             except:
                 break
 
@@ -80,10 +81,11 @@ class UnionAllRC(vtbase.VT):
 
         for filenum,fileObject in enumerate(fileIterlist):
             b = struct.unpack('B',fileObject.read(1))
-            schema = marshal.load(fileObject)
+            
+            schema = cPickle.load(fileObject)
             colnum = len(schema)
-            readtype = 'L'*(colnum+1)
-            readsize = 8*(colnum+1)
+            readtype = 'L'*colnum
+            readsize = 8*colnum
             if filenum == 0:
                 yield schema
 
@@ -92,13 +94,14 @@ class UnionAllRC(vtbase.VT):
                     b = struct.unpack('B',fileObject.read(1))
                 except :
                     break
-                if b[0]==0:
-                    schema = marshal.load(fileObject)
-                elif b[0]==1:
+                if b[0]:
                     ind = struct.unpack(readtype,fileObject.read(readsize))
-                    for row in izip(*[marshal.loads(zlib.decompress(fileObject.read(ind[col+1]-ind[col]))) for col in xrange(colnum)]) :
+                    udata = [fileObject.read(ind[col]) for col in xrange(colnum)]
+                    for row in izip(*[cPickle.loads(zlib.decompress(udata[col])) for col in xrange(colnum)]) :
                         yield row
-        
+                elif not b[0]:
+                    schema = cPickle.load(fileObject)
+                    
 
 
         try:

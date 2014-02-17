@@ -26,7 +26,6 @@ import zlib
 from collections import OrderedDict
 from array import array
 from itertools import chain
-import bz2
 
 
 
@@ -1814,7 +1813,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         blocknum = 0
         bsize = 0
         rowlimit = 0
-        compress = bz2.compress
+        compress = zlib.compress
         
 
         while True:
@@ -1962,16 +1961,17 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
     def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
-        structHeader = 'L' * len(schema)
-        indexinit = [0 for _ in xrange(len(schema))]
+        structHeader = 'L' * colnum
+        indexinit = [0 for _ in xrange(colnum)]
         fileObject.write(struct.pack('B', 0))
-        marshal.dump(schema[1:], fileObject,2)
-        
+        cPickle.dump(schema[1:],fileObject,1)
+        l = cStringIO.StringIO()
+        fastPickler = cPickle.Pickler(l, 1)
+        fastPickler.fast = 1
         exitGen = False
-
         if lencols == 0:
             (yield)
-
+            
         while not exitGen:
             rows = []
             try:
@@ -1982,15 +1982,21 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 
             index = indexinit[:]
             output = cStringIO.StringIO()
+            
             output.write(struct.pack('B', 1))
             output.write(struct.pack(structHeader, *index))
+            checkcol = 0
             for i,col in enumerate(izip(*rows)):
-                index[i] = output.tell()
-                output.write(zlib.compress(marshal.dumps(col,2),5))
-                index[i+1] = output.tell()
-            output.seek(1)
-            output.write(struct.pack(structHeader, *index))
-            print >> fileObject,output.getvalue()
+                checkcol=1
+                l.truncate(0)
+                fastPickler.dump(col)
+                cz = zlib.compress(l.getvalue(),5)
+                output.write(cz)
+                index[i] = len(cz)
+            if checkcol:
+                output.seek(1)
+                output.write(struct.pack(structHeader, *index))
+                fileObject.write(output.getvalue())
 
 
         fileObject.close()
