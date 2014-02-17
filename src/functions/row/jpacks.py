@@ -80,7 +80,7 @@ def jzip(*args):
     """
     .. function:: jzip(args...) -> json string
 
-    It combines the correspinding elements of input jpacks.
+    It combines the corresponding elements of input jpacks.
 
     Examples:
 
