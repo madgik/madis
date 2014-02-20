@@ -3,6 +3,7 @@
 import os.path
 import setpath
 import sys
+import io
 import imp
 from lib.dsv import writer
 import gzip
@@ -16,7 +17,7 @@ from collections import defaultdict
 import json
 from itertools import izip
 import itertools
-import marshal as marshal
+#import marshal as marshal
 import cPickle
 import pickle
 import setpath
@@ -36,8 +37,7 @@ import re
 import zlib
 ### Classic stream iterator
 registered=True
-BLOCK_SIZE = 32768000
-
+BLOCK_SIZE = 200000000
 
 class UnionAllRC(vtbase.VT):
 
@@ -80,36 +80,29 @@ class UnionAllRC(vtbase.VT):
                 raise  functions.OperatorError(__name__.rsplit('.')[-1],"No such file")
 
         for filenum,fileObject in enumerate(fileIterlist):
-            schema = marshal.load(fileObject)
+            b = struct.unpack('B',fileObject.read(1))
+            
+            schema = cPickle.load(fileObject)
             colnum = len(schema)
-            ENDFILE = 0
+            readtype = 'L'*colnum
+            readsize = 8*colnum
             if filenum == 0:
                 yield schema
 
             while True:
-                row=0
-                d = 0
-                ind = [0 for _ in xrange(colnum+2)]
+                try:
+                    b = struct.unpack('B',fileObject.read(1))
+                except :
+                    break
+                if b[0]:
+                    ind = struct.unpack(readtype,fileObject.read(readsize))
+                    udata = [fileObject.read(ind[col]) for col in xrange(colnum)]
+                    for row in izip(*[cPickle.loads(zlib.decompress(udata[col])) for col in xrange(colnum)]) :
+                        yield row
+                elif not b[0]:
+                    schema = cPickle.load(fileObject)
+                    
 
-                if ENDFILE==1:
-                    try:
-                        newschema=marshal.load(fileObject)
-                        ENDFILE=0
-                    except EOFError:
-                        break
-
-                for i in xrange(colnum+2):
-                    ind[i] = struct.unpack('L',fileObject.read(8))
-
-                if ind[colnum+1][0] == 1:
-                    ENDFILE = 1
-
-                d2 = tuple(marshal.loads(zlib.decompress(fileObject.read(ind[col+1][0]-ind[col][0])))
-                           for col in xrange(colnum))
-
-                rowcount = len(d2[0])
-                for row in xrange(rowcount):
-                    yield tuple(d2[col][row] for col in xrange(colnum))
 
         try:
             for fileObject in fileIterlist:
