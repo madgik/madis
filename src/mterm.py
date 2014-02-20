@@ -852,10 +852,10 @@ while True:
                 if i.strip().startswith('File'):
                     break
 
+            msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
             if pipedinput:
                 exitwitherror(functions.mstr(msg))
             else:
-                msg=Fore.RED+Style.BRIGHT+"Unknown error:" + Style.RESET_ALL + "\nTraceback is:\n" + '\n'.join(reversed(trlines))
                 print msg
 
         finally:
