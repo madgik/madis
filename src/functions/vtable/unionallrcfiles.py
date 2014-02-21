@@ -80,7 +80,11 @@ class UnionAllRC(vtbase.VT):
                 raise  functions.OperatorError(__name__.rsplit('.')[-1],"No such file")
 
         for filenum,fileObject in enumerate(fileIterlist):
-            b = struct.unpack('B',fileObject.read(1))
+            try:
+                b = struct.unpack('B',fileObject.read(1))
+            except:
+                 raise error('No schema found!')
+                 
             
             schema = cPickle.load(fileObject)
             colnum = len(schema)
