@@ -2020,7 +2020,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 checkcol=1
                 l.truncate(0)
                 fastPickler.dump(col)
-                cz = zlib.compress(l.getvalue(),5)
+                cz = zlib.compress(l.getvalue(), 5)
                 output.write(cz)
                 index[i] = len(cz)
             if checkcol:
