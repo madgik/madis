@@ -1991,9 +1991,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
     def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
-        structHeader = 'i' * colnum
+        structHeader = '!'+'i' * colnum
         indexinit = [0 for _ in xrange(colnum)]
-        fileObject.write(struct.pack('B', 0))
+        fileObject.write(struct.pack('!B', 0))
         cPickle.dump(schema[1:],fileObject,1)
         l = cStringIO.StringIO()
         fastPickler = cPickle.Pickler(l, 1)
@@ -2013,7 +2013,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             index = indexinit[:]
             output = cStringIO.StringIO()
             
-            output.write(struct.pack('B', 1))
+            output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
             checkcol = 0
             for i,col in enumerate(izip(*rows)):
