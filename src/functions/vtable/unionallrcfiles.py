@@ -19,6 +19,7 @@ from itertools import izip
 import itertools
 #import marshal as marshal
 import cPickle
+import cStringIO
 import pickle
 import setpath
 import vtbase
@@ -46,6 +47,7 @@ class UnionAllRC(vtbase.VT):
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'
+        input = cStringIO.StringIO()
 
         if 'file' in dictargs:
             where=dictargs['file']
@@ -83,8 +85,8 @@ class UnionAllRC(vtbase.VT):
             b = struct.unpack('B',fileObject.read(1))
             schema = cPickle.load(fileObject)
             colnum = len(schema)
-            readtype = 'L'*colnum
-            readsize = 8*colnum
+            readtype = 'i'*colnum
+            readsize = 4 * colnum
             if filenum == 0:
                 yield schema
 
@@ -94,15 +96,15 @@ class UnionAllRC(vtbase.VT):
                 except :
                     break
                 if b[0]:
+                    input.truncate(0)
                     ind = struct.unpack(readtype,fileObject.read(readsize))
-                    udata = [fileObject.read(ind[col]) for col in xrange(colnum)]
-                    for row in izip(*[cPickle.loads(zlib.decompress(udata[col])) for col in xrange(colnum)]) :
+                    input.write(fileObject.read(sum(ind)))
+                    input.seek(0)
+                    for row in izip(*[cPickle.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum)]) :
                         yield row
                 elif not b[0]:
                     schema = cPickle.load(fileObject)
                     
-
-
         try:
             for fileObject in fileIterlist:
                 fileObject.close()

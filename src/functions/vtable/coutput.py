@@ -1,5 +1,35 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
+"""
+Examples:
+
+    >>> table1('''
+    ... James   10	2
+    ... Mark    7	3
+    ... Lila    74	1
+    ... ''')
+    >>> sql("select * from table1")
+    a     | b  | c
+    --------------
+    James | 10 | 2
+    Mark  | 7  | 3
+    Lila  | 74 | 1
+    >>> sql("coutput '../../tests/output' split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1)")
+    return_value
+    ------------
+    1
+    >>> sql("unionallrcfiles file:../../tests/output")
+    name  | age | rank
+    ------------------
+    Mark  | 7   | 3
+    Lila  | 74  | 1
+    James | 10  | 2
+"""
+
+
+
+
+
 import os.path
 import setpath
 import sys
@@ -1961,7 +1991,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
     def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
-        structHeader = 'L' * colnum
+        structHeader = 'i' * colnum
         indexinit = [0 for _ in xrange(colnum)]
         fileObject.write(struct.pack('B', 0))
         cPickle.dump(schema[1:],fileObject,1)
