@@ -94,10 +94,7 @@ class UnionAllRC(vtbase.VT):
                 except :
                     break
                 if b[0]:
-                    try:
-                        ind = struct.unpack(readtype,fileObject.read(readsize))
-                    except:
-                        break
+                    ind = struct.unpack(readtype,fileObject.read(readsize))
                     udata = [fileObject.read(ind[col]) for col in xrange(colnum)]
                     for row in izip(*[cPickle.loads(zlib.decompress(udata[col])) for col in xrange(colnum)]) :
                         yield row
