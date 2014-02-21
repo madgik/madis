@@ -1,38 +1,16 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 import os.path
-import setpath
 import sys
-import io
-import imp
-from lib.dsv import writer
-import gzip
-from lib.ziputils import ZipIter
 import functions
-from lib.vtoutgtable import vtoutpugtformat
-import lib.inoutparsing
 import os
-import apsw
-from collections import defaultdict
-import json
 from itertools import izip
-import itertools
-#import marshal as marshal
 import cPickle
 import cStringIO
-import pickle
-import setpath
 import vtbase
 import functions
 import struct
-from array import array
 import vtbase
 import functions
-import apsw
 import os
-import sys
-import gc
-#import marshal
 import gc
 import re
 import zlib

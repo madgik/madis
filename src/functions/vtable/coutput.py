@@ -1,5 +1,3 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
 """
 Examples:
 
@@ -14,6 +12,7 @@ Examples:
     James | 10 | 2
     Mark  | 7  | 3
     Lila  | 74 | 1
+
     >>> sql("coutput '../../tests/output' split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1)")
     return_value
     ------------
@@ -24,26 +23,33 @@ Examples:
     Mark  | 7   | 3
     Lila  | 74  | 1
     James | 10  | 2
+
+    >>> sql("coutput '../../tests/emptyoutput' split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1 limit 0)")
+    return_value
+    ------------
+    1
+    >>> sql("unionallrcfiles file:../../tests/emptyoutput")
+
+
+    >>> sql("coutput '../../tests/outputsp8' split:8  mode:rcfile select hashmodarchdep(rank,8),* from (select a as name , b as age, c as rank from table1)")
+    return_value
+    ------------
+    1
+    >>> sql("unionallrcfiles file:../../tests/outputsp8")
+    name  | age | rank
+    ------------------
+    James | 10  | 2
+    Mark  | 7   | 3
+    Lila  | 74  | 1
 """
 
 
-
-
-
 import os.path
-import setpath
 import sys
-import imp
 from vtout import SourceNtoOne
-from lib.dsv import writer
-import gzip
-from lib.ziputils import ZipIter
 import functions
-from lib.vtoutgtable import vtoutpugtformat
 import lib.inoutparsing
 import os
-import apsw
-from collections import defaultdict
 import marshal
 from itertools import izip
 import itertools
@@ -55,7 +61,6 @@ import marshal
 import zlib
 from collections import OrderedDict
 from array import array
-from itertools import chain
 
 
 
