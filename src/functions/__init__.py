@@ -172,8 +172,7 @@ class Cursor(object):
             return self.__wrapped.execute(statements,bindings)
         except Exception, e:
             try:  # avoid masking exception in recover statements
-                trace = sys.exc_info()[2]
-                raise e, None, trace
+                raise e, None, sys.exc_info()[2]
             finally:
                 try:
                     self.cleanupvts()
@@ -212,8 +211,7 @@ class Cursor(object):
                 except Exception, e:
                     strex = mstr(e)
                     if SQLITEAFTER3711 or type(e) != apsw.SQLError or strex.find('already exists')==-1 or strex.find(i[0])==-1:
-                        trace = sys.exc_info()[2]
-                        raise e, None, trace
+                        raise e, None, sys.exc_info()[2]
                     else:
                         self.__permanentvtables[i[0]]=createvirtualsql
 
@@ -227,8 +225,7 @@ class Cursor(object):
             if settings['tracing']:
                 traceback.print_exc(limit=sys.getrecursionlimit())
             try:  # avoid masking exception in recover statements
-                trace = sys.exc_info()[2]
-                raise e, None, trace
+                raise e, None, sys.exc_info()[2]
             finally:
                 try:
                     self.cleanupvts()
