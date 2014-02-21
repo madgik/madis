@@ -80,12 +80,7 @@ class UnionAllRC(vtbase.VT):
                 raise  functions.OperatorError(__name__.rsplit('.')[-1],"No such file")
 
         for filenum,fileObject in enumerate(fileIterlist):
-            try:
-                b = struct.unpack('B',fileObject.read(1))
-            except:
-                 raise error('No schema found!')
-                 
-            
+            b = struct.unpack('B',fileObject.read(1))
             schema = cPickle.load(fileObject)
             colnum = len(schema)
             readtype = 'L'*colnum
@@ -99,7 +94,10 @@ class UnionAllRC(vtbase.VT):
                 except :
                     break
                 if b[0]:
-                    ind = struct.unpack(readtype,fileObject.read(readsize))
+                    try:
+                        ind = struct.unpack(readtype,fileObject.read(readsize))
+                    except:
+                        raise error('Error!!!')
                     udata = [fileObject.read(ind[col]) for col in xrange(colnum)]
                     for row in izip(*[cPickle.loads(zlib.decompress(udata[col])) for col in xrange(colnum)]) :
                         yield row
