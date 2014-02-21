@@ -92,9 +92,12 @@ def createConnection(db):
     # Change TEMP store to where the mterm is run from
     try:
         connection.cursor().execute("PRAGMA temp_store_directory = '.';")
+        # if pipedinput:
     except:
         pass
-    
+
+    functions.settings['stacktrace'] = True
+
     return connection
 
 def reloadfunctions():
@@ -847,7 +850,7 @@ while True:
         except Exception, e:
             trlines = []
 
-            for i in reversed(traceback.format_exc().splitlines()):
+            for i in reversed(traceback.format_exc(limit=sys.getrecursionlimit()).splitlines()):
                 trlines.append(i)
                 if i.strip().startswith('File'):
                     break

@@ -171,17 +171,16 @@ class Cursor(object):
         try:
             return self.__wrapped.execute(statements,bindings)
         except Exception, e:
-            if settings['tracing']:
-                traceback.print_exc()
-            try: #avoid masking exception in recover statements
-                raise(e)
+            try:  # avoid masking exception in recover statements
+                trace = sys.exc_info()[2]
+                raise e, None, trace
             finally:
                 try:
                     self.cleanupvts()
                 except:
                     pass
         
-    def execute(self,statements,bindings=None,parse=True, localbindings=None): #overload execute statement
+    def execute(self,statements,bindings=None,parse=True, localbindings=None):  # overload execute statement
         if localbindings!=None:
             bindings=localbindings
         else:
@@ -198,22 +197,23 @@ class Cursor(object):
         svts=sqltransform.transform(statements, multiset_functions.keys(), functions['vtable'], functions['row'].keys(), substitute=functions['row']['subst'])
         s=svts[0]
         try:
-            if self.__vtables!=[]:
+            if self.__vtables != []:
                 self.executetrace(''.join(['drop table ' + 'temp.'+x +';' for x in reversed(self.__vtables)]))
-                self.__vtables=[]
+                self.__vtables = []
             for i in svts[1]:
                 createvirtualsql=None
-                if re.match(r'\s*$',i[2])==None:
+                if re.match(r'\s*$', i[2]) is None:
                     sep=','
                 else:
                     sep=''
-                createvirtualsql=VTCREATE+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
+                createvirtualsql = VTCREATE+i[0]+ ' using ' + i[1] + "(" + i[2] + sep + "'automatic_vtable:1'" +")"
                 try:
                     self.executetrace(createvirtualsql)
                 except Exception, e:
                     strex = mstr(e)
-                    if SQLITEAFTER3711 or type(e)!=apsw.SQLError or strex.find('already exists')==-1 or strex.find(i[0])==-1:
-                        raise(e)
+                    if SQLITEAFTER3711 or type(e) != apsw.SQLError or strex.find('already exists')==-1 or strex.find(i[0])==-1:
+                        trace = sys.exc_info()[2]
+                        raise e, None, trace
                     else:
                         self.__permanentvtables[i[0]]=createvirtualsql
 
@@ -222,12 +222,13 @@ class Cursor(object):
                 else:
                     self.__vtables.append(i[0])
             self.__query = s
-            return self.executetrace(s,bindings)
+            return self.executetrace(s, bindings)
         except Exception, e:
             if settings['tracing']:
-                traceback.print_exc()
-            try: #avoid masking exception in recover statements
-                raise
+                traceback.print_exc(limit=sys.getrecursionlimit())
+            try:  # avoid masking exception in recover statements
+                trace = sys.exc_info()[2]
+                raise e, None, trace
             finally:
                 try:
                     self.cleanupvts()
