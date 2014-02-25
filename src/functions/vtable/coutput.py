@@ -2021,7 +2021,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
             checkcol = 0
-            for i,col in ((c, [x[c] for x in rows]) for c in xrange(len(rows[0]))):
+            for i,col in enumerate(izip(*rows)):
                 checkcol=1
                 l.truncate(0)
                 fastPickler.dump(col)
