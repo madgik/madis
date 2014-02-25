@@ -2001,7 +2001,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         fileObject.write(struct.pack('!B', 0))
         cPickle.dump(schema[1:],fileObject,1)
         l = cStringIO.StringIO()
-        output = cStringIO.StringIO()
         fastPickler = cPickle.Pickler(l, 1)
         fastPickler.fast = 1
         exitGen = False
@@ -2017,8 +2016,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 exitGen = True
                 
             index = indexinit[:]
+            output = cStringIO.StringIO()
             
-            output.truncate(0)
             output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
             checkcol = 0
@@ -2035,23 +2034,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 fileObject.write(output.getvalue())
 
 
-    def rcfile1(fileObject,lencols):
-
-        exitGen = False
-        if lencols == 0:
-            (yield)
-
-        while not exitGen:
-            rows = []
-            try:
-                for i in xrange(lencols):
-                    rows.append((yield))
-            except GeneratorExit:
-                exitGen = True
-
-            for c in ([x[col] for x in rows] for col in xrange(len(rows[0]))):
-                pass
-
+        fileObject.close()
 
     def rcfilenonsplit(fileObject=fileIter,colnum = (len(schema))):
             structHeader = 'L' * (colnum+2)
@@ -2148,14 +2131,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             rcgensend = [x.send for x in rcgen]
             for j in rcgensend:
                 j(None)
-            try:
-                for row in rows:
-                    rcgensend[row[0]](row[1:])
-                del(rows)
-                for row in diter:
-                    rcgensend[row[0]](row[1:])
-            except KeyboardInterrupt:
-                pass
+            for row in rows:
+                rcgensend[row[0]](row[1:])
+            del(rows)
+            for row in diter:
+                rcgensend[row[0]](row[1:])
             for j in rcgen:
                 j.close()
         else :
