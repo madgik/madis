@@ -31,17 +31,18 @@ import functions
 registered=True
        
 class NopVT(vtbase.VT):
-    def VTiter(self, *parsedArgs,**envars):
+    def VTiter(self, *parsedArgs, **envars):
         largs, dictargs = self.full_parse(parsedArgs)
 
         if 'query' not in dictargs:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
-        query=dictargs['query']
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "No query argument ")
+        query = dictargs['query']
 
-        c=envars['db'].cursor().execute(query, parse = False)
+        c = envars['db'].cursor()
+        q = c.execute(query, parse=False)
 
         try:
-            yield list(c.getdescription())
+            yield list(c.getdescriptionsafe())
         except StopIteration:
             try:
                 raise
@@ -52,7 +53,8 @@ class NopVT(vtbase.VT):
                     pass
 
         while True:
-            c.next()
+            q.next()
+
 
 def Source():
     return vtbase.VTGenerator(NopVT)
