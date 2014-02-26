@@ -2020,16 +2020,13 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             
             output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
-            checkcol = 0
             if rows != []:
-                for i,col in ((c, [x[c] for x in rows]) for c in xrange(len(rows[0]))):
-                    checkcol=1
+                for i, col in enumerate((tuple(x[c] for x in rows) for c in xrange(colnum))):
                     l.truncate(0)
                     fastPickler.dump(col)
-                    cz = zlib.compress(l.getvalue(), 5)
+                    cz = zlib.compress(l.getvalue(), 6)
                     output.write(cz)
                     index[i] = len(cz)
-            if checkcol:
                 output.seek(1)
                 output.write(struct.pack(structHeader, *index))
                 fileObject.write(output.getvalue())
