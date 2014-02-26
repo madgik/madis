@@ -2024,7 +2024,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 for i, col in enumerate((tuple(x[c] for x in rows) for c in xrange(colnum))):
                     l.truncate(0)
                     fastPickler.dump(col)
-                    cz = zlib.compress(l.getvalue(), 6)
+                    cz = zlib.compress(l.getvalue(), 5)
                     output.write(cz)
                     index[i] = len(cz)
                 output.seek(1)
