@@ -78,15 +78,16 @@ import vtbase
 import functions
 import re
 from lib.sqlitetypes import getElementSqliteType
+from operator import iadd
 
 ### Classic stream iterator
 registered=True
 
-noas=re.compile('.*\(.*\).*')
+noas = re.compile('.*\(.*\).*')
 
 def izip2(*args):
     # izip_longest('ABCD', 'xy', fillvalue='-') --> Ax By C- D-
-    counter = sum((1 if type(x)==generator else 0 for x in args))
+    counter = sum((1 if type(x) is generator else 0 for x in args))
     iterators = [chain(it, sentinel(), fillers) for it in args]
     try:
         while iterators:
@@ -96,13 +97,15 @@ def izip2(*args):
 
 class Expand(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
+
         def exprown(row):
             for i in xrange(len(row)):
-                iobj=row[i]
-                if type(iobj)==tuple:
+                iobj = row[i]
+                if type(iobj) is tuple:
                     for el in iobj[1]:
                         for l in exprown(row[(i+1):]):
-                            yield list(row[:i])+list(el)+list(l)
+                            yield row[:i] + list(el) + l
+                            # yield reduce(iadd, (row[:i], el, l))
                     try:
                         del(self.connection.openiters[iobj[0]])
                     except KeyboardInterrupt:
@@ -146,8 +149,8 @@ class Expand(vtbase.VT):
         rowlen = len(row)
 
         for i in xrange(rowlen):
-            obj=row[i]
-            if type(obj)==buffer and obj[:lenIH]==iterheader:
+            obj = row[i]
+            if type(obj) is buffer and obj[:lenIH] == iterheader:
                 strobj = str(obj)
                 oiter=oiters[strobj]
                 try:
@@ -155,26 +158,27 @@ class Expand(vtbase.VT):
                 except StopIteration:
                     first = [None]
 
-                ttypes+=['GUESS']*len(first)
+                ttypes += ['GUESS']*len(first)
                 if noas.match(orignames[i]):
                     badschema = False
                     if type(first) != tuple:
                         badschema = True
 
                     for i in first:
-                        if type(first)!=tuple or type(i) not in (unicode, str) or i == None:
+                        if type(first) != tuple or type(i) not in (unicode, str) or i is None:
                             badschema = True
                             break
                             
                     if badschema:
-                        raise functions.OperatorError(__name__.rsplit('.')[-1],"First yielded row of multirow functions, should contain the schema inside a Python tuple.\nExample:\n  yield ('C1', 'C2')")
+                        raise functions.OperatorError(__name__.rsplit('.')[-1],
+                            "First yielded row of multirow functions, should contain the schema inside a Python tuple.\nExample:\n  yield ('C1', 'C2')")
 
                     nnames += list(first)
                 else:
-                    if len(first)==1:
-                        nnames +=[orignames[i]]
+                    if len(first) == 1:
+                        nnames += [orignames[i]]
                     else:
-                        nnames +=[orignames[i]+str(j) for j in xrange(1,len(first)+1)]
+                        nnames += [orignames[i]+str(j) for j in xrange(1, len(first)+1)]
                 nrow += [(strobj, oiter)]
             else:
                 ttypes += [origtypes[i]]
@@ -187,19 +191,14 @@ class Expand(vtbase.VT):
         except StopIteration:
             firstrow = None
 
-        for i in ttypes:
-            if i == 'GUESS':
-                try:
-                    i = getElementSqliteType(firstrow[i])
-                except Exception, e:
-                    i = 'text'
-                if i == None:
-                    i = 'text'
-            types.append(i)
+        for i, v in enumerate(ttypes):
+            if v == 'GUESS':
+                v = getElementSqliteType(firstrow[i])
+            types.append(v)
 
         yield [(nnames[i], types[i]) for i in xrange(len(types))]
 
-        if firstrow != None:
+        if firstrow is not None:
             yield firstrow
             
         for exp in firstbatch:
@@ -211,13 +210,12 @@ class Expand(vtbase.VT):
 #            itercount = 0
 
             for i in xrange(rowlen):
-                if type(nrow[i])==buffer and nrow[i][:lenIH]==iterheader:
+                if type(nrow[i]) is buffer and nrow[i][:lenIH] == iterheader:
                     striter = str(nrow[i])
-                    oiter=oiters[striter]
+                    oiter = oiters[striter]
                     oiter.next()
                     nrow[i] = (striter, oiter)
 #                    itercount += 1
-
 
             for exp in exprown(nrow):
                 yield exp
