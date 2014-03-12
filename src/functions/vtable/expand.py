@@ -78,10 +78,9 @@ import vtbase
 import functions
 import re
 from lib.sqlitetypes import getElementSqliteType
-from operator import iadd
 
 ### Classic stream iterator
-registered=True
+registered = True
 
 noas = re.compile('.*\(.*\).*')
 
@@ -105,7 +104,6 @@ class Expand(vtbase.VT):
                     for el in iobj[1]:
                         for l in exprown(row[(i+1):]):
                             yield row[:i] + list(el) + l
-                            # yield reduce(iadd, (row[:i], el, l))
                     try:
                         del(self.connection.openiters[iobj[0]])
                     except KeyboardInterrupt:
