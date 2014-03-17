@@ -212,27 +212,23 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     print >> fileIter, je(row)
                 gc.enable()
                     
-        elif formatArgs['mode']=='csv':
+        elif formatArgs['mode'] == 'csv':
             del formatArgs['mode']
-            csvprinter=writer(fileIter,'excel',**formatArgs)
+            csvprinter = writer(fileIter, 'excel', **formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
                 
-            gc.disable()
             for row in diter:
                 csvprinter.writerow(row)
-            gc.enable()
 
-        elif formatArgs['mode']=='tsv':
+        elif formatArgs['mode'] == 'tsv':
             del formatArgs['mode']
-            csvprinter=writer(fileIter,'excel-tab',**formatArgs)
+            csvprinter = writer(fileIter, 'excel-tab', **formatArgs)
             if header:
                 csvprinter.writerow([h[0] for h in schema])
 
-            gc.disable()
             for row in diter:
-                csvprinter.writerow([x.replace('\t','    ') if type(x)==str or type(x)==unicode else x for x in row])
-            gc.enable()
+                csvprinter.writerow([x.replace('\t', '    ') if type(x) is str or type(x) is unicode else x for x in row])
 
         elif formatArgs['mode']=='gtable':
             vtoutpugtformat(fileIter,diter,simplejson=False)
