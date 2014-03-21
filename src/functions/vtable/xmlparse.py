@@ -123,7 +123,7 @@ Examples:
     row1val1 |      |
     row2val1 | asdf | asdf<d>row2val</d>
 
-    >>> sql('''select * from (xmlparse  root:a '{"a/b":"", "a":"*"}' select * from table2)''')
+    >>> sql('''select * from (xmlparse  root:a '{"a/b":"", "a":"*"}' select * from table2)''') # doctest: +NORMALIZE_WHITESPACE
     b        | $
     ------------------------------------------------------
     row1val1 | <b>row1val1</b>
