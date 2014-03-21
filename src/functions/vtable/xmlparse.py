@@ -123,6 +123,14 @@ Examples:
     row1val1 |      |
     row2val1 | asdf | asdf<d>row2val</d>
 
+    >>> sql('''select * from (xmlparse  root:a '{"a/b":"", "a":"*"}' select * from table2)''')
+    b        | $
+    ------------------------------------------------------
+    row1val1 | <b>row1val1</b>
+    row2val1 |
+    <b>
+    row2val1</b><c>asdf<d>row2val</d></c>
+
     >>> sql("select * from (xmlparse '<a><b>v</b><c>*</c></a>' select * from table2)")
     b        | c_$
     -----------------------------
@@ -494,31 +502,32 @@ class XMLparse(vtbase.VT):
                         
             elif type(jxp) is OrderedDict:
                 for k,v in jxp.iteritems():
-                    path=k.split('/')
+                    path = k.split('/')
                     if path[0] == '':
-                        path=path[1:]
+                        path = path[1:]
                         
-                    if self.subtreeroot==None:
-                        self.subtreeroot=path[0]
+                    if self.subtreeroot is None:
+                        self.subtreeroot = path[0]
 
                     try:
-                        path = path[ path.index(self.subtreeroot)+1: ]
+                        path = path[path.index(self.subtreeroot)+1:]
                     except ValueError:
                         continue
 
-                    if path==[]:
-                        continue
-                        
                     if type(v) in (list, OrderedDict):
                         for i in v:
                             if i in ('*', '$'):
                                 s.addtoschema(path+['*'])
                             else:
+                                # if path == []:
+                                #     continue
                                 s.addtoschema(path)
                     else:
                         if v in ('*', '$'):
                             s.addtoschema(path+['*'])
                         else:
+                            # if path == []:
+                            #     continue
                             s.addtoschema(path)
             else:
                 xpath=[]
