@@ -34,7 +34,7 @@ class RC2DB(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
         col = 0
 
-
+        filename, ext=os.path.splitext(os.path.basename(where))
         if 'cols' in dictargs:
             a = re.split(' |,| , |, | ,' , dictargs['cols'])
             column = [x for x in a if x != '']
@@ -83,7 +83,7 @@ class RC2DB(vtbase.VT):
                             list(cursor.execute(create_schema))
                             insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
                             return c, cursor, insertquery
-                c, cursor, insertquery=createdb(where+".db", where, schema)
+                c, cursor, insertquery=createdb(where+".db", filename, schema)
 
             while True:
                 try:
