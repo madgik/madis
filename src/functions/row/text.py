@@ -412,10 +412,13 @@ def regexpr(*args):
         else:
             return None
 
-    if len(args)==3:
-        return re.sub(args[0], args[2], args[1])
+    if len(args) == 3:
+        try:
+            return re.sub(args[0], args[2], args[1], flags=re.UNICODE)
+        except TypeError:
+            return re.sub(args[0], args[2], args[1])
 
-regexpr.registered=True
+regexpr.registered = True
 
 def regexprfindall(*args):
     """
