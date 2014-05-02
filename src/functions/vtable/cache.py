@@ -65,6 +65,7 @@ import operator
 from lib import argsparse
 from lib import kdtree
 from lib import schemaUtils
+import json
 
 constraints={
 2:'SQLITE_INDEX_CONSTRAINT_EQ',
@@ -174,21 +175,29 @@ class LTable: ####Init means setschema and execstatus
         return self.schema
 
     @echocall
-    def BestIndex(self, constraints, orderbys):
-        indexes=[]
-        newcons=[]
-        i=0
-        for c in constraints:
-            if c[1]==apsw.SQLITE_INDEX_CONSTRAINT_MATCH:
+    def BestIndex(self, constraint_param, orderbys):
+        indexes = []
+        newcons = []
+        i = 0
+
+        for c in constraint_param:
+            if c[1] == apsw.SQLITE_INDEX_CONSTRAINT_MATCH:
                 indexes.append(None)
             else:
                 indexes.append((i, True))
-                i=i+1
+                i += 1
                 newcons.append(c)
-        consname=str(newcons)+str(orderbys)
-        self.consdict[consname]=(newcons, orderbys)
 
-        return ( indexes, 0, consname, True, 0  )
+        consname = json.dumps(newcons, separators=(',', ':')) + json.dumps(orderbys, separators=(',', ':'))
+        self.consdict[consname] = (newcons, orderbys)
+
+        cost = 0
+
+        # Cost of scan
+        if newcons == []:
+            cost = len(self.data)
+
+        return indexes, 0, consname, True, cost
 
     @echocall
     def Open(self):
@@ -217,7 +226,8 @@ class Cursor:
     @echocall #-- Commented out for speed reasons
     def Filter(self, indexnum, indexname, constraintargs):
         self.eof=False
-        constraints,orderbys=self.table.consdict[indexname]
+
+        constraints, orderbys = self.table.consdict[indexname]
 
         if self.table.lastcalculatedidx!=(constraints,orderbys):
             self.calculate_indexes(constraints,orderbys)
