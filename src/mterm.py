@@ -697,7 +697,16 @@ while True:
                 for i in sorted(alltables):
                     printterm(i)
             else:
-                statement='select * from '+argument+' limit 2;'
+                statement = 'select * from '+argument+' limit 2;'
+
+        elif 'select'.startswith(command):
+            update_tablelist()
+            argument = argument.rstrip('; ')
+            if not argument:
+                for i in sorted(alltables):
+                    printterm(i)
+            else:
+                statement = 'select * from '+argument + ';'
 
         elif command=='vacuum':
             statement="PRAGMA temp_store_directory = '.';VACUUM;PRAGMA temp_store_directory = '';"
