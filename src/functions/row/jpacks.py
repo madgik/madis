@@ -6,43 +6,72 @@ import operator
 import itertools
 import re
 import functions
+import math
 try:
     from collections import OrderedDict
 except ImportError:
     # Python 2.6
     from lib.collections26 import OrderedDict
 
-def jpack(*args):
+def jngrams(*args):
 
     """
-    .. function:: jpack(args...) -> jpack
+    .. function:: jngrams(n,text) -> jpack
 
-    Converts multiple input arguments into a single string. Jpacks preserve the types
-    of their inputs and are based on JSON encoding. Single values are represented as
-    themselves where possible.
+    Converts multiple input arguments into a jpack of ngrams.
 
     Examples:
 
-    >>> sql("select jpack('a')")
-    jpack('a')
-    ----------
-    a
+    >>> sql("select jngrams(1,'This is a test phrase')")
+    jngrams(1,'This is a test phrase')
+    -------------------------------------------
+    [["This"],["is"],["a"],["test"],["phrase"]]
 
-    >>> sql("select jpack('a','b',3)")
-    jpack('a','b',3)
-    ----------------
-    ["a","b",3]
+    >>> sql("select jngrams(2,'This is a test phrase')")
+    jngrams(2,'This is a test phrase')
+    ---------------------------------------------------------
+    [["This","is"],["is","a"],["a","test"],["test","phrase"]]
 
-    >>> sql("select jpack('a', jpack('b',3))")
-    jpack('a', jpack('b',3))
-    ------------------------
-    ["a",["b",3]]
 
     """
+    if type(args[0]) == int:
+        n = args[0]
+        text = args[1]
+    else:
+        n = 1
+        text = args[0]
+    g = text.split(' ')
+    listofngrams = []
+    for i in xrange(len(g)-n+1):
+        listofngrams.append(g[i:i+n])
+    return jopts.toj(listofngrams)
 
-    return jopts.toj(jopts.elemfromj(*args))
 
-jpack.registered=True
+jngrams.registered=True
+
+
+
+def jfrequentwords(*args):
+
+    """
+    .. function:: jfrequentwords(args...) -> jpack
+
+    Returns the frequent words of a text in a jpack
+
+    """
+    wordslist = args[0].split(' ')
+    setwords = set(wordslist)
+    c = dict.fromkeys(setwords, 0)
+    for w in wordslist:
+        c[w]+=1
+    lenwords = len(setwords)
+    extremevals = int(math.ceil(lenwords * 3 * 1.0/100))
+    frequences = sorted(c.values())[extremevals:(lenwords-extremevals)]
+    avgfrequency = math.ceil(sum(frequences)*1.0/len(frequences))
+
+    return jopts.toj([k for k,v in c.iteritems() if v >= avgfrequency])
+
+jfrequentwords.registered=True
 
 def jsonstrict(*args):
 
