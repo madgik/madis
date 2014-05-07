@@ -65,7 +65,8 @@ from array import array
 
 
 BLOCK_SIZE = 65536000
-
+RCFILE=1
+SDC=2
 registered=True
 
 def getSize(v):
@@ -868,6 +869,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
 
 
+
+   
     if mode == 'corelspacfinal':
         colnum = len(schema)
         marshal.dump(schema,fileIter,2)
@@ -1180,6 +1183,162 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 fileIter.close()
                 break
 
+    if mode == 'spactest':
+        colnum = len(schema)
+        marshal.dump(schema,fileIter,2)
+        setcol = [set([]) for _ in xrange(colnum)]
+#        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+#        compressorlistvals = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
+        listoflens = [0 for _ in xrange(colnum)]
+        start = 0
+        dictsize = 65536
+        #listofarrays = []
+        paxcols = []
+        indextype = 'H'
+        step = dictsize
+        stopstep = int(dictsize/20)
+        bsize = 0
+        listofnditers = []
+        numrows=0
+        dictlimit = step - colnum
+        coldicts = [{} for _ in xrange(colnum)]
+        prevsets =  [set([]) for _ in xrange(colnum)]
+        corelset = {}
+        correlatedcols = {}
+        correlated = set()
+        firstgroup = set()
+        count = 0
+        blocknum = 0
+        bsize = 0
+        while True:
+            maxlen = 0
+            ret = False
+            z = zip(*itertools.islice(diter, 0, step))
+
+            if z==[]:
+                ret = True
+            else:
+                for c in z:
+                    bsize+=sys.getsizeof(c)
+                listofnditers.append(z)
+
+                if len(listofnditers[-1])!=0:
+                    count += len(listofnditers[-1][0])
+                else:
+                    ret = 1
+
+                for i,col in enumerate(listofnditers[-1]):
+                    if i not in paxcols:
+                        setcol[i].update(col)
+                        l = len(setcol[i])
+                        if l > maxlen:
+                            maxlen = l
+
+            step = dictsize - maxlen
+            if step < stopstep or ret or bsize>300000000:
+                bsize=0
+                prev = fileIter.tell() + 4*(colnum+2)
+                output = cStringIO.StringIO()
+                headindex = [0 for _ in xrange(colnum+2)]
+                listofvals = []
+                for j in xrange(colnum):
+                    listofvals.append([val for subl in [x[j] for x in listofnditers] for val in subl])
+
+                if blocknum == 0:
+
+
+                    sortdict = {}
+                    for i in xrange(colnum):
+                        if (len(setcol[i])>55000):
+                            paxcols.append(i)
+                        sortdict[i] = len(setcol[i])
+
+                    check = 0
+                    for i in xrange(colnum):
+                        headindex[i] = output.tell() + prev
+#                        s =  [val for subl in [x[i] for x in listofnditers] for val in subl]
+#                        if (dictsize*2+len(marshal.dumps(setcol[i],2))>len(marshal.dumps(s,2))):
+#                            paxcols.append(i)
+#                            output.write(compressorlistdicts[i].compress(marshal.dumps(s,2)))
+                        if i in paxcols:
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
+                            #listofarrays.append(s)
+                        else:
+                            prevsets[i] = set(setcol[i]).copy()
+                            s = sorted(setcol[i])
+                            coldicts[i] = dict(((x,y) for y,x in enumerate(s)))
+                            coldict = coldicts[i]
+                            if len(s)<256:
+                                indextype='B'
+                            else:
+                                indextype='H'
+                            #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
+                            output.write(zlib.compress(marshal.dumps(s,2)))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                else:
+#                    listofnditers1 = zip(*listofnditers)
+#                    listofnditers1.sort(key=lambda listofnditers1: listofnditers1[paxcols[0]])
+#                    listofnditers = zip(*listofnditers1)
+                    check=0
+                    for i in xrange(colnum):
+                        headindex[i] = output.tell() + prev
+                        if i in paxcols:
+                            output.write(zlib.compress(marshal.dumps(listofvals[i],2)))
+                            #listofarrays.append(s)
+                        else:
+                            difnew = list(setcol[i]-prevsets[i])
+                            difold = list(prevsets[i]-setcol[i])
+                            prevsets[i].intersection_update(setcol[i])
+                            prevsets[i].update(difnew)
+                            prevsets[i].update(difold[:(dictsize-len(prevsets[i]))])
+                            towrite = {}
+                            le = len(difold)
+                            si = len(coldicts[i])
+                            for l,j in enumerate(difnew):
+                                if l<le:
+                                    towrite[j] = coldicts[i][difold[l]]
+                                else:
+                                    towrite[j] = si
+                                    si+=1
+                            coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
+                            coldict = coldicts[i]
+                            if len(prevsets[i]) != 0 :
+                                if len(prevsets[i])<256:
+                                    indextype='B'
+                                else:
+                                    indextype='H'
+                                output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
+                            #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
+                            output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+
+#                for i,l in enumerate(listofarrays):
+#                    if i in paxcols:
+#                        output.write(zlib.compress(marshal.dumps(sorted(l),2)))
+#                    else:
+#                        output.write(zlib.compress(l.tostring()))
+
+
+
+                headindex[i+1] = output.tell()+ prev
+                headindex[i+2] = count
+
+                count=0
+                fileIter.write(struct.pack('L'*len(headindex), *headindex))
+                fileIter.write(output.getvalue())
+                listoflens = [0 for _ in xrange(colnum)]
+                for s in setcol:
+                    s.clear()
+                #listofarrays = []
+                listofnditers = []
+                gc.collect()
+                step = dictsize
+                blocknum+=1
+
+            if ret:
+                break
+
 
     if mode == 'spac':
         colnum = len(schema)
@@ -1206,7 +1365,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         blocknum = 0
         bsize = 0
         rowlimit = 0
-        compress = zlib.compress
+        compress = bz2.compress
 
         while True:
             maxlen = 0.5
@@ -1218,9 +1377,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             else:
                 if blocknum==0:
                     for c in z:
-                        for v in c:
-
-                            bsize += getSize(v)
+                        bsize+=sys.getsizeof(c)
 
                 listofnditers.append(z)
 
@@ -1242,11 +1399,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     listofvals = []
                     listofvals.append([val for subl in [x[paxcols[0]] for x in listofnditers] for val in subl])
                     if len(listofvals[0]) > rowlimit:
-                        bsize = 300000001
+                        bsize = 10000001
 
 
             step = dictsize - maxlen
-            if step < stopstep or ret or bsize>30000000:
+            if step < stopstep or ret or bsize>1000000:
 
                 bsize=0
                 prev = fileIter.tell() + 8*(colnum+2)
@@ -1369,7 +1526,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 difold = list(pset - setcol[i])
 
                                 while len(s)>dictsize:
-                                    s.remove[difold[d]]
+                                    s.remove(difold[d])
                                     d+=1
                                     
                             prevsets[i] = s
@@ -1428,63 +1585,15 @@ def outputData(diter, schema, connection, *args, **formatArgs):
     
 
 
-    if mode == 'sorteddictpercol': #to do (arxika epilegw ta rows metrwntas ta sets meta ta vazw se sorted dict kai telos grafw tis kolwnes)
-        colnum = len(schema)
-        marshal.dump(schema,fileIter,2)
-
-        setcol = [set([]) for _ in xrange(colnum)]
-        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
-        compressorlistcols = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
-        start = 0
-        step = 65535
-        bsize = 0
-        numrows=0
-        dictlimit = step - colnum
-        current = [[] for _ in xrange(colnum)]
-        count = 0
-        while True:
-            maxlen = 0
-            nditer = zip(*itertools.islice(diter, 0, step))
-            if len(nditer)!=0:
-                count += len(nditer[0])
-            for i,col in enumerate(nditer):
-                current[i] += col
-                setcol[i].update(col)
-                l = len(setcol[i])
-                if l > maxlen:
-                    maxlen = l
-            step = 65535 - maxlen
-            if step < 5000 or len(nditer) == 0:
-                prev = fileIter.tell()
-                headindex = [0 for _ in xrange(colnum+2)]
-                fileIter.write(struct.pack('L'*len(headindex), *headindex))
-                for i in xrange(colnum):
-                    headindex[i] = fileIter.tell()
-                    s = sorted(setcol[i])
-                    coldict = dict(((x,y) for y,x in enumerate(s)))
-                    fileIter.write(compressorlistdicts[i].compress(marshal.dumps(s,2)))
-                    fileIter.write(compressorlistcols[i].compress(array('H',[coldict[y] for y in current[i]]).tostring()))
-                headindex[i+1] = fileIter.tell()
-                headindex[i+2] = count
-                count=0
-                fileIter.seek(prev)
-                fileIter.write(struct.pack('L'*len(headindex), *headindex))
-                fileIter.seek(headindex[colnum])
-                current = [[] for _ in xrange(colnum)]
-                setcol = [set([]) for _ in xrange(colnum)]
-                gc.collect()
-                step = 65535
-            if len(nditer)==0:
-                break
-
+   
 
 
     if mode == 'dictpercol':
         colnum = len(schema)
         fastPickler.dump(schema)
         listptr = [array('H') for _ in xrange(colnum) ]
-        compressorlistdicts = [zlib.BZ2Compressor(9) for _ in xrange(colnum)]
-        compressorcols = zlib.BZ2Compressor(9)
+        compressorlistdicts = [zlib.compressobj(5) for _ in xrange(colnum)]
+        compressorcols = zlib.compressobj(5)
         listofdicts = [{} for _ in xrange(colnum) ]
         listoflens = [-1 for _ in xrange(colnum)]
         start = 0
@@ -1830,7 +1939,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             gc.enable()
             pass
 
-    def spac(fileObject):
+    def spac(fileObject,lencols):
         colnum = len(schema)-1
         marshal.dump(schema[1:],fileObject,2)
         setcol = [set([]) for _ in xrange(colnum)]
@@ -1838,17 +1947,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         paxcols = []
         indextype = 'H'
         index_init = [0 for _ in xrange(3)]
-        step = dictsize
-        stopstep = int(dictsize/20)
-        bsize = 0
-        listofnditers = []
         coldicts = [{} for _ in xrange(colnum)]
         prevsets =  [[] for _ in xrange(colnum)]
         count = 0
         blocknum = 0
-        bsize = 0
-        rowlimit = 0
-        compress = zlib.compress
+        compress = bz2.compress
         
 
         while True:
@@ -1856,49 +1959,26 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             exitGen = False
             rows = []
             try:
-                for i in xrange(step):
+                for i in xrange(lencols):
                     rows.append((yield))
             except GeneratorExit:
                 exitGen = True
-            z = zip(*rows)
+            listofvals = zip(*rows)
 
-            if z!=[]:
-                if blocknum==0:
-                    for c in z:
-                        for v in c:
-                            bsize += getSize(v)
-                listofnditers.append(z)
-                count += len(listofnditers[-1][0])
-                
+            if listofvals!=[]:
 
-                for i,col in enumerate(listofnditers[-1]):
+                for i,col in enumerate(listofvals):
                     if i not in paxcols:
                         setcol[i].update(col)
-                        l = len(setcol[i])
-                        if l > maxlen:
-                            maxlen = l
 
-                if blocknum>=1:
-                    listofvals = []
-                    listofvals.append([val for subl in [x[paxcols[0]] for x in listofnditers] for val in subl])
-                    if len(listofvals[0]) > rowlimit:
-                        bsize = 30000001
-
-
-            step = dictsize - maxlen
-            if step < stopstep or exitGen or bsize>30000000:
-                bsize=0
                 prev = fileObject.tell() + 8*(colnum+2)
                 output = cStringIO.StringIO()
                 headindex = [0 for _ in xrange(colnum+2)]
-                listofvals = []
-                for j in xrange(colnum):
-                    listofvals.append([val for subl in [x[j] for x in listofnditers] for val in subl])
 
                 if blocknum == 0:
                     for i in xrange(colnum):
                         headindex[i] = output.tell() + prev
-                        if (len(setcol[i])*1.0/maxlen>0.67):
+                        if (len(setcol[i])*1.0/lencols>0.67):
                             paxcols.append(i)
                             l = index_init[:]
                             t = output.tell()
@@ -1908,8 +1988,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
                             output.seek(l[0])
-                            if rowlimit == 0:
-                                rowlimit = len(listofvals[i])
                         else:
                             prevsets[i] = list(set(setcol[i]).copy())
                             coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
@@ -1984,15 +2062,101 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 fileObject.write(output.getvalue())
                 for s in setcol:
                     s.clear()
-                listofnditers = []
                 gc.collect()
-                step = dictsize
                 blocknum+=1
 
             if exitGen:
                 fileObject.close()
                 break
 
+
+    def sorteddictpercol(fileIter,lencols):
+        colnum = len(schema)-1
+        fileIter.write(struct.pack('!B', 0))
+        cPickle.dump(schema[1:],fileIter,1)
+        paxcols = []
+        blocknum = 0
+        output = cStringIO.StringIO()
+        tempio = cStringIO.StringIO()
+        fastPickler = cPickle.Pickler(tempio, 1)
+        fastPickler.fast = 1
+        exitGen=False
+        if lencols == 0:
+            (yield)
+        
+        while not exitGen:
+            output.truncate(0)
+            mrows = []
+            try:
+                for i in xrange(lencols):
+                    mrows.append((yield))
+            except GeneratorExit:
+                exitGen = True
+            
+            count = len(mrows)
+            headindex = [0 for _ in xrange((colnum*2)+1)]
+            type = '!'+'i'*len(headindex)
+            output.write(struct.pack(type, *headindex))
+            if mrows != []:
+                for i, col in enumerate((tuple(x[c] for x in mrows) for c in xrange(colnum))):
+                    if blocknum==0:
+                        s = sorted(set(col))
+                        lens = len(s)
+                        if lens>50*1.0*count/100:
+                            paxcols.append(i)
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(col)
+                            output.write(zlib.compress(tempio.getvalue(),5))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(s)
+                            output.write(zlib.compress(tempio.getvalue(),5))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(zlib.compress(array('B',[coldict[y] for y in col]).tostring(),5))
+                                else:
+                                    output.write(zlib.compress(array('H',[coldict[y] for y in col]).tostring(),5))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+                    else:
+                        if i in paxcols:
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(col)
+                            output.write(zlib.compress(tempio.getvalue(),5))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            s = sorted(set(col))
+                            lens = len(s)
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(s)
+                            output.write(zlib.compress(tempio.getvalue(),5))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(zlib.compress(array('B',[coldict[y] for y in col]).tostring(),5))
+                                else:
+                                    output.write(zlib.compress(array('H',[coldict[y] for y in col]).tostring(),5))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+
+                blocknum=1
+                headindex[colnum*2] = count
+                output.seek(0)
+                type = '!'+'i'*len(headindex)
+                output.write(struct.pack(type, *headindex))
+                cz = output.getvalue()
+                fileIter.write(struct.pack('!B', 1))
+                fileIter.write(struct.pack('!i',len(cz)))
+
+                fileIter.write(cz)
+                gc.collect()
+        fileIter.close()
 
     def rcfile(fileObject,lencols):
         colnum = len(schema) - 1
@@ -2081,18 +2245,50 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     todisk = [[] for _ in xrange(len(schema))]
                     bsize = 0
 
+    def calclencols(mode):
+            if mode==RCFILE:
+                count = 0
+                bsize = 0
+                rows = []
+                try:
+                    while bsize<BLOCK_SIZE:
+                        row = diter.next()
+                        rows.append(row)
+                        count += 1
+                        bsize += sum((getSize(v) for v in row[1:]))
+                except StopIteration:
+                    pass
+                return count+10*count/100 , rows
+            if mode==SDC:
+                count = 0
+                bsize = 0
+                rows = []
+                try:
+                    while bsize<BLOCK_SIZE and count<65535:
+                        row = diter.next()
+                        rows.append(row)
+                        count += 1
+                        bsize += sum((getSize(v) for v in row[1:]))
+                except StopIteration:
+                    pass
+                return count , rows
+
 
     if mode == 'spac1':
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
+            lencols , rows = calclencols()
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'a')
 
-            spacgen = [spac(x) for x in filesList]
+            spacgen = [spac(x,lencols) for x in filesList]
             spacgensend = [x.send for x in spacgen]
             for j in spacgensend:
                 j(None)
+            for row in rows:
+                spacgensend[row[0]](row[1:])
+            del(rows)
             for row in diter:
                 spacgensend[row[0]](row[1:])
             for j in spacgen:
@@ -2100,27 +2296,34 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         else :
             rcfilenonsplit()
 
-    def calclencols():
-            count = 0
-            bsize = 0
-            rows = []
-            try:
-                while bsize<BLOCK_SIZE:
-                    row = diter.next()
-                    rows.append(row)
-                    count += 1
-                    bsize += sum((getSize(v) for v in row[1:]))
-            except StopIteration:
-                pass
 
-            return count+10*count/100 , rows
+    if mode == 'sdc':
+        if 'split' in formatArgs:
+            filesNum = int(formatArgs['split'])
+            filesList = [None]*filesNum
+            lencols , rows = calclencols(SDC)
+            for key in xrange(int(formatArgs['split'])) :
+                filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+
+
+            sdcgen = [sorteddictpercol(x,lencols) for x in filesList]
+            sdcgensend = [x.send for x in sdcgen]
+            for j in sdcgensend:
+                j(None)
+            for row in rows:
+                sdcgensend[row[0]](row[1:])
+            del(rows)
+            for row in diter:
+                sdcgensend[row[0]](row[1:])
+            for j in sdcgen:
+                j.close()
 
 
     if mode == 'rcfile':
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
-            lencols , rows = calclencols()
+            lencols , rows = calclencols(RCFILE)
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
 
@@ -2223,23 +2426,31 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             pass
 
     if mode == 'row':   # rowstore periptwsi
-        todump = []
-        try:
-            bsize = 0
-            fastPickler = cPickle.Pickler(fileIter, 1)
-            fastPickler.fast = 1
-            for row in diter:
-                if bsize>BLOCK_SIZE:
-                    fastPickler.dump(todump)
-                    todump = [row]
-                    bsize += len(marshal.dumps(row))
-                else:
-                    todump.append(row)
-                    bsize += len(marshal.dumps(row))
-        except StopIteration,e:
-            pass
-        if len(todump)>0:
-             fastPickler.dump(todump)
+        lencols,rows = calclencols()
+        cPickle.dump(schema,fileIter,1)
+        l = cStringIO.StringIO()
+        fastPickler = cPickle.Pickler(l, 1)
+        fastPickler.fast = 1
+        last = 0
+
+        l.truncate(0)
+        fastPickler.dump(rows)
+        cz = zlib.compress(l.getvalue(),5)
+        s = len(cz)
+        fileIter.write(struct.pack('i', s))
+        fileIter.write(cz)
+        
+        while last == 0:
+            rows = list(itertools.islice(diter, 0, lencols))
+            if len(rows)<lencols:
+                last = 1
+            l.truncate(0)
+            fastPickler.dump(rows)
+            cz = zlib.compress(l.getvalue(),5)
+            s = len(cz)
+            fileIter.write(struct.pack('i', s))
+            fileIter.write(cz)
+
 
     try:
         if 'split' not in formatArgs:
