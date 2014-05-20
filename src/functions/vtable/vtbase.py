@@ -135,7 +135,7 @@ class LTable(object): ####Init means setschema and execstatus
 
 # Represents a cursor
 class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename ...... if has close
-    __slots__ = ("Column", "Next", "Rowid", "Eof", "iterNext", "pos", "row", "eof", "envars", "firsttime", "openIter", "iterFunc")
+    __slots__ = ("Column", "Next", "Eof", "Rowid", "iterNext", "pos", "row", "eof", "envars", "firsttime", "openIter", "iterFunc")
 
     @echocall
     def __init__(self, iterFunc, openIter, envars):
