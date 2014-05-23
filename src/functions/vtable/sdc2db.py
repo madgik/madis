@@ -2,7 +2,7 @@ import os.path
 import sys
 import functions
 import os
-from itertools import izip
+from itertools import izip , repeat, imap
 import cPickle
 import cStringIO
 import vtbase
@@ -19,11 +19,14 @@ registered=True
 BLOCK_SIZE = 200000000
 import apsw
 from array import array
+import time
+import msgpack
 
 class SDC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        time1 = time.time()
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'
@@ -81,59 +84,50 @@ class SDC2DB(vtbase.VT):
                         insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
                         return c, cursor, insertquery
                 cur, cursor, insertquery=createdb(where+".db", filename, schema)
-            output = cStringIO.StringIO()
-            blocknum = 0
-            paxcols = {}
+            input = cStringIO.StringIO()
 
            
-
             while True:
-                    output.truncate(0)
+                    input.truncate(0)
                     try:
                         b = struct.unpack('!B', fileIter.read(1))
                     except:
                         break
                     if b[0]:
                         blocksize = struct.unpack('!i', fileIter.read(4))
-    #                        output.write(fileIter.read(blocksize[0]))
-    #                        output.seek(0)
+                        input.write(fileIter.read(blocksize[0]))
+                        input.seek(0)
                         type = '!'+'i'*(colnum*2+1)
-                        ind = list(struct.unpack(type, fileIter.read(4*(colnum*2+1))))
+                        ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
                         cols = [[] for _ in xrange(colnum)]
                         for c in xrange(colnum):
-                            s = cPickle.loads(zlib.decompress(fileIter.read(ind[c*2])))
-                            if (blocknum == 1 and c in paxcols) or (blocknum == 0 and len(s)>50*1.0*ind[colnum*2]/100):
+                            s = msgpack.loads(zlib.decompress(input.read(ind[c*2])))
+                            if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
                                 cols[c] = s
-                                if blocknum == 0:
-                                    paxcols[c]=1
                             else:
                                 if len(s)==1:
-                                    cols[c] = [s[0] for _ in xrange(ind[colnum*2])]
+                                    cols[c] = repeat(s[0], ind[colnum*2])
                                 elif len(s)<256:
-                                    listptr = array('B')
-                                    listptr.fromstring(zlib.decompress(fileIter.read(ind[c*2+1])))
-                                    for lala in listptr:
-                                        cols[c].append(s[lala])
+                                    cols[c] = imap(s.__getitem__, array('B', zlib.decompress(input.read(ind[c*2+1]))))
                                 else:
-                                    listptr = array('H')
-                                    listptr.fromstring(zlib.decompress(fileIter.read(ind[c*2+1])))
-                                    for lala in listptr:
-                                        cols[c].append(s[lala])
+                                    cols[c] = imap(s.__getitem__, array('H', zlib.decompress(input.read(ind[c*2+1]))))
                         gc.disable()
                         cursor.executemany(insertquery, izip(*cols))
                         gc.enable()
-                        blocknum = 1
                     elif not b[0]:
                         schema = cPickle.load(fileIter)
         list(cursor.execute('commit'))
         cur.close()
-
         try:
             for fileObject in fileIterlist:
                 fileObject.close()
         except NameError:
             pass
-
+        time2 = time.time()
+        stats = open('compressionstatistics.tsv', 'a')
+        stat = where
+        statstr = stat + "\t" + str(time2-time1) + "\n"
+        stats.write(statstr)
 
 def Source():
     return vtbase.VTGenerator(SDC2DB)
