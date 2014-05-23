@@ -2147,14 +2147,14 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = output.tell()
 #                            tempio.truncate(0)
 #                            fastPickler.dump(col)
-                            output.write(zlib.compress(msgpack.dumps(col),level))
+                            output.write(zlib.compress(marshal.dumps(col),level))
                             headindex[i*2] = output.tell() - l
                         else:
                             coldict = dict(((x,y) for y,x in enumerate(s)))
                             l = output.tell()
 #                            tempio.truncate(0)
 #                            fastPickler.dump(s)
-                            output.write(zlib.compress(msgpack.dumps(s),level))
+                            output.write(zlib.compress(marshal.dumps(s),level))
                             headindex[i*2] = output.tell()-l
                             if lens>1:
                                 if lens<256:
@@ -2167,7 +2167,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = output.tell()
 #                            tempio.truncate(0)
 #                            fastPickler.dump(col)
-                            output.write(zlib.compress(msgpack.dumps(col),level))
+                            output.write(zlib.compress(marshal.dumps(col),level))
                             headindex[i*2] = output.tell() - l
                         else:
                             s = sorted(set(col))
@@ -2176,7 +2176,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = output.tell()
 #                            tempio.truncate(0)
 #                            fastPickler.dump(s)
-                            output.write(zlib.compress(msgpack.dumps(s),level))
+                            output.write(zlib.compress(marshal.dumps(s),level))
                             headindex[i*2] = output.tell()-l
                             if lens>1:
                                 if lens<256:

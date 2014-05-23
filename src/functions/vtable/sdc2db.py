@@ -20,7 +20,6 @@ BLOCK_SIZE = 200000000
 import apsw
 from array import array
 import time
-import msgpack
 
 class SDC2DB(vtbase.VT):
 
@@ -101,7 +100,7 @@ class SDC2DB(vtbase.VT):
                         ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
                         cols = [[] for _ in xrange(colnum)]
                         for c in xrange(colnum):
-                            s = msgpack.loads(zlib.decompress(input.read(ind[c*2])))
+                            s = marshal.loads(zlib.decompress(input.read(ind[c*2])))
                             if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
                                 cols[c] = s
                             else:
