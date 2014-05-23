@@ -51,7 +51,7 @@ import functions
 import lib.inoutparsing
 import os
 import marshal
-from itertools import izip
+from itertools import izip , imap
 import itertools
 import cPickle as cPickle
 import struct
@@ -61,10 +61,14 @@ import marshal
 import zlib
 from collections import OrderedDict
 from array import array
+import time
+import listser
 
 
 
 BLOCK_SIZE = 65536000
+ZLIB = "zlib"
+BZ2 = "bzip"
 RCFILE=1
 SDC=2
 registered=True
@@ -85,6 +89,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
     where=None
     mode = 'row'
+    compression = 'zlib'
+    level = 5
     if len(args)>0:
         where=args[0]
     elif 'file' in formatArgs:
@@ -95,6 +101,15 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         del formatArgs['file']
     if 'mode' in formatArgs:
         mode = formatArgs['mode']
+    if 'compr'  in formatArgs:
+        if formatArgs['compr'] == "zlib":
+            compression = ZLIB
+        elif formatArgs['compr'] == "bz2":
+            compression = BZ2
+    if 'level' in formatArgs:
+        l = formatArgs['level']
+        if int(l)>=0 and int(l) <=9 :
+            level = int(l)
     filename, ext=os.path.splitext(os.path.basename(where))
     fullpath=os.path.split(where)[0]
     if 'split' not in formatArgs:
@@ -109,7 +124,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         pass
 
 
-   
+
 
 
     if mode == 'spaconedict':
@@ -656,12 +671,36 @@ def outputData(diter, schema, connection, *args, **formatArgs):
         coldicts = [{} for _ in xrange(colnum)]
         prevsets =  [set([]) for _ in xrange(colnum)]
         corelset = {}
-        correlatedcols = {}
+        correlatedcols = [{} for _ in xrange(colnum**colnum)]
         correlated = set()
         firstgroup = set()
         count = 0
         blocknum = 0
         bsize = 0
+
+        def allgroup(expansions, n=0, groups = []):
+            expgroup = [expansions[n]]
+            if n == len(expansions) - 1:
+                yield groups + [expgroup]
+                for i in xrange(len(groups)):
+                    tmp = groups[i]
+                    groups[i] = tmp + expgroup
+                    yield groups
+                    groups[i] = tmp
+            else:
+                for g in allgroup(expansions, n+1, groups + [expgroup]):
+                    yield g
+                for i in xrange(len(groups)):
+                    tmp = groups[i]
+                    groups[i] = tmp + expgroup
+                    for g in allgroup(expansions, n + 1, groups):
+                        yield g
+                    groups[i] = tmp
+
+        for i in allgroup(range(colnum)):
+            print i
+
+
         while True:
             maxlen = 0
             ret = False
@@ -697,39 +736,36 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     listofvals.append([val for subl in [x[j] for x in listofnditers] for val in subl])
 
                 if blocknum == 0:
-
-
                     sortdict = {}
                     for i in xrange(colnum):
                         if (len(setcol[i])>55000):
+                            print i
                             paxcols.append(i)
                         sortdict[i] = len(setcol[i])
-                    le = sorted(sortdict, key=sortdict.get)
-                    ginomeno = 1
-
-                    for i in le:
-                        ginomeno = ginomeno * sortdict[i]
-                        if ginomeno > 256:
-                            break
-                        else:
-                            pass #firstgroup.add(i)
-                    print firstgroup
-                    num = colnum-len(paxcols)-len(firstgroup)
-                    if num%2 != 0 and len(firstgroup)!=0:
-                        firstgroup.remove(le[0])
-                    print firstgroup
-                    print paxcols
-                    for i in xrange(colnum-1):
-                        for j in xrange(i+1,colnum):
-                            if  i not in correlated and j not in correlated and i not in firstgroup and j not in firstgroup:
-                                l = zip(listofvals[i],listofvals[j])
-                                #print (float(len(set(l)))/len(set(listofvals[i]))+len(set(listofvals[j]))) , i , j
-                                if len(set(l)) < 10000:
-                                    correlatedcols[i] = j
-                                    correlated.add(i)
-                                    correlated.add(j)
-                                    i+=1
-                    print correlatedcols
+#                    le = sorted(sortdict, key=sortdict.get)
+#                    ginomeno = 1
+#
+#                    for i in le:
+#                        ginomeno = ginomeno * sortdict[i]
+#                        if ginomeno > 256:
+#                            break
+#                        else:
+#                            pass #firstgroup.add(i)
+#                    num = colnum-len(paxcols)-len(firstgroup)
+#                    if num%2 != 0 and len(firstgroup)!=0:
+#                        firstgroup.remove(le[0])
+#
+#                    for i in xrange(colnum-1):
+#                        for j in xrange(i+1,colnum):
+#                            if  i not in correlated and j not in correlated and i not in firstgroup and j not in firstgroup:
+#                                l = zip(listofvals[i],listofvals[j])
+#                                #print (float(len(set(l)))/len(set(listofvals[i]))+len(set(listofvals[j]))) , i , j
+#                                if len(set(l)) < 10000:
+#                                    correlatedcols[i] = j
+#                                    correlated.add(i)
+#                                    correlated.add(j)
+#                                    i+=1
+#                    print correlatedcols
                     check = 0
                     for i in xrange(colnum):
                         headindex[i] = output.tell() + prev
@@ -744,7 +780,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
                             check=1
                         elif i in correlatedcols:
-                                corellated = zip(listofvals[i],listofvals[correlatedcols[i]])
+                                corellated = zip(listofvals[i],*listofvals[correlatedcols[i]])
                                 corelset[i] = set(corellated)
                                 coldicts[i] = dict(((x,y) for y,x in enumerate(corelset[i])))
                                 coldict = coldicts[i]
@@ -2070,19 +2106,23 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 break
 
 
-    def sorteddictpercol(fileIter,lencols):
+    def sorteddictpercol(fileIter,lencols,compression,level):
         colnum = len(schema)-1
         fileIter.write(struct.pack('!B', 0))
         cPickle.dump(schema[1:],fileIter,1)
         paxcols = []
         blocknum = 0
         output = cStringIO.StringIO()
-        tempio = cStringIO.StringIO()
-        fastPickler = cPickle.Pickler(tempio, 1)
-        fastPickler.fast = 1
+#        tempio = cStringIO.StringIO()
+#        fastPickler = cPickle.Pickler(tempio, 2)
+#        fastPickler.fast = 1
         exitGen=False
+        compress = zlib.compress
+        if compression == BZ2:
+            compress = bz2.compress
         if lencols == 0:
             (yield)
+
         
         while not exitGen:
             output.truncate(0)
@@ -2105,6 +2145,205 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         if lens>50*1.0*count/100:
                             paxcols.append(i)
                             l = output.tell()
+#                            tempio.truncate(0)
+#                            fastPickler.dump(col)
+                            output.write(zlib.compress(msgpack.dumps(col),level))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+#                            tempio.truncate(0)
+#                            fastPickler.dump(s)
+                            output.write(zlib.compress(msgpack.dumps(s),level))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                else:
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+                    else:
+                        if i in paxcols:
+                            l = output.tell()
+#                            tempio.truncate(0)
+#                            fastPickler.dump(col)
+                            output.write(zlib.compress(msgpack.dumps(col),level))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            s = sorted(set(col))
+                            lens = len(s)
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+#                            tempio.truncate(0)
+#                            fastPickler.dump(s)
+                            output.write(zlib.compress(msgpack.dumps(s),level))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                else:
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+
+                blocknum=1
+                headindex[colnum*2] = count
+                output.seek(0)
+                type = '!'+'i'*len(headindex)
+                output.write(struct.pack(type, *headindex))
+                cz = output.getvalue()
+                fileIter.write(struct.pack('!B', 1))
+                fileIter.write(struct.pack('!i',len(cz)))
+
+                fileIter.write(cz)
+                gc.collect()
+        fileIter.close()
+
+
+    def corsorteddictpercol(fileIter,lencols,compression,level):
+        colnum = len(schema)-1
+        fileIter.write(struct.pack('!B', 0))
+        cPickle.dump(schema[1:],fileIter,1)
+        paxcols = []
+        blocknum = 0
+        output = cStringIO.StringIO()
+        tempio = cStringIO.StringIO()
+        fastPickler = cPickle.Pickler(tempio, 2)
+        fastPickler.fast = 1
+        exitGen=False
+        corelcols = {}
+        compress = zlib.compress
+        if compression == BZ2:
+            compress = bz2.compress
+        if lencols == 0:
+            (yield)
+
+
+        while not exitGen:
+            output.truncate(0)
+            mrows = []
+            try:
+                for i in xrange(lencols):
+                    mrows.append((yield))
+            except GeneratorExit:
+                exitGen = True
+
+            count = len(mrows)
+            headindex = [0 for _ in xrange((colnum*2)+1)]
+            type = '!'+'i'*len(headindex)
+            colsets = [set([]) for _ in xrange(colnum)]
+            lencolsets = [[] for _ in xrange(colnum)]
+            if mrows != []:
+                if blocknum == 0:
+                    for i, col in enumerate((tuple(x[c] for x in mrows) for c in xrange(colnum))):
+                        colsets[i] = set(col)
+                        lencolsets[i] = len(colsets[i])
+                        if lencolsets[i]>50*1.0*count/100:
+                            paxcols.append(i)
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(col)
+                            output.write(zlib.compress(tempio.getvalue(),level))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            s = sorted(colsets[i])
+                            lens = lencolsets[i]
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(s)
+                            output.write(compress(tempio.getvalue(),level))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                else:
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+
+                    notpaxcols = [x for x in xrange(colnum) if x not in paxcols]
+                    corelcandidates = []
+                    for i in xrange(2,len(notpaxcols)+1):
+                        corelcandidates += list(itertools.combinations(notpaxcols,i))
+                    print len(corelcandidates)
+
+
+                else:
+                    for i, col in enumerate((tuple(x[c] for x in mrows) for c in xrange(colnum))):
+
+                        if i in paxcols:
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(col)
+                            output.write(zlib.compress(tempio.getvalue(),level))
+                            headindex[i*2] = output.tell() - l
+                        else:
+                            s = sorted(set(col))
+                            lens = len(s)
+                            coldict = dict(((x,y) for y,x in enumerate(s)))
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(s)
+                            output.write(compress(tempio.getvalue(),level))
+                            headindex[i*2] = output.tell()-l
+                            if lens>1:
+                                if lens<256:
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                else:
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                            headindex[i*2+1] = output.tell()-l-headindex[i*2]
+
+                blocknum=1
+                headindex[colnum*2] = count
+                output.seek(0)
+                type = '!'+'i'*len(headindex)
+                output.write(struct.pack(type, *headindex))
+                cz = output.getvalue()
+                fileIter.write(struct.pack('!B', 1))
+                fileIter.write(struct.pack('!i',len(cz)))
+
+                fileIter.write(cz)
+                gc.collect()
+        fileIter.close()
+
+
+    def sorteddictpercolspac(fileIter,lencols):
+        colnum = len(schema)-1
+        fileIter.write(struct.pack('!B', 0))
+        cPickle.dump(schema[1:],fileIter,1)
+        paxcols = []
+        spaccols = []
+        blocknum = 0
+        output = cStringIO.StringIO()
+        tempio = cStringIO.StringIO()
+        fastPickler = cPickle.Pickler(tempio, 1)
+        fastPickler.fast = 1
+        exitGen=False
+        firstblocksets =  [set([]) for _ in xrange(colnum)]
+        if lencols == 0:
+            (yield)
+
+        while not exitGen:
+            output.truncate(0)
+            mrows = []
+            try:
+                for i in xrange(lencols):
+                    mrows.append((yield))
+            except GeneratorExit:
+                exitGen = True
+
+            count = len(mrows)
+            headindex = [0 for _ in xrange((colnum*2)+1)]
+            type = '!'+'i'*len(headindex)
+            output.write(struct.pack(type, *headindex))
+            if mrows != []:
+                for i, col in enumerate((tuple(x[c] for x in mrows) for c in xrange(colnum))):
+                    if blocknum==0:
+                        firstblocksets[i] = sorted(set(col))
+                        s = firstblocksets[i]
+                        lens = len(s)
+                        if lens>50*1.0*count/100:
+                            paxcols.append(i)
+                            l = output.tell()
                             tempio.truncate(0)
                             fastPickler.dump(col)
                             output.write(zlib.compress(tempio.getvalue(),5))
@@ -2122,6 +2361,61 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                 else:
                                     output.write(zlib.compress(array('H',[coldict[y] for y in col]).tostring(),5))
                             headindex[i*2+1] = output.tell()-l-headindex[i*2]
+                    elif blocknum==1:
+                         if i in paxcols:
+                            l = output.tell()
+                            tempio.truncate(0)
+                            fastPickler.dump(col)
+                            output.write(zlib.compress(tempio.getvalue(),5))
+                            headindex[i*2] = output.tell() - l
+                         else:
+                            s = sorted(set(col))
+                            difsets = list(set(s)-set(firstblocksets[i]))
+                            lendif = len(difsets)
+                            lenfirst = len(firstblocksets[i])
+                            if dif*1.0/lenfirst < 0.1:
+                                if (lenfirst < 135) or (lenfirst < 28000 and lenfirst > 256):
+                                    spaccols.append(i)
+                                    difold = list(prevsets[i]-setcol[i])
+                                    prevsets[i].intersection_update(setcol[i])
+                                    prevsets[i].update(difnew)
+                                    prevsets[i].update(difold[:(dictsize-len(prevsets[i]))])
+                                    towrite = {}
+                                    le = len(difold)
+                                    si = len(coldicts[i])
+                                    for l,j in enumerate(difnew):
+                                        if l<le:
+                                            towrite[j] = coldicts[i][difold[l]]
+                                        else:
+                                            towrite[j] = si
+                                            si+=1
+                                    coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
+                                    coldict = coldicts[i]
+                                    if len(prevsets[i]) != 0 :
+                                        if len(prevsets[i])<256:
+                                            indextype='B'
+                                        else:
+                                            indextype='H'
+                                        output.write(zlib.compress(marshal.dumps(towrite.keys(),2)))
+                                        output.write(zlib.compress(array(indextype,towrite.values()).tostring()))
+                                    #listofarrays.append(array(indextype,[coldict[val] for subl in [x[i] for x in listofnditers] for val in subl]))
+                                    output.write(zlib.compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+
+
+                                else:
+                                    lens = len(s)
+                                    coldict = dict(((x,y) for y,x in enumerate(s)))
+                                    l = output.tell()
+                                    tempio.truncate(0)
+                                    fastPickler.dump(s)
+                                    output.write(zlib.compress(tempio.getvalue(),5))
+                                    headindex[i*2] = output.tell()-l
+                                    if lens>1:
+                                        if lens<256:
+                                            output.write(zlib.compress(array('B',[coldict[y] for y in col]).tostring(),5))
+                                        else:
+                                            output.write(zlib.compress(array('H',[coldict[y] for y in col]).tostring(),5))
+                                    headindex[i*2+1] = output.tell()-l-headindex[i*2]
                     else:
                         if i in paxcols:
                             l = output.tell()
@@ -2129,6 +2423,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             fastPickler.dump(col)
                             output.write(zlib.compress(tempio.getvalue(),5))
                             headindex[i*2] = output.tell() - l
+                        if i in spaccols:
+                            pass
                         else:
                             s = sorted(set(col))
                             lens = len(s)
@@ -2145,7 +2441,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     output.write(zlib.compress(array('H',[coldict[y] for y in col]).tostring(),5))
                             headindex[i*2+1] = output.tell()-l-headindex[i*2]
 
-                blocknum=1
+                blocknum+=1
                 headindex[colnum*2] = count
                 output.seek(0)
                 type = '!'+'i'*len(headindex)
@@ -2158,16 +2454,19 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 gc.collect()
         fileIter.close()
 
-    def rcfile(fileObject,lencols):
+    def rcfile(fileObject,lencols,compression,level):
         colnum = len(schema) - 1
         structHeader = '!'+'i' * colnum
         indexinit = [0 for _ in xrange(colnum)]
         fileObject.write(struct.pack('!B', 0))
         cPickle.dump(schema[1:],fileObject,1)
-        l = cStringIO.StringIO()
-        fastPickler = cPickle.Pickler(l, 1)
-        fastPickler.fast = 1
+#        l = cStringIO.StringIO()
+#        fastPickler = cPickle.Pickler(l, 2)
+#        fastPickler.fast = 1
         exitGen = False
+        compress = zlib.compress
+        if compression == BZ2:
+            compress = bz2.compress
         if lencols == 0:
             (yield)
             
@@ -2185,10 +2484,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
             if rows != []:
-                for i, col in enumerate((tuple(x[c] for x in rows) for c in xrange(colnum))):
-                    l.truncate(0)
-                    fastPickler.dump(col)
-                    cz = zlib.compress(l.getvalue(), 5)
+                for i, col in enumerate(([x[c] for x in rows] for c in xrange(colnum))):
+#                    l.truncate(0)
+#                    fastPickler.dump(col)
+                    cz = zlib.compress(listser.dumps(col), 5)
                     output.write(cz)
                     index[i] = len(cz)
                 output.seek(1)
@@ -2269,6 +2568,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         rows.append(row)
                         count += 1
                         bsize += sum((getSize(v) for v in row[1:]))
+
                 except StopIteration:
                     pass
                 return count , rows
@@ -2298,6 +2598,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
 
     if mode == 'sdc':
+        time1 = time.time()
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
@@ -2306,7 +2607,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
 
 
-            sdcgen = [sorteddictpercol(x,lencols) for x in filesList]
+            sdcgen = [sorteddictpercol(x,lencols,compression,level) for x in filesList]
             sdcgensend = [x.send for x in sdcgen]
             for j in sdcgensend:
                 j(None)
@@ -2317,9 +2618,15 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 sdcgensend[row[0]](row[1:])
             for j in sdcgen:
                 j.close()
+        time2 = time.time()
+        stats = open('compressionstatistics.tsv', 'a')
+        stat = "sdc_"+compression+str(level)
+        statstr = stat + "\t" + str(time2-time1) + "\t" + str(os.path.getsize(os.path.join(fullpath, filename+'.'+str(0)))) + "\n"
+        stats.write(statstr)
 
-
+    
     if mode == 'rcfile':
+        time1 = time.time()
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
@@ -2328,7 +2635,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
 
 
-            rcgen = [rcfile(x,lencols) for x in filesList]
+            rcgen = [rcfile(x,lencols,compression,level) for x in filesList]
             rcgensend = [x.send for x in rcgen]
             for j in rcgensend:
                 j(None)
@@ -2341,6 +2648,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 j.close()
         else :
             rcfilenonsplit()
+        time2 = time.time()
+        stats = open('compressionstatistics.tsv', 'a')
+        stat = "rcfile_"+compression+str(level)
+        statstr = stat + "\t" + str(time2-time1) + "\t" + str(os.path.getsize(os.path.join(fullpath, filename+'.'+str(0)))) + "\n"
+        stats.write(statstr)
 
 
 

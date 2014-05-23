@@ -117,6 +117,59 @@ def jaccard(*args):
 
 jaccard.registered=True
 
+
+def sorensendice(*args):
+    """
+    .. function:: sorensendice(jpack1,jpack2)
+
+    Return jaccard similarity value of two jpacks.
+
+    Example:
+
+    >>> table1('''
+    ... user1   movie1 20
+    ... user1   movie2 30
+    ... user2   movie1 40
+    ... user2   movie3 90
+    ... user2   movie4 90
+    ... user3   movie1 40
+    ... user3   movie3 80
+    ... user4   movie1 70
+    ... user4   movie2 10
+    ... ''')
+
+    NOTE that only column b is jgrouped because *jaccard* operates on packs as sets, not weighted values, So packing
+    also column c would not make any difference.
+
+    >>> sql(\"""select u1.userid,u2.userid, sorensendice(u1.pk, u2.pk) as similarity
+    ...     from
+    ...         (select a as userid, jgroup(b)  as pk from table1 group by a) as u1,
+    ...         (select a as userid, jgroup(b) as pk from table1 group by a) as u2
+    ...     where u1.userid<u2.userid\""")
+    userid | userid | similarity
+    ----------------------------
+    user1  | user2  | 0.4
+    user1  | user3  | 0.5
+    user1  | user4  | 1.0
+    user2  | user3  | 0.8
+    user2  | user4  | 0.4
+    user3  | user4  | 0.5
+    """
+
+    if len(args)!=2:
+        raise functions.OperatorError("sorensendice","operator takes exactly two arguments")
+    try:
+        r=jopts.fromj(args[0])
+        s=jopts.fromj(args[1])
+    except Exception,e:
+        raise functions.OperatorError("sorensendice"," Wrong format arguments: %s" %(e))
+    rset=set([tuple(x) if type(x)==list else x for x in r])
+    sset=set([tuple(x) if type(x)==list else x for x in s])
+
+    return 2 * float(len( rset & sset ))/(len(rset) + len(sset) )
+
+sorensendice.registered=True
+
 #def euclean(*args):###not working with lists
 #    """
 #

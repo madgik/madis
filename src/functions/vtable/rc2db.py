@@ -18,11 +18,13 @@ import zlib
 registered=True
 BLOCK_SIZE = 200000000
 import apsw
-
+import time
+import listser
 class RC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        time1 = time.time()
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'
@@ -96,7 +98,7 @@ class RC2DB(vtbase.VT):
                     input.write(fileObject.read(sum(ind)))
                     input.seek(0)
                     gc.disable()
-                    cursor.executemany(insertquery, izip(*tuple(cPickle.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))))
+                    cursor.executemany(insertquery, izip(*tuple(listser.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))))
                     gc.enable()
                 elif not b[0]:
                     schema = cPickle.load(fileObject)
@@ -108,7 +110,11 @@ class RC2DB(vtbase.VT):
                 fileObject.close()
         except NameError:
             pass
-
+        time2 = time.time()
+        stats = open('compressionstatistics.tsv', 'a')
+        stat = where
+        statstr = stat + "\t" + str(time2-time1) + "\n"
+        stats.write(statstr)
 
 def Source():
     return vtbase.VTGenerator(RC2DB)
