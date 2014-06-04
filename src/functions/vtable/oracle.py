@@ -37,7 +37,16 @@ class Oracle(vtbase.VT):
         from lib import jaydebeapi
         import os
         from types import NoneType
-        import jpype
+        try:
+            import jpype
+        except ImportError:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"""
+For this operator to work you'll need to:
+ - Install JPype Python package. For Debian/Ubuntu do:
+     sudo apt-get install python-jpype
+ - Add the Oracle JDBC JAR (ojdbc5.jar) in directory madis/lib/jdbc/.
+ - Have a JVM installed, and the JAVA_HOME environment variable set correctly.
+        """)
 
         largs, dictargs = self.full_parse(parsedArgs)
 
