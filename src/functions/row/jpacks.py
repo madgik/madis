@@ -407,6 +407,7 @@ def jmerge(*args):
 
 jmerge.registered=True
 
+
 def jset(*args):
     """
     .. function:: jset(jpacks) -> jpack
@@ -422,9 +423,10 @@ def jset(*args):
 
     """
 
-    return jopts.toj(sorted(set( jopts.fromj(*args) )))
+    return jopts.toj(sorted(set(jopts.fromj(*args))))
 
-jset.registered=True
+jset.registered = True
+
 
 def jexcept(*args):
     """
@@ -452,7 +454,35 @@ def jexcept(*args):
     b = set(jopts.fromj(args[1]))
     return jopts.toj([x for x in jopts.fromj(args[0]) if x not in b])
 
-jexcept.registered=True
+jexcept.registered = True
+
+
+def jintersection(*args):
+    """
+    .. function:: jintersection(jpackA, jpackB) -> jpack
+
+    Returns the items of jpackA except the items that appear on jpackB.
+
+    Examples:
+
+    >>> sql("select jintersection('[1,2,3]', '[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
+    jintersection('[1,2,3]', '[1,2,3]')
+    -----------------------------------
+    [1,2,3]
+
+    >>> sql("select jintersection('[1,2,3]', '[1,3]', 1)") # doctest: +NORMALIZE_WHITESPACE
+    jintersection('[1,2,3]', '[1,3]', 1)
+    ------------------------------------
+    1
+
+    """
+
+    if len(args) < 2:
+        raise functions.OperatorError("jintersection","operator needs at least two inputs")
+
+    return jopts.toj(sorted(set.intersection(*[set(jopts.fromj(x)) for x in args])))
+
+jintersection.registered = True
 
 
 def jsort(*args):
