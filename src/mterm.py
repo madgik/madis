@@ -91,7 +91,7 @@ def createConnection(db):
 
     # Change TEMP store to where the mterm is run from
     try:
-        connection.cursor().execute("PRAGMA temp_store_directory = '.';")
+        connection.cursor().execute("PRAGMA temp_store_directory='.';PRAGMA page_size=16384;PRAGMA default_cache_size=3000;")
         # if pipedinput:
     except:
         pass
