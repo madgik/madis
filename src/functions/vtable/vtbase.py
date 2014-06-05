@@ -183,6 +183,7 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
     def Next(self):
         try:
             self.row=self.iterNext()
+            self.Column=self.row.__getitem__
 #            self.pos+=1
         except StopIteration:
             self.row=[]
