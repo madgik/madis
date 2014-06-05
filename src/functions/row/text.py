@@ -360,7 +360,7 @@ def utf8clean(*args):
         if type(i) in (str,unicode):
             o+=characters_to_clean.sub(cleanchar, i)
         else:
-            o+=unicode(append(i))
+            o+=unicode(i, errors='replace')
 
     return o
 
