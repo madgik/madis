@@ -350,7 +350,7 @@ def utf8clean(*args):
 
     def cleanchar(c):
         c=c.group()[0]
-        if unicodedata.category(c)[0]=='C':
+        if c != '\n' and unicodedata.category(c)[0] == 'C':
             return u''
         else:
             return c
