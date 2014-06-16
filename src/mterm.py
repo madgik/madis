@@ -66,6 +66,8 @@ except:
     colnums = False
     pass
 
+DELIM = Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL
+
 class mtermoutput(csv.Dialect):
     def __init__(self):
         self.delimiter='|'
@@ -703,7 +705,7 @@ while True:
                     l = ('{:<' + str(maxtlen) + '}').format(i)
 
                     try:
-                        l+= "| cols:{:<4}".format(str(len(get_table_cols(i))))
+                        l += DELIM + " cols:{:<4}".format(str(len(get_table_cols(i))))
                     except:
                         pass
 
@@ -711,7 +713,7 @@ while True:
                         maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + i))[0][0]
                         if maxrowid is None:
                             maxrowid = 0
-                        l += "| max_rowid:" + str(maxrowid)
+                        l += DELIM + " max_rowid:" + str(maxrowid)
                     except:
                         pass
 
