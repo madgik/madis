@@ -193,7 +193,7 @@ def get_table_cols(t):
         cols=[x[1] for x in cexec]
     else:
         cexec=cursor.execute('select * from '+str(tname))
-        cols=[x[0] for x in cursor.getdescription()]
+        cols=[x[0] for x in cursor.getdescriptionsafe()]
     return cols
 
 def update_cols_for_table(t):
@@ -694,8 +694,28 @@ while True:
             update_tablelist()
             argument=argument.rstrip('; ')
             if not argument:
+                maxtlen = 0
                 for i in sorted(alltables):
-                    printterm(i)
+                    maxtlen = max(maxtlen, len(i))
+                maxtlen += 1
+
+                for i in sorted(alltables):
+                    l = ('{:<' + str(maxtlen) + '}').format(i)
+
+                    try:
+                        l+= "| cols:{:<4}".format(str(len(get_table_cols(i))))
+                    except:
+                        pass
+
+                    try:
+                        maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + i))[0][0]
+                        if maxrowid is None:
+                            maxrowid = 0
+                        l += "| max_rowid:" + str(maxrowid)
+                    except:
+                        pass
+
+                    printterm(l)
             else:
                 statement = 'select * from '+argument+' limit 2;'
 
