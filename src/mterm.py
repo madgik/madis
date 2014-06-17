@@ -19,6 +19,8 @@ import apsw
 import functions
 import traceback
 import json
+import math
+import random
 
 pipedinput=not sys.stdin.isatty()
 errorexit = True
@@ -48,7 +50,6 @@ import os
 
 from lib.dsv import writer
 import csv
-
 
 try:
     if pipedinput:
@@ -197,6 +198,36 @@ def get_table_cols(t):
         cexec=cursor.execute('select * from '+str(tname))
         cols=[x[0] for x in cursor.getdescriptionsafe()]
     return cols
+
+def sizeof_fmt(num, use_kibibyte=False):
+    base, infix = [(1000.,''),(1024.,'i')][use_kibibyte]
+    for x in ['','K%s'%infix,'M%s'%infix,'G%s'%infix]:
+        if num < base and num > -base:
+            if x == '':
+                return str(int(num))
+            else:
+                return "%3.1f%s" % (num, x)
+        num /= base
+    return "%3.1f %s" % (num, 'T%sB'%infix)
+
+def approx_rowcount(t):
+    maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + t))[0][0]
+    if maxrowid is None:
+        return 0
+    samplesize = min(int(math.sqrt(maxrowid)), 100)
+    if samplesize == 0:
+        return 0
+
+    maxrowid1 = maxrowid + 1
+    step = maxrowid1 / samplesize
+    firstsample = random.randrange(1, step)
+    sample = range(firstsample, maxrowid1, step)
+    samplesize = len(sample)
+    samplestr = json.dumps(sample, separators=(',',':'))[1:-1]
+    samplehits = list(connection.cursor().execute(
+        'select count(*) from ' + t +
+        ' where _rowid_ in (' + samplestr + ');'))[0][0]
+    return int(maxrowid * float(samplehits) / samplesize)
 
 def update_cols_for_table(t):
     global alltablescompl, colscompl, lastcols, connection, updated_tables
@@ -710,10 +741,7 @@ while True:
                         pass
 
                     try:
-                        maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + i))[0][0]
-                        if maxrowid is None:
-                            maxrowid = 0
-                        l += DELIM + " max_rowid:" + str(maxrowid)
+                        l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
                     except:
                         pass
 
