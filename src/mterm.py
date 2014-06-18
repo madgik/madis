@@ -749,14 +749,16 @@ while True:
                     try:
                         l += DELIM + " cols:{:<4}".format(str(len(get_table_cols(i))))
                     except KeyboardInterrupt:
-                        raise
+                        print
+                        break
                     except:
                         pass
 
                     try:
                         l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
                     except KeyboardInterrupt:
-                        raise
+                        print
+                        break
                     except:
                         pass
 
