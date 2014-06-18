@@ -226,7 +226,6 @@ def approx_rowcount(t):
     sample = range(random.randrange(1, step), maxrowid1, step)
     samplesize = len(sample)
     samplehits = 0
-    sample = sample[1:]
     samplestep = 1
     timer = time.time()
     while sample != []:
@@ -749,11 +748,15 @@ while True:
 
                     try:
                         l += DELIM + " cols:{:<4}".format(str(len(get_table_cols(i))))
+                    except KeyboardInterrupt:
+                        raise
                     except:
                         pass
 
                     try:
                         l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
+                    except KeyboardInterrupt:
+                        raise
                     except:
                         pass
 
