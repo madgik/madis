@@ -217,16 +217,16 @@ def approx_rowcount(t):
     if maxrowid is None:
         return 0
     samplesize = min(int(math.sqrt(maxrowid)), 100)
-    tdiff = (time.time() - timer) * samplesize
     if samplesize == 0:
         return 0
     maxrowid1 = maxrowid + 1
     step = maxrowid1 / samplesize
     sample = range(random.randrange(1, step), maxrowid1, step)
     samplesize = len(sample)
+    samplesizef = float(samplesize)
     samplehits = list(connection.cursor().execute(
         'select ' + str(sample[0]) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
-    tdiff = (time.time() - timer)
+    tdiff = (time.time() - timer) * samplesize
     if tdiff > 0.5:
         return maxrowid
     sample = sample[1:]
@@ -234,9 +234,10 @@ def approx_rowcount(t):
         samplehits += list(connection.cursor().execute(
             'select count(*) from ' + t +
             ' where _rowid_ in (' + ','.join((str(x) for x in sample[:10])) + ');', parse=False))[0][0]
-        sample = sample[10:]
+        tdiff = float(samplesizef) / (samplesize - len(sample)) * (time.time() - timer)
         if tdiff > 0.5:
             return maxrowid
+        sample = sample[10:]
     return int(maxrowid * float(samplehits) / samplesize)
 
 
