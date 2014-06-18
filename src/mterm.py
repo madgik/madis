@@ -45,6 +45,7 @@ else:
         import readline
 
 import datetime
+import time
 import locale
 import os
 
@@ -221,12 +222,18 @@ def approx_rowcount(t):
     maxrowid1 = maxrowid + 1
     step = maxrowid1 / samplesize
     firstsample = random.randrange(1, step)
-    sample = range(firstsample, maxrowid1, step)
-    samplesize = len(sample)
-    samplestr = json.dumps(sample, separators=(',',':'))[1:-1]
+    timer=time.time()
+    firsthit = list(connection.cursor().execute(
+        'select '+ str(firstsample) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
+    tdiff = (time.time() - timer) * samplesize
+    if tdiff > 1:
+        return maxrowid
+    sample = range(firstsample + step, maxrowid1, step)
+    samplesize = len(sample) + 1
+    samplestr = ','.join((str(x) for x in sample))
     samplehits = list(connection.cursor().execute(
         'select count(*) from ' + t +
-        ' where _rowid_ in (' + samplestr + ');'))[0][0]
+        ' where _rowid_ in (' + samplestr + ');', parse=False))[0][0] + firsthit
     return int(maxrowid * float(samplehits) / samplesize)
 
 def update_cols_for_table(t):
@@ -740,10 +747,10 @@ while True:
                     except:
                         pass
 
-                    try:
-                        l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
-                    except:
-                        pass
+                    # try:
+                    l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
+                    # except:
+                    #     pass
 
                     printterm(l)
             else:
