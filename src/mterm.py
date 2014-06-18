@@ -222,18 +222,21 @@ def approx_rowcount(t):
         return 0
     maxrowid1 = maxrowid + 1
     step = maxrowid1 / samplesize
-    firstsample = random.randrange(1, step)
-    firsthit = list(connection.cursor().execute(
-        'select '+ str(firstsample) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
-    tdiff = (time.time() - timer) * (samplesize * 0.5)
+    sample = range(random.randrange(1, step), maxrowid1, step)
+    samplesize = len(sample)
+    samplehits = list(connection.cursor().execute(
+        'select ' + str(sample[0]) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
+    tdiff = (time.time() - timer)
     if tdiff > 0.5:
         return maxrowid
-    sample = range(firstsample + step, maxrowid1, step)
-    samplesize = len(sample) + 1
-    samplestr = ','.join((str(x) for x in sample))
-    samplehits = list(connection.cursor().execute(
-        'select count(*) from ' + t +
-        ' where _rowid_ in (' + samplestr + ');', parse=False))[0][0] + firsthit
+    sample = sample[1:]
+    while sample != []:
+        samplehits += list(connection.cursor().execute(
+            'select count(*) from ' + t +
+            ' where _rowid_ in (' + ','.join((str(x) for x in sample[:10])) + ');', parse=False))[0][0]
+        sample = sample[10:]
+        if tdiff > 0.5:
+            return maxrowid
     return int(maxrowid * float(samplehits) / samplesize)
 
 
@@ -748,10 +751,10 @@ while True:
                     except:
                         pass
 
-                    try:
-                        l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
-                    except:
-                        pass
+                    # try:
+                    l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
+                    # except:
+                    #     pass
 
                     printterm(l)
             else:
