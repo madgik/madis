@@ -223,21 +223,18 @@ def approx_rowcount(t):
     step = maxrowid1 / samplesize
     sample = range(random.randrange(1, step), maxrowid1, step)
     samplesize = len(sample)
-    samplesizef = float(samplesize)
-    samplehits = list(connection.cursor().execute(
-        'select ' + str(sample[0]) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
-    tdiff = (time.time() - timer) * samplesize
-    if tdiff > 0.5:
-        return maxrowid
+    samplehits = 0
     sample = sample[1:]
+    samplestep = 1
     while sample != []:
         samplehits += list(connection.cursor().execute(
             'select count(*) from ' + t +
-            ' where _rowid_ in (' + ','.join((str(x) for x in sample[:10])) + ');', parse=False))[0][0]
-        tdiff = float(samplesizef) / (samplesize - len(sample)) * (time.time() - timer)
+            ' where _rowid_ in (' + ','.join([str(x) for x in sample[:samplestep]]) + ');', parse=False))[0][0]
+        sample = sample[samplestep:]
+        samplestep *= 2
+        tdiff = samplesize * (time.time() - timer) / (samplesize - len(sample))
         if tdiff > 0.5:
             return maxrowid
-        sample = sample[10:]
     return int(maxrowid * float(samplehits) / samplesize)
 
 
@@ -752,10 +749,10 @@ while True:
                     except:
                         pass
 
-                    # try:
-                    l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
-                    # except:
-                    #     pass
+                    try:
+                        l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
+                    except:
+                        pass
 
                     printterm(l)
             else:
