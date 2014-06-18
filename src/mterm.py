@@ -226,7 +226,7 @@ def approx_rowcount(t):
     firsthit = list(connection.cursor().execute(
         'select '+ str(firstsample) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
     tdiff = (time.time() - timer) * (samplesize * 0.5)
-    if tdiff > 1:
+    if tdiff > 0.5:
         return maxrowid
     sample = range(firstsample + step, maxrowid1, step)
     samplesize = len(sample) + 1
