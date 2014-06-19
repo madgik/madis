@@ -78,6 +78,11 @@ Formatting options for CSV file types:
 
     When True, whitespace immediately following the delimiter is ignored. The default is False
 
+:toj: *Num*
+
+    When toj is defined, columns 0-Num are returned as normal, and all columns >Num are returned as a JSON list or JSON
+    dict, depending on if the *header* is enabled.
+
 Examples::
   
     >>> sql("select * from (file file:testing/colpref.csv dialect:csv) limit 3;")
@@ -174,6 +179,27 @@ def strict0(tabiter, colcount):
         if len(row) == colcount:
             yield row
 
+def convnumbers(r):
+    out = []
+    for c in r:
+        try:
+            c = int(c)
+        except ValueError:
+            try:
+                c = float(c)
+            except ValueError:
+                pass
+        out.append(c)
+    return out
+
+def tojdict(tabiter, header, preable):
+    for r in tabiter:
+        yield r[:preable] + [json.dumps(dict(zip(header, convnumbers(r[preable:]))), separators=(',',':'), ensure_ascii=False)]
+
+def tojlist(tabiter, preable):
+    for r in tabiter:
+        yield r[:preable] + [json.dumps(convnumbers(r[preable:]), separators=(',',':'), ensure_ascii=False)]
+
 def strict1(tabiter, colcount):
     linenum = 0
     while True:
@@ -201,6 +227,10 @@ class FileCursor:
         self.encoding='utf_8'
         self.fast = False
         self.strict = None
+        self.toj = False
+        self.namelist = None
+        self.hasheader = hasheader
+        self.namelist = namelist
 
         if 'encoding' in rest:
             self.encoding=rest['encoding']
@@ -213,6 +243,13 @@ class FileCursor:
         if 'fast' in rest:
             self.fast = True
             del rest['fast']
+
+        if 'toj' in rest:
+            try:
+                self.toj = int(rest['toj'])
+            except ValueError:
+                self.toj = 0
+            del rest['toj']
 
         self.nonames=first
         for el in rest:
@@ -350,6 +387,17 @@ class FileCursor:
                 self.iter = directfile(self.fileiter, encoding=self.encoding)
             namelist.append( ['C1', 'text'] )
 
+        if self.toj >=0:
+            header = [x[0] for x in namelist]
+            while len(namelist) > self.toj: namelist.pop()
+            header = header[self.toj:]
+            if self.hasheader:
+                namelist.append( ['Cjdict', 'text'] )
+                self.iter = tojdict(self.iter, header, self.toj)
+            else:
+                namelist.append( ['Cjlist', 'text'] )
+                self.iter = tojlist(self.iter, self.toj)
+
         if self.fast:
             self.next = self.iter.next
 
@@ -358,7 +406,7 @@ class FileCursor:
             return self.iter
         else:
             return self
-    
+
     def next(self):
         try:
             return self.iter.next()
