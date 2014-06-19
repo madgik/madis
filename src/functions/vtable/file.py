@@ -227,7 +227,7 @@ class FileCursor:
         self.encoding='utf_8'
         self.fast = False
         self.strict = None
-        self.toj = False
+        self.toj = -1
         self.namelist = None
         self.hasheader = hasheader
         self.namelist = namelist
