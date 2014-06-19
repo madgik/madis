@@ -213,17 +213,18 @@ def sizeof_fmt(num, use_kibibyte=False):
 
 def approx_rowcount(t):
     timer = time.time()
+    minrowid = list(connection.cursor().execute('select min(_rowid_) from ' + t, parse=False))[0][0]
     maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + t, parse=False))[0][0]
-    if maxrowid is None:
+    if maxrowid is None or minrowid is None:
         return 0
+    idrange = maxrowid - minrowid + 1
     if (time.time() - timer) > 0.5:
-        return maxrowid
-    samplesize = min(int(math.sqrt(maxrowid)), 100)
+        return idrange
+    samplesize = min(int(math.sqrt(idrange)), 100)
     if samplesize == 0:
         return 0
-    maxrowid1 = maxrowid + 1
-    step = maxrowid1 / samplesize
-    sample = range(random.randrange(1, step), maxrowid1, step)
+    step = idrange / samplesize
+    sample = range(random.randrange(0, step) + minrowid, maxrowid + 1, step)
     samplesize = len(sample)
     samplehits = 0
     samplestep = 1
@@ -236,8 +237,8 @@ def approx_rowcount(t):
         samplestep *= 2
         estimt = samplesize * (time.time() - timer) / (samplesize - len(sample))
         if estimt > 0.5:
-            return maxrowid
-    return int(maxrowid * float(samplehits) / samplesize)
+            return idrange
+    return int(idrange * float(samplehits) / samplesize)
 
 
 def update_cols_for_table(t):
