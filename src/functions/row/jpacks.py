@@ -824,7 +824,7 @@ jdictvals.registered=True
 def jdictsplit(*args):
 
     """
-    .. function:: jdictvals(jdict, [key1, key2,..]) -> columns
+    .. function:: jdictsplit(jdict, [key1, key2,..]) -> columns
 
     If only the first argument (jdict) is provided, it returns a row containing the values of input jdict (sorted by the jdict keys).
 
@@ -862,6 +862,47 @@ def jdictsplit(*args):
         yield vals
 
 jdictsplit.registered=True
+
+
+def jdictsplitv(*args):
+
+    """
+    .. function:: jdictsplitv(jdict, [key1, key2,..]) -> columns
+
+    If only the first argument (jdict) is provided, it returns rows containing the values of input jdict.
+
+    If key values are also provided, it returns only the columns of which the keys have been provided.
+
+    Examples:
+
+    >>> sql(''' select jdictsplitv('{"k1":1,"k2":2}') ''') # doctest: +NORMALIZE_WHITESPACE
+    key | val
+    ---------
+    k1  | 1
+    k2  | 2
+
+    >>> sql(''' select jdictsplitv('{"k1":1,"k2":2, "k3":3}', 'k3', 'k1', 'k4') ''') # doctest: +NORMALIZE_WHITESPACE
+    key | val
+    ---------
+    k3  | 3
+    k1  | 1
+
+    """
+
+    yield ('key', 'val')
+    if len(args) == 1:
+        dlist = json.loads(args[0], object_pairs_hook=OrderedDict)
+        for k, v in dlist.iteritems():
+            yield [k, jopts.toj(v)]
+    else:
+        dlist = json.loads(args[0])
+        for k in args[1:]:
+            try:
+                yield k, jopts.toj(dlist[k])
+            except KeyError:
+                pass
+
+jdictsplitv.registered = True
 
 def jdictgroupkey(*args):
     """
