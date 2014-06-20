@@ -212,29 +212,34 @@ def sizeof_fmt(num, use_kibibyte=False):
     return "%3.1f %s" % (num, 'T%sB'%infix)
 
 def approx_rowcount(t):
-    maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + t))[0][0]
-    if maxrowid is None:
+    timer = time.time()
+    minrowid = list(connection.cursor().execute('select min(_rowid_) from ' + t, parse=False))[0][0]
+    maxrowid = list(connection.cursor().execute('select max(_rowid_) from ' + t, parse=False))[0][0]
+    if maxrowid is None or minrowid is None:
         return 0
-    samplesize = min(int(math.sqrt(maxrowid)), 100)
+    idrange = maxrowid - minrowid + 1
+    if (time.time() - timer) > 0.5:
+        return idrange
+    samplesize = min(int(math.sqrt(idrange)), 100)
     if samplesize == 0:
         return 0
+    step = idrange / samplesize
+    sample = range(random.randrange(0, step) + minrowid, maxrowid + 1, step)
+    samplesize = len(sample)
+    samplehits = 0
+    samplestep = 1
+    timer = time.time()
+    while sample != []:
+        samplehits += list(connection.cursor().execute(
+            'select count(*) from ' + t +
+            ' where _rowid_ in (' + ','.join([str(x) for x in sample[:samplestep]]) + ');', parse=False))[0][0]
+        sample = sample[samplestep:]
+        samplestep *= 2
+        estimt = samplesize * (time.time() - timer) / (samplesize - len(sample))
+        if estimt > 0.5:
+            return idrange
+    return int(idrange * float(samplehits) / samplesize)
 
-    maxrowid1 = maxrowid + 1
-    step = maxrowid1 / samplesize
-    firstsample = random.randrange(1, step)
-    timer=time.time()
-    firsthit = list(connection.cursor().execute(
-        'select '+ str(firstsample) + ' in (select _rowid_ from ' + t + ');', parse=False))[0][0]
-    tdiff = (time.time() - timer) * samplesize
-    if tdiff > 1:
-        return maxrowid
-    sample = range(firstsample + step, maxrowid1, step)
-    samplesize = len(sample) + 1
-    samplestr = ','.join((str(x) for x in sample))
-    samplehits = list(connection.cursor().execute(
-        'select count(*) from ' + t +
-        ' where _rowid_ in (' + samplestr + ');', parse=False))[0][0] + firsthit
-    return int(maxrowid * float(samplehits) / samplesize)
 
 def update_cols_for_table(t):
     global alltablescompl, colscompl, lastcols, connection, updated_tables
@@ -744,13 +749,19 @@ while True:
 
                     try:
                         l += DELIM + " cols:{:<4}".format(str(len(get_table_cols(i))))
+                    except KeyboardInterrupt:
+                        print
+                        break
                     except:
                         pass
 
-                    # try:
-                    l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
-                    # except:
-                    #     pass
+                    try:
+                        l += DELIM + " ~rows:" + sizeof_fmt(approx_rowcount(i))
+                    except KeyboardInterrupt:
+                        print
+                        break
+                    except:
+                        pass
 
                     printterm(l)
             else:
