@@ -191,7 +191,10 @@ class Expand(vtbase.VT):
 
         for i, v in enumerate(ttypes):
             if v == 'GUESS':
-                v = getElementSqliteType(firstrow[i])
+                try:
+                    v = getElementSqliteType(firstrow[i])
+                except Exception, e:
+                    v = 'text'
             types.append(v)
 
         yield [(nnames[i], types[i]) for i in xrange(len(types))]
