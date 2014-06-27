@@ -488,7 +488,7 @@ def printrow(row):
         else:
             if i1!=1:
                 sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
-        if type(d) in (int,float):
+        if type(d) in (int, float, long):
             d=str(d)
         elif d is None:
             d=Style.BRIGHT+'null'+Style.RESET_ALL
