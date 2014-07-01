@@ -938,7 +938,7 @@ def hashmodarchdep(*args):
 hashmodarchdep.registered=True
 
 
-def textreferences(txt,maxlen = 5,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)' ):
+def textreferences(txt,maxlen = 5,pattern = r'(\b|_)((1[5-9]\d{2,2})|(20\d{2,2}))(\b|_)' ):
     """
     .. function:: textreferences(text, maxlen = 5, pattern = (\b|_)(1|2)\d{3,3}(\b|_))
 
@@ -1033,28 +1033,12 @@ def textreferences(txt,maxlen = 5,pattern = r'(\b|_)(1|2)\d{3,3}(\b|_)' ):
     except:
         threshold = 0
 
-    winlen = 0
-    win = deque(('' for _ in xrange(maxlen)),maxlen)
     current = 0
-    start = 0
     for i in reversedtext2:
         if len(i)>10:
-            if  winlen == maxlen and densities[current]>=threshold:
-                if start == 1:
-                    start = 0
-                    for j in xrange(maxlen/2):
-                        references.append(win[j])
-
-                references.append(win[maxlen/2])
-            win.append(i)
-            if winlen<maxlen:
-                winlen+=1
-                if winlen == maxlen:
-                    start = 1
-            else :
-                current+=1
-
-
+            if densities[current] >= threshold:
+                references.append(i)
+            current+=1
     return  '\n'.join(reversed(references))
 
 textreferences.registered=True
@@ -1237,11 +1221,18 @@ def textwindow2s(*args):
 
     try:
         nextlen = args[3]
+        try:
+            nextlen = int(nextlen)
+        except:
+            raise functions.OperatorError('textwindow2s','Third argument should be an integer')
     except IndexError:
         nextlen = 0
 
     if len(args) > 4:
-        patt = re.compile(args[4])
+        try:
+            patt = re.compile(args[4])
+        except:
+            raise functions.OperatorError('textwindow2s','Fourth argument must be string or compiled pattern')
         for i in xrange(len(g)-middle+1):
             im = i+middle
             mid = ' '.join(g[i:im])
