@@ -132,23 +132,23 @@ elif os.uname()[0].lower() == 'darwin' or os.name=='mac':
     getcb = macGetClipboard
     setcb = macSetClipboard
 elif os.name == 'posix':
-    xclipExists = False
+    xselExists = False
     try:
-        xclipExists = (subprocess.check_output(['which',  'xclip']) != '')
+        xselExists = (subprocess.check_output(['which',  'xsel']) != '')
     except:
         pass
-    if xclipExists:
-        getcb = xclipGetClipboard
-        setcb = xclipSetClipboard
+    if xselExists:
+        getcb = xselGetClipboard
+        setcb = xselSetClipboard
     else:
-        xselExists = False
+        xclipExists = False
         try:
-            xselExists = (subprocess.check_output(['which',  'xsel']) != '')
+            xclipExists = (subprocess.check_output(['which',  'xclip']) != '')
         except:
             pass
-        if xselExists:
-            getcb = xselGetClipboard
-            setcb = xselSetClipboard
+        if xclipExists:
+            getcb = xclipGetClipboard
+            setcb = xclipSetClipboard
         try:
             import gtk
             signal.signal(signal.SIGINT, signal.SIG_DFL)
