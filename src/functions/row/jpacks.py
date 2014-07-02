@@ -13,6 +13,39 @@ except ImportError:
     # Python 2.6
     from lib.collections26 import OrderedDict
 
+
+def jpack(*args):
+
+    """
+    .. function:: jpack(args...) -> jpack
+
+    Converts multiple input arguments into a single string. Jpacks preserve the types
+    of their inputs and are based on JSON encoding. Single values are represented as
+    themselves where possible.
+
+    Examples:
+
+    >>> sql("select jpack('a')")
+    jpack('a')
+    ----------
+    a
+
+    >>> sql("select jpack('a','b',3)")
+    jpack('a','b',3)
+    ----------------
+    ["a","b",3]
+
+    >>> sql("select jpack('a', jpack('b',3))")
+    jpack('a', jpack('b',3))
+    ------------------------
+    ["a",["b",3]]
+
+    """
+
+    return jopts.toj(jopts.elemfromj(*args))
+
+jpack.registered=True
+
 def jngrams(*args):
 
     """
@@ -46,10 +79,7 @@ def jngrams(*args):
         listofngrams.append(g[i:i+n])
     return jopts.toj(listofngrams)
 
-
 jngrams.registered=True
-
-
 
 def jfrequentwords(*args):
 
