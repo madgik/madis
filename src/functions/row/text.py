@@ -998,36 +998,38 @@ def textreferences(txt,maxlen = 5,pattern = r'(\b|_)((1[5-9]\d{2,2})|(20\d{2,2})
     if exp.count('\n')<10:
         return exp
     references = []
-    reversedtext = iter(reversed(exp.split('\n')))
-    reversedtext2 = iter(reversed(exp.split('\n')))
+    reversedtext = iter(reversed(exp.split('\n')[10:]))
+    reversedtext2 = iter(reversed(exp.split('\n')[10:]))
     results = []
     densities = []
-    winlen = 0
 
-
+    for i in xrange(maxlen/2):
+        results.append(1)
     for i in reversedtext:
         if len(i)>10:
             if re.search(pattern,i):
                     results.append(1)
             else:
                     results.append(0)
-    tmpmax = 0
-    maximum = 0
-    win = deque(('' for _ in xrange(maxlen)),maxlen)
-    for i in results:
 
-        if winlen<maxlen:
-            winlen+=1
-            win.append(i)
-            tmpmax += i
+    for i in xrange(maxlen/2):
+        results.append(0)
+
+    out = 0
+    temp = 0
+    for i in xrange(maxlen/2,len(results)-maxlen/2):
+        if i==maxlen/2 :
+            temp = sum(results[0:maxlen])*1.0/maxlen
         else:
-            tmpmax -= win.popleft()
-            tmpmax += i
-            win.append(i)
-        densities.append(float(tmpmax)/maxlen)
-        if float(tmpmax)/maxlen>maximum:
-            maximum = float(tmpmax)/maxlen
-    #threshold = sorted(densities)[len(densities)/2]
+            if out == results[i+maxlen/2]:
+                pass
+            elif results[i+maxlen/2]:
+                temp = (temp*maxlen+1) *1.0 / maxlen
+            else:
+                temp = (temp*maxlen-1) *1.0 / maxlen
+        densities.append(temp)
+        out = results[i-maxlen/2]
+
     try:
         threshold =  sum(densities)/len(densities)
     except:

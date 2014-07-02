@@ -19,7 +19,9 @@ registered=True
 BLOCK_SIZE = 200000000
 import apsw
 import time
-import listser
+import marshal
+
+
 class RC2DB(vtbase.VT):
 
 
@@ -98,7 +100,7 @@ class RC2DB(vtbase.VT):
                     input.write(fileObject.read(sum(ind)))
                     input.seek(0)
                     gc.disable()
-                    cursor.executemany(insertquery, izip(*tuple(listser.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))))
+                    cursor.executemany(insertquery, izip(*tuple(marshal.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))))
                     gc.enable()
                 elif not b[0]:
                     schema = cPickle.load(fileObject)

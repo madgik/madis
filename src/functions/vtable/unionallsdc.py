@@ -15,6 +15,7 @@ import gc
 import re
 import zlib
 from array import array
+import marshal
 ### Classic stream iterator
 registered=True
 BLOCK_SIZE = 200000000
@@ -83,7 +84,7 @@ class UnionAllSDC(vtbase.VT):
                         ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
                         cols = [None] * colnum
                         for c in xrange(colnum):
-                            s = cPickle.loads(zlib.decompress(input.read(ind[c*2])))
+                            s = marshal.loads(zlib.decompress(input.read(ind[c*2])))
                             if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
                                 cols[c] = s
                             else:
