@@ -55,6 +55,8 @@ u'[]'
 [1, 2, 3]
 >>> elemfromj(1,None,3)
 [1, None, 3]
+>>> fromjsingle("[1,2]")
+[1, 2]
 """
 
 import json
