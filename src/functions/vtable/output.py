@@ -144,6 +144,15 @@ def outputData(diter, schema, connection, *args, **formatArgs):
     if 'compressiontype' not in formatArgs:
         formatArgs['compressiontype']='gz'
 
+    orderby = None
+    if 'orderby' in formatArgs:
+        orderby = formatArgs['orderby']
+        del formatArgs['orderby']
+
+    if 'orderbydesc' in formatArgs:
+        orderby = formatArgs['orderbydesc'] + ' desc'
+        del formatArgs['orderbydesc']
+
     append=False
     if 'append' in formatArgs:
         append=formatArgs['append']
@@ -248,7 +257,11 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 c=apsw.Connection(where)
                 cursor=c.cursor()
                 list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
-                create_schema='create table '+tname+' ('
+                if orderby:
+                    tname = '_' + tname
+                    create_schema='create temp table '+tname+'('
+                else:
+                    create_schema='create table '+tname+'('
                 create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
                 for colname, coltype in schema[1:]:
                     create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
@@ -333,6 +346,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
                     for c, cursor in dbcon:
                         if c != None:
+                            if orderby:
+                                cursor.execute('create table '+tablename+' as select * from _'+tablename+' order by '+orderby)
                             cursor.execute('commit')
                             c.close()
             else:
