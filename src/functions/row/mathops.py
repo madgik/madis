@@ -16,10 +16,18 @@ def randomrange(*args):
     ---------------------
     ...
 
+    >>> sql("select randomrange(0, 68)") # doctest: +ELLIPSIS
+    randomrange(0, 68)
+    ------------------
+    ...
+
     """
 
     try:
-        ret=random.randrange(args[0],args[1],args[2])
+        s = 1
+        if len(args) >= 3:
+            s = args[2]
+        ret=random.randrange(args[0], args[1], s)
     except ValueError:
         return None
 
