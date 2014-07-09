@@ -347,7 +347,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     for c, cursor in dbcon:
                         if c != None:
                             if orderby:
-                                cursor.execute('create table '+tablename+' as select * from _'+tablename+' order by '+orderby)
+                                cursor.execute('pragma cache_size=-'+str(100000)+';create table '+tablename+' as select * from _'+tablename+' order by '+orderby)
                             cursor.execute('commit')
                             c.close()
             else:
