@@ -933,7 +933,10 @@ def hashmodarchdep(*args):
     ...
     """
 
-    return hash(tuple(args[:-1])) % args[-1]
+    if len(args) == 2:
+        return hash(args[0]) % args[1]
+    else:
+        return hash(tuple(args[:-1])) % args[-1]
 
 hashmodarchdep.registered=True
 
