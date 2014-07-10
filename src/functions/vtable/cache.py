@@ -190,7 +190,6 @@ class LTable: ####Init means setschema and execstatus
 
         consname = json.dumps(newcons, separators=(',', ':')) + json.dumps(orderbys, separators=(',', ':'))
         self.consdict[consname] = (newcons, orderbys)
-
         cost = 0
 
         # Cost of scan
@@ -222,11 +221,11 @@ class Cursor:
         self.table=table
         self.eof=True
         self.pos=0
+        self.row=[]
         
-    @echocall #-- Commented out for speed reasons
+    # @echocall #-- Commented out for speed reasons
     def Filter(self, indexnum, indexname, constraintargs):
         self.eof=False
-
         constraints, orderbys = self.table.consdict[indexname]
 
         if self.table.lastcalculatedidx!=(constraints,orderbys):
