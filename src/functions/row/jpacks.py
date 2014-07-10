@@ -417,6 +417,58 @@ def s2j(*args):
 
 s2j.registered=True
 
+def nl2j(*args):
+
+    """
+    .. function:: nl2j(text) -> jpack
+
+    Converts a text with newlines to a jpack.
+    """
+
+    fj=[]
+    for t in args:
+        fj+=[x for x in t.split('\n')]
+
+    return jopts.toj(fj)
+
+nl2j.registered=True
+
+def j2nl(*args):
+
+    """
+    .. function:: j2nl(jpack) -> text
+
+    Converts multiple input jpacks to a newline separated text.
+
+    Examples:
+
+    >>> sql("select j2nl('[1,2,3]')") # doctest: +NORMALIZE_WHITESPACE
+    j2nl('[1,2,3]')
+    ---------------
+    1
+    2
+    3
+
+    >>> sql("select j2nl('[1,2,3]','a')") # doctest: +NORMALIZE_WHITESPACE
+    j2nl('[1,2,3]','a')
+    -------------------
+    1
+    2
+    3
+    a
+
+    >>> sql("select j2nl('a', 'b')") # doctest: +NORMALIZE_WHITESPACE
+    j2nl('a', 'b')
+    --------------
+    a
+    b
+
+    """
+
+    return '\n'.join([unicode(x) for x in jopts.fromj(*args)])
+
+j2nl.registered = True
+
 def jmerge(*args):
 
     """

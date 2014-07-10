@@ -33,6 +33,42 @@ class concatgroup:
     def final(self):
         return ''.join(self.whole_string)
 
+
+class concatlines:
+    """
+    .. function:: concatlines(X)
+
+    Concatenates strings in a group/dataset X.
+
+    Example:
+
+    >>> table1('''
+    ... word1
+    ... word2
+    ... word3
+    ... word4
+    ... ''')
+    >>> sql("select concatlines(a) from table1")
+    concatlines(a)
+    -----------------------
+    word1
+    word2
+    word3
+    word4
+    """
+
+    registered=True #Value to define db operator
+
+    def __init__(self):
+        self.whole_string=[]
+
+    def step(self, *args):
+        self.whole_string.append(args[0])
+
+    def final(self):
+        return '\n'.join(self.whole_string)
+
+
 class concatterms:
     """
     .. function:: concatterms(text1, text2,...)
