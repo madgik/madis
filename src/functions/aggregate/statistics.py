@@ -5,6 +5,8 @@ from lib import iso8601
 import re
 import datetime
 from fractions import Fraction
+import json
+from fractions import Fraction
 
 
 __docformat__ = 'reStructuredText en'
@@ -935,7 +937,74 @@ class pearson:
             return 0
 
         return float((self.n*self.sXY-self.sX*self.sY)/d)
-   
+
+
+class fsum:
+    """
+    .. function:: fsum(X) -> json
+
+    Computes the sum using fractional computation. It return the result in json format
+
+    Examples:
+
+    >>> table1('''
+    ... 1
+    ... 2
+    ... 2
+    ... 10
+    ... ''')
+
+    >>> sql("select fsum(a) from table1")
+    fsum(a)
+    -------
+    [15, 1]
+
+    >>> table1('''
+    ... 0.99999999
+    ... 3.99999999
+    ... 0.78978989
+    ... 1.99999999
+    ... ''')
+
+    >>> sql("select fsum(a) from table1")
+    fsum(a)
+    -------------------------------------
+    [70164189421580937, 9007199254740992]
+    """
+
+    registered = True
+
+    def __init__(self):
+        self.init = True
+        self.x = Fraction(0.0)
+
+    def step(self, *args):
+        if self.init:
+            self.init = False
+            if not args:
+                raise functions.OperatorError("fsum","No arguments")
+
+        try:
+            if type(args[0]) in (int, float, long):
+                x = Fraction(args[0])
+            else:
+                try:
+                    json_object = json.loads(args[0])
+                    x = Fraction(json_object[0], json_object[1])
+                except ValueError, e:
+                    return
+        except KeyboardInterrupt:
+            raise
+        except:
+            return
+
+        self.x += x
+
+    def final(self):
+        return json.dumps([self.x.numerator, self.x.denominator])
+
+
+
 
 
 if not ('.' in __name__):
