@@ -1,6 +1,10 @@
+import setpath
+import functions
 import random
 # coding: utf-8
 import math
+import json
+from fractions import Fraction
 
 def randomrange(*args):
 
@@ -90,6 +94,7 @@ def sqroot(*args):
 
 sqroot.registered=True
 
+
 def safediv(*args):
 
     """
@@ -112,9 +117,81 @@ def safediv(*args):
     else:
         return (args[1]/args[2])
 
+safediv.registered = True
 
 
-safediv.registered=True
+def simplify_fraction(f):
+    """
+    .. function:: simplify_fraction(Fraction) -> int or float or Fraction
+
+    Takes as input a Fraction and returns the equivalent int or float.
+    In the case the int or float cannot be represented, the function returns the Fraction in json format
+
+    Examples:
+    >>> simplify_fraction(Fraction(50,1))
+    50
+
+    >>> simplify_fraction(Fraction(50,2))
+    25
+
+    >>> simplify_fraction(Fraction(55555555294967297,2))
+    '[55555555294967297, 2]'
+    """
+
+    if f.denominator == 1 and f.numerator < 9223372036854775808:
+        return f.numerator
+    elif float(f) < 4294967296.0:
+        return float(f)
+    else:
+        return json.dumps([f.numerator, f.denominator])
+
+
+def farith(*args):
+    """
+    .. function:: farith(calc) -> float or Fraction
+
+    Takes as input a mathematical expression in polish notation and computes the result using fractional computation
+
+    Examples:
+
+    >>> sql("select farith('+',5,7)" )
+    farith('+',5,7)
+    ---------------
+    12
+
+    >>> sql("select farith('-','*','/',15,'-',7,'+',1,1,3,'+',2,'+',1,1)" )
+    farith('-','*','/',15,'-',7,'+',1,1,3,'+',2,'+',1,1)
+    ----------------------------------------------------
+    5
+    """
+
+    s = []
+    for i in reversed(args):
+        if i in ('*', '/', '-', '+'):
+            operand1 = s.pop()
+            operand2 = s.pop()
+            if i == '+':
+                operand = operand1 + operand2
+            elif i == '-':
+                operand = operand1 - operand2
+            elif i == '/':
+                operand = operand1 / operand2
+            elif i == '*':
+                operand = operand1 * operand2
+            s.append(operand)
+        else:
+            if type(i) in (int, float, long):
+                operand = Fraction(i)
+                s.append(operand)
+            else:
+                try:
+                    s.append(Fraction(*json.loads(i)))
+                except ValueError, e:
+                    raise functions.OperatorError('farith',"invalid expression found: '" + i +"'")
+
+    return simplify_fraction(s.pop())
+
+farith.registered = True
 
 if not ('.' in __name__):
     """
