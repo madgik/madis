@@ -368,6 +368,9 @@ class sample:
     C1    | C2 | C3
     ---------------
     ...
+
+    >>> sql("select sample(2) from (select 5 where 5=6)") # doctest: +ELLIPSIS
+
     """
     registered=True
 
@@ -390,7 +393,7 @@ class sample:
 
 
     def final(self):
-        if len(self.samplelist) == []:
+        if self.samplelist == []:
             yield tuple(['C1'])
         else:
             yield tuple(['C'+str(i) for i in xrange(1, len(self.samplelist[0]) + 1)] )
