@@ -119,7 +119,7 @@ def xselSetClipboard(text):
     outf.close()
 
 def xselGetClipboard():
-    outf = os.popen('xsel -o', 'r')
+    outf = os.popen('xsel -o -b', 'r')
     content = outf.read()
     outf.close()
     return content
