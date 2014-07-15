@@ -57,19 +57,10 @@ class reader:
     def __init__(self,tsvfile,hasheader=False,dialect=SQLITE_DIALECT,encoding="utf_8",**kwds):
         self.hasheader=hasheader
         self.fast = False
-        if 'fast' in kwds:
-            self.fast = True
-            if 'delimiter' in kwds:
-                delimiter = kwds['delimiter']
-            else:
-                delimiter = ','
-            del kwds['fast']
-            self.reader = (unicode((r[:-1] if r[-1] == '\n' else r), 'utf_8').split(delimiter) for r in tsvfile)
+        if not hasheader:
+            self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
         else:
-            if not hasheader:
-                self.reader=UnicodeReader(tsvfile,dialect,encoding,**kwds)
-            else:
-                self.reader=UnicodeDictReader(tsvfile,dialect,encoding,**kwds)
+            self.reader=UnicodeDictReader(tsvfile,dialect,encoding,**kwds)
 
     def __iter__(self):
         return self.reader

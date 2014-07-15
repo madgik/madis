@@ -155,8 +155,38 @@ import itertools
 import json
 import os.path
 from codecs import utf_8_decode
+import csv
+
+# Set maximum field size to 20MB
+csv.field_size_limit(20000000)
+
+class defaultcsv(csv.Dialect):
+    def __init__(self):
+        self.delimiter=','
+        self.doublequote=True
+        self.quotechar='"'
+        self.quoting=csv.QUOTE_MINIMAL
+        self.lineterminator='\n'
+
+class tsv(csv.Dialect):
+    def __init__(self):
+        self.delimiter='\t'
+        self.doublequote=True
+        self.quotechar='"'
+        self.quoting=csv.QUOTE_MINIMAL
+        self.lineterminator='\n'
+
+
+class line(csv.Dialect):
+    def __init__(self):
+        self.delimiter='\n'
+        self.doublequote=False
+        self.quotechar='"'
+        self.quoting=csv.QUOTE_NONE
+        self.lineterminator='\n'
 
 csvkeywordparams=set(['delimiter','doublequote','escapechar','lineterminator','quotechar','quoting','skipinitialspace','dialect', 'fast'])
+nonstringargs = {'quoting':{'QUOTE_ALL':csv.QUOTE_ALL, 'QUOTE_NONE':csv.QUOTE_NONE, 'QUOTE_MINIMAL':csv.QUOTE_MINIMAL, 'QUOTE_NONNUMERIC':csv.QUOTE_NONNUMERIC}}
 
 def nullify(iterlist):
     for lst in iterlist:
@@ -231,6 +261,7 @@ class FileCursor:
         self.namelist = None
         self.hasheader = hasheader
         self.namelist = namelist
+        self.dialect = 'csv'
 
         if 'encoding' in rest:
             self.encoding=rest['encoding']
@@ -250,6 +281,12 @@ class FileCursor:
             except ValueError:
                 self.toj = 0
             del rest['toj']
+
+        if 'dialect' in rest:
+            self.dialect = rest['dialect']
+            dialects = {'line':line(), 'tsv':tsv(), 'csv':defaultcsv()}
+            if self.dialect in dialects:
+                rest['dialect'] = dialects[self.dialect]
 
         self.nonames=first
         for el in rest:
@@ -322,6 +359,7 @@ class FileCursor:
                 self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
             return
 
+
         if filenameExt =='.csv':
             if self.fast:
                 rest['delimiter'] = ','
@@ -332,6 +370,12 @@ class FileCursor:
                 rest['delimiter'] = '\t'
             rest['dialect']=lib.inoutparsing.tsv()
 
+        if self.fast:
+            if 'delimiter' not in rest:
+                rest['delimiter'] = ','
+            if self.dialect == 'tsv':
+                rest['delimiter'] = '\t'
+
         if hasheader or len(rest)>0: #if at least one csv argument default dialect is csv else line
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
@@ -339,8 +383,8 @@ class FileCursor:
             linelen = 0
             if first and not hasheader:
                 if self.fast:
-                    rest['fast'] = True
-                    self.iter=peekable(reader(self.fileiter,encoding=self.encoding, **rest))
+                    delim = rest['delimiter']
+                    self.iter=peekable((unicode(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter))
                 else:
                     self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
                     if self.strict == None:
@@ -349,8 +393,8 @@ class FileCursor:
                 linelen = len(sample)
             else: ###not first or header
                 if self.fast:
-                    rest['fast'] = True
-                    self.iter=iter(reader(self.fileiter,encoding=self.encoding,**rest))
+                    delim = rest['delimiter']
+                    self.iter = (unicode(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter)
                 else:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                     if self.strict == None:
@@ -463,7 +507,7 @@ class FileVT:
 
 def Source():
     global boolargs, nonstringargs
-    return SourceVT(FileVT, lib.inoutparsing.boolargs+['header','compression'], lib.inoutparsing.nonstringargs, lib.inoutparsing.needsescape)
+    return SourceVT(FileVT, lib.inoutparsing.boolargs+['header','compression'], nonstringargs, lib.inoutparsing.needsescape)
 
 
 if not ('.' in __name__):
