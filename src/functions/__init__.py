@@ -268,6 +268,40 @@ class Connection(apsw.Connection):
             self.openiters = {}
             
         return Cursor(apsw.Connection.cursor(self))
+
+    def queryplan(self, statements, bindings=None, parse=True, localbindings=None):
+        def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
+            """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or SQLITE_IGNORE"""
+            # find the operation name
+            plan.append([apsw.mapping_authorizer_function[operation], paramone, paramtwo, databasename, triggerorview])
+            return apsw.SQLITE_OK
+
+        def buststatementcache():
+            c = self.cursor()
+            for i in xrange(110):
+                a = list(c.execute("select "+str(i)))
+
+        plan = []
+
+        buststatementcache()
+
+        cursor = self.cursor()
+
+        cursor.setexectrace(lambda v1, v2, v3: apsw.SQLITE_DENY)
+
+        self.setauthorizer(authorizer)
+
+        cursor.execute(statements)
+
+        self.setauthorizer(None)
+
+        cursor.close()
+
+        yield (('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text'))
+
+        for r in plan:
+            if r[1] not in ('sqlite_temp_master', 'sqlite_master'):
+                yield r
     
     @echofunctionmember
     def close(self):
