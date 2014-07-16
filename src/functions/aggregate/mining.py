@@ -377,28 +377,26 @@ class sample:
     def __init__(self):
         self.samplelist = []
         self.index = 0
+        self.random = random.randint
 
     def step(self, *args):
-        sample_count = args[0]
-
         # Generate the reservoir
-        if self.index < sample_count:
-            self.samplelist.append(args[1:])
+        if self.index < args[0]:
+            self.samplelist.append(args)
         else:
-            r = random.randint(0, self.index)
-            if r < sample_count:
-                self.samplelist[r] = args[1:]
+            r = self.random(0, self.index)
+            if r < args[0]:
+                self.samplelist[r] = args
 
         self.index += 1
-
 
     def final(self):
         if self.samplelist == []:
             yield tuple(['C1'])
         else:
-            yield tuple(['C'+str(i) for i in xrange(1, len(self.samplelist[0]) + 1)] )
+            yield tuple(['C'+str(i) for i in xrange(1, len(self.samplelist[0]))] )
             for r in self.samplelist:
-                yield list(r)
+                yield list(r[1:])
 
 if not ('.' in __name__):
     """
