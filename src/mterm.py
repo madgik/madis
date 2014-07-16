@@ -682,6 +682,7 @@ while True:
     #scan for commands
     iscommand=re.match("\s*\.(?P<command>\w+)\s*(?P<argument>([\w\.]*))(?P<rest>.*)$", statement)
     validcommand=False
+    queryplan = False
 
     if iscommand:
         validcommand=True
@@ -710,6 +711,13 @@ while True:
 
         elif command=='explain':
             statement=re.sub("^\s*\.explain\s+", "explain query plan ", origstatement)
+
+        elif command=='queryplan':
+            try:
+                statement = re.match(r"\s*\.queryplan\s+(.+)", origstatement).groups()[0]
+                queryplan = True
+            except IndexError:
+                pass
 
         elif command=='quote':
             allquote^=True
@@ -851,18 +859,20 @@ while True:
             pass
 
         before = datetime.datetime.now()
-        cursor = connection.cursor()
         try:
-            cexec=cursor.execute(statement)
+            if queryplan:
+                cexec = connection.queryplan(origstatement[10:])
+                desc = cexec.next()
+            else:
+                cursor = connection.cursor()
+                cexec = cursor.execute(statement)
+                try:
+                    desc = cursor.getdescriptionsafe()
+                    lastcols[0:desc] = [x for x, y in desc]
+                except apsw.ExecutionCompleteError, e:
+                    desc = []
 
-            desc = []
-            try:
-                desc = cursor.getdescriptionsafe()
-                newcols=[x for x,y in desc]
-                lastcols[0:len(newcols)]=newcols
-            except apsw.ExecutionCompleteError, e:
-                desc = []
-                newcols=[]
+            newcols=[x for x,y in desc]
 
             colorama.init()
             rownum=0
@@ -880,7 +890,8 @@ while True:
                 print
                 sys.stdout.flush()
 
-            cursor.close()
+            if not queryplan:
+                cursor.close()
 
             after=datetime.datetime.now()
             tmdiff=after-before
