@@ -193,6 +193,53 @@ def farith(*args):
 
 farith.registered = True
 
+
+def tonumber(*args):
+
+    """
+    .. function:: tonumber(variable) -> int or float
+
+    Convert variable, whose type is str or unicode, to int or float, if it is feasible
+
+    Examples:
+
+    >>> sql("select tonumber('12.3') as val")
+    val
+    ----
+    12.3
+
+    >>> sql("select tonumber(12.3) as val")
+    val
+    ----
+    12.3
+
+    >>> sql("select tonumber('not a number') as val")
+    val
+    ------------
+    not a number
+
+    >>> sql("select tonumber(null) as val")
+    val
+    ----
+    None
+
+    """
+
+    if type(args[0]) not in (str, unicode):
+        return args[0]
+
+    try:
+        ret = int(args[0])
+    except ValueError:
+        try:
+            ret = float(args[0])
+        except ValueError:
+            return args[0]
+
+    return ret
+
+tonumber.registered = True
+
 if not ('.' in __name__):
     """
     This is needed to be able to test the function, put it at the end of every
