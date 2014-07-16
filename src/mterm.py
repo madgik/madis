@@ -869,7 +869,7 @@ while True:
                 cexec = cursor.execute(statement)
                 try:
                     desc = cursor.getdescriptionsafe()
-                    lastcols[0:desc] = [x for x, y in desc]
+                    lastcols[0:len(desc)] = [x for x, y in desc]
                 except apsw.ExecutionCompleteError, e:
                     desc = []
 
