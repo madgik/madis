@@ -598,6 +598,7 @@ helpmessage=""".functions             Lists all functions
 .separator SEP         Change separator to SEP. For tabs use 'tsv' or '\\t' as SEP
                        Separator is used only when NOT using colnums
 .vacuum                Vacuum DB using a temp file in current path
+.queryplan query       Displays the queryplan of the query
 
 Use: FILE or CLIPBOARD function for importing data
      OUTPUT or CLIPOUT function for exporting data"""
