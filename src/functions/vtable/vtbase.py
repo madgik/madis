@@ -151,7 +151,7 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
         self.Rowid = lambda: self.pos + 1
         self.Eof = lambda: self.eof
 
-    @echocall
+    # @echocall
     def Filter(self, *args):
         self.eof=False
         self.pos=0

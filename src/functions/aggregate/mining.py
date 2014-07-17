@@ -350,12 +350,12 @@ class sampledistvals:
         yield tuple(['C'+str(i) for i in xrange(1, self.lenargs)] )
         yield [jopts.toj(list(i)) for i in self.vals]
 
-class sample:
+class samplegroup:
     """
 
-    .. function:: sample(sample_size, C1, C2, C3)
+    .. function:: samplegroup(sample_size, C1, C2, C3)
 
-    Sample returns a random sample_size set of rows.
+    Returns a random sample_size set of rows.
 
     >>> table1('''
     ... test1 2 3
@@ -364,12 +364,12 @@ class sample:
     ... test4 2 t
     ... ''')
 
-    >>> sql("select sample(2, a, b, c) from table1") # doctest: +ELLIPSIS
+    >>> sql("select samplegroup(2, a, b, c) from table1") # doctest: +ELLIPSIS
     C1    | C2 | C3
     ---------------
     ...
 
-    >>> sql("select sample(2) from (select 5 where 5=6)") # doctest: +ELLIPSIS
+    >>> sql("select samplegroup(2) from (select 5 where 5=6)") # doctest: +ELLIPSIS
 
     """
     registered=True

@@ -1,12 +1,17 @@
 """
 
-.. function:: unindexed(query) -> query results
+.. function:: sample(sample_size  query) -> samples rows from input
 
-Returns the query input results without any change. UNINDEXED can be used as a
-barrier for SQLite's optimizer, for debugging etc.
+Returns a random sample_size set of rows.
 
 :Returned table schema:
     Same as input query schema.
+
+Options:
+
+:size:
+
+    Sample size
 
 Examples::
 
@@ -15,32 +20,27 @@ Examples::
     ... Mark    7	3
     ... Lila    74	1
     ... ''')
-    >>> sql("unindexed select * from table1")
+    >>> sql("sample '10' select * from table1")
     a     | b  | c
     --------------
     James | 10 | 2
     Mark  | 7  | 3
     Lila  | 74 | 1
     
-    >>> sql("unindexed select * from table1 order by c")
+    >>> sql("sample size:1 select * from table1") # doctest:+ELLIPSIS +NORMALIZE_WHITESPACE
     a     | b  | c
-    --------------
-    Lila  | 74 | 1
-    James | 10 | 2
-    Mark  | 7  | 3
+    ...
 
-    Note the difference with rowid table column.
+    >>> sql("sample size:0 select * from table1")
 
 """
 import setpath
 import vtbase
 import functions
-import gc
 
-### Classic stream iterator
-registered=True
+registered = True
        
-class NopVT(vtbase.VT):
+class SampleVT(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         largs, dictargs = self.full_parse(parsedArgs)
 
@@ -48,8 +48,22 @@ class NopVT(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query=dictargs['query']
 
-        cur=envars['db'].cursor()
-        c=cur.execute(query, parse = False)
+        samplesize = 1
+
+        if len(largs) > 0:
+            samplesize = int(largs[0])
+
+
+        if 'size' in dictargs:
+            samplesize = int(dictargs['size'])
+
+        try:
+            samplesize = int(samplesize)
+        except ValueError:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Sample size should be integer")
+
+        cur = envars['db'].cursor()
+        c = cur.execute(query, parse = False)
 
         try:
             yield list(cur.getdescriptionsafe())
@@ -62,11 +76,21 @@ class NopVT(vtbase.VT):
                 except:
                     pass
 
-        while True:
-            yield c.next()
+        from itertools import islice
+        samplelist = list(islice(c, samplesize))
+        index = len(samplelist)
+
+        from random import randint
+        for i, row in enumerate(c, index):
+            r = randint(0, i)
+            if r < samplesize:
+                samplelist[r] = row
+
+        for r in samplelist:
+            yield r
 
 def Source():
-    return vtbase.VTGenerator(NopVT)
+    return vtbase.VTGenerator(SampleVT)
 
 if not ('.' in __name__):
     """
