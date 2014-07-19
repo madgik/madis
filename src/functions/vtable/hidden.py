@@ -52,8 +52,8 @@ class NopVT(vtbase.VT):
                 except:
                     pass
 
-        while True:
-            q.next()
+        for _ in q:
+            pass
 
 
 def Source():
