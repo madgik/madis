@@ -941,6 +941,43 @@ def hashmodarchdep(*args):
 hashmodarchdep.registered=True
 
 
+def hashmodarchdep2(a, b):
+    """
+    .. function:: hashmodarchdep2(arg, divisor) -> int
+
+    Returns a hash of the args.
+
+    .. note::
+
+        This hash function is architecture dependent (32bit vs 64bit). It is specialized for 2 parameters
+
+    Examples:
+
+    >>> sql("select hashmodarchdep2(65,5)") #doctest:+ELLIPSIS
+    hashmodarchdep2(65,5)
+    ---------------------
+    ...
+
+    >>> sql("select hashmodarchdep2(6,5)") #doctest:+ELLIPSIS
+    hashmodarchdep2(6,5)
+    --------------------
+    ...
+
+    >>> sql("select hashmodarchdep2(5,5)") #doctest:+ELLIPSIS
+    hashmodarchdep2(5,5)
+    --------------------
+    ...
+
+    >>> sql("select hashmodarchdep2('5',5)") #doctest:+ELLIPSIS
+    hashmodarchdep2('5',5)
+    ----------------------
+    ...
+    """
+    return hash(a)%b
+
+hashmodarchdep2.registered=True
+
+
 def textreferences(txt,maxlen = 5,pattern = r'(\b|_)((1[5-9]\d{2,2})|(20\d{2,2}))(\b|_)' ):
     """
     .. function:: textreferences(text, maxlen = 5, pattern = (\b|_)(1|2)\d{3,3}(\b|_))
