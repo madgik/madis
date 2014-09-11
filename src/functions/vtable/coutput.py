@@ -61,8 +61,7 @@ import marshal
 import zlib
 from collections import OrderedDict
 from array import array
-import time
-import listser
+
 
 
 
@@ -90,7 +89,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
     where=None
     mode = 'row'
     compression = 'zlib'
-    level = 5
+    level = 2
     if len(args)>0:
         where=args[0]
     elif 'file' in formatArgs:
@@ -2158,9 +2157,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             headindex[i*2] = output.tell()-l
                             if lens>1:
                                 if lens<256:
-                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),4))
                                 else:
-                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),4))
                             headindex[i*2+1] = output.tell()-l-headindex[i*2]
                     else:
                         if i in paxcols:
@@ -2180,9 +2179,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             headindex[i*2] = output.tell()-l
                             if lens>1:
                                 if lens<256:
-                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                    output.write(compress(array('B',[coldict[y] for y in col]).tostring(),4))
                                 else:
-                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                                    output.write(compress(array('H',[coldict[y] for y in col]).tostring(),4))
                             headindex[i*2+1] = output.tell()-l-headindex[i*2]
 
                 blocknum=1
@@ -2598,15 +2597,12 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
 
     if mode == 'sdc':
-        time1 = time.time()
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
             lencols , rows = calclencols(SDC)
             for key in xrange(int(formatArgs['split'])) :
                 filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
-
-
             sdcgen = [sorteddictpercol(x,lencols,compression,level) for x in filesList]
             sdcgensend = [x.send for x in sdcgen]
             for j in sdcgensend:
@@ -2618,15 +2614,9 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 sdcgensend[row[0]](row[1:])
             for j in sdcgen:
                 j.close()
-        time2 = time.time()
-        stats = open('compressionstatistics.tsv', 'a')
-        stat = "sdc_"+compression+str(level)
-        statstr = stat + "\t" + str(time2-time1) + "\t" + str(os.path.getsize(os.path.join(fullpath, filename+'.'+str(0)))) + "\n"
-        stats.write(statstr)
 
     
     if mode == 'rcfile':
-        time1 = time.time()
         if 'split' in formatArgs:
             filesNum = int(formatArgs['split'])
             filesList = [None]*filesNum
@@ -2648,11 +2638,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 j.close()
         else :
             rcfilenonsplit()
-        time2 = time.time()
-        stats = open('compressionstatistics.tsv', 'a')
-        stat = "rcfile_"+compression+str(level)
-        statstr = stat + "\t" + str(time2-time1) + "\t" + str(os.path.getsize(os.path.join(fullpath, filename+'.'+str(0)))) + "\n"
-        stats.write(statstr)
 
 
 
