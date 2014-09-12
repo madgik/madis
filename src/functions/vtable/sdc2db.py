@@ -19,13 +19,12 @@ registered=True
 BLOCK_SIZE = 200000000
 import apsw
 from array import array
-import time
+import marshal
 
 class SDC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
-        time1 = time.time()
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'
@@ -122,11 +121,6 @@ class SDC2DB(vtbase.VT):
                 fileObject.close()
         except NameError:
             pass
-        time2 = time.time()
-        stats = open('compressionstatistics.tsv', 'a')
-        stat = where
-        statstr = stat + "\t" + str(time2-time1) + "\n"
-        stats.write(statstr)
 
 def Source():
     return vtbase.VTGenerator(SDC2DB)
