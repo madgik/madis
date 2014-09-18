@@ -6,6 +6,13 @@ import setpath
 import functions
 import apsw
 from lib import argsparse ,schemaUtils
+import sys
+if hasattr(sys, 'pypy_version_info'):
+    PYPY = True
+    from __pypy__ import newlist_hint
+else:
+    PYPY = False
+    newlist_hint = lambda size: []
 
 autostring='automatic_vtable:1'
 
@@ -150,6 +157,10 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
         self.Column = lambda col: self.row[col]
         self.Rowid = lambda: self.pos + 1
         self.Eof = lambda: self.eof
+        if PYPY:
+            self.Next = self.NextPyPy
+        else:
+            self.Next = self.NextCPython
 
     # @echocall
     def Filter(self, *args):
@@ -180,14 +191,23 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
     #     return self.row[col]
 
     #@echocall #-- Commented out for speed reasons
-    def Next(self):
+    def NextCPython(self):
         try:
-            self.row=self.iterNext()
-            self.Column=self.row.__getitem__
+            self.row = self.iterNext()
+            self.Column = self.row.__getitem__
 #            self.pos+=1
         except StopIteration:
-            self.row=[]
-            self.eof=True
+            self.row = []
+            self.eof = True
+            self.Close()
+
+    def NextPyPy(self):
+        try:
+            self.row = self.iterNext()
+#            self.pos+=1
+        except StopIteration:
+            self.row = []
+            self.eof = True
             self.Close()
 
     @echocall
