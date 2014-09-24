@@ -84,20 +84,20 @@ from collections import defaultdict
 
 registered=True
 
-def fileit(p,append=False):
+def fileit(p, append=False):
     if append:
         return open(p, "a", buffering=100000)
     return open(p, "w" , buffering=100000)
 
-def getoutput(p,append,compress,comptype):
+def getoutput(p, append,compress,comptype):
     source=p
     it=None
 
-    if compress and ( comptype=='zip'):
-        it=ZipIter(source,"w")
-    elif compress and ( comptype=='gzip' or comptype=='gz'):
-            itt=fileit(source+'.gz')
-            it=gzip.GzipFile(mode="w", compresslevel=6, fileobj=itt)
+    if compress and ( comptype == 'zip'):
+        it = ZipIter(source, "w")
+    elif compress and (comptype=='gzip' or comptype == 'gz'):
+            itt = fileit(source+'.gz')
+            it = gzip.GzipFile(mode="w", compresslevel=6, fileobj=itt)
     else:
         it=fileit(source,append)
     return it
@@ -211,16 +211,14 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             tmp = splitkeys[key]
 
                 for f in jsfiles.values():
-                    if f != None:
+                    if f is not None:
                         f.close()
             else:
-                fileIter.write( je( {'schema':schema} ) + '\n')
+                fileIter.write(je({'schema':schema}) + '\n')
 
-                gc.disable()
                 for row in diter:
                     print >> fileIter, je(row)
-                gc.enable()
-                    
+
         elif formatArgs['mode'] == 'csv':
             del formatArgs['mode']
             csvprinter = writer(fileIter, 'excel', **formatArgs)
@@ -254,8 +252,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
         elif formatArgs['mode']=='db':
             def createdb(where, tname, schema, page_size=16384):
-                c=apsw.Connection(where)
-                cursor=c.cursor()
+                c = apsw.Connection(where)
+                cursor = c.cursor()
                 list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
                 if orderby:
                     tname = '_' + tname
@@ -280,7 +278,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 tablename=formatArgs['tablename']
 
             if 'split' in formatArgs:
-
                 maxparts = 0
                 try:
                     maxparts = int(formatArgs['split'])
@@ -314,35 +311,33 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         if c != None:
                             cursor.execute('commit')
                             c.close()
-                # Splitparts defined
                 else:
+                # Splitparts defined
                     cursors = []
                     dbcon = []
                     if "MSPW" in functions.apsw_version:
                         prepedqueries = []
-                        for i in xrange(0,maxparts):
-                            t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                        for i in xrange(0, maxparts):
+                            t =createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
                             cursors.append(t[1].executedirect)
                             prepedqueries.append(t[1].prepare(t[2]))
                             dbcon.append((t[0], t[1]))
+                        cursors = tuple(cursors)
+                        prepedqueries = tuple(prepedqueries)
 
-                        gc.disable()
                         for row in diter:
-                            row0 = row[0]
+                            row0 = hash(row[0]) % maxparts
                             cursors[row0](prepedqueries[row0], row[1:])
-                        gc.enable()
-
                     else:
-                        for i in xrange(0,maxparts):
-                            t=createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                        for i in xrange(0, maxparts):
+                            t = createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
                             cursors.append(t[1].execute)
                             dbcon.append((t[0], t[1]))
                             insertqueryw = t[2]
+                        cursors = tuple(cursors)
 
-                        gc.disable()
                         for row in diter:
-                            cursors[row[0]](insertqueryw, row[1:])
-                        gc.enable()
+                            cursors[hash(row[0]) % maxparts](insertqueryw, row[1:])
 
                     for c, cursor in dbcon:
                         if c != None:
