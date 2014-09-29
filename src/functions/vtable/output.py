@@ -316,18 +316,24 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                     cursors = []
                     dbcon = []
                     if "MSPW" in functions.apsw_version:
-                        prepedqueries = []
+                        iters = []
+                        senders = []
                         for i in xrange(0, maxparts):
-                            t =createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
-                            cursors.append(t[1].executedirect)
-                            prepedqueries.append(t[1].prepare(t[2]))
+                            t = createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
+                            it = t[1].executesplit(t[2])
+                            iters.append(it)
+                            senders.append(it.send)
+                            cursors.append(t[1].execute)
+                            it.send(None)
                             dbcon.append((t[0], t[1]))
                         cursors = tuple(cursors)
-                        prepedqueries = tuple(prepedqueries)
+                        senders = tuple(senders)
 
                         for row in diter:
-                            row0 = hash(row[0]) % maxparts
-                            cursors[row0](prepedqueries[row0], row[1:])
+                            senders[hash(row[0]) % maxparts](row)
+
+                        for it in iters:
+                            it.close()
                     else:
                         for i in xrange(0, maxparts):
                             t = createdb(os.path.join(fullpath, filename+'.'+str(i)+ext), tablename, schema[1:], page_size)
