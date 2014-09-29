@@ -55,6 +55,7 @@ import itertools
 import cPickle as cPickle
 import struct
 import gc
+import StringIO as StringIO
 import cStringIO as cStringIO
 import marshal
 import zlib
@@ -63,31 +64,8 @@ from array import array
 import bz2
 import msgpack
 
-if hasattr(sys, 'pypy_version_info'):
-    # cStringIO is slow on PyPy, StringIO is faster.  However: PyPy's own
-    # StringBuilder is fastest.
-    from __pypy__ import newlist_hint
-    from __pypy__.builders import StringBuilder
-    USING_STRINGBUILDER = True
-    class StringIO(object):
-        def __init__(self, s=b''):
-            if s:
-                self.builder = StringBuilder(len(s))
-                self.builder.append(s)
-            else:
-                self.builder = StringBuilder()
-        def write(self, s):
-            self.builder.append(s)
-        def getvalue(self):
-            return self.builder.build()
-        def tell(self):
-            return len(self.builder)
-else:
-    USING_STRINGBUILDER = False
-    from io import BytesIO as StringIO
-    newlist_hint = lambda size: []
 
-serializer = marshal
+serializer = msgpack
 BLOCK_SIZE = 65536000
 ZLIB = "zlib"
 BZ2 = "bzip"
@@ -187,7 +165,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                         setcol[i].update(col)
 
                 prev = fileObject.tell() + 8*(colnum+2)
-                output = StringIO()
+                output = cStringIO.StringIO()
                 headindex = [0 for _ in xrange(colnum+2)]
 
                 if blocknum == 0:
@@ -286,18 +264,27 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
 
     def sorteddictpercol(fileIter,lencols,compression,level):
+        output = StringIO.StringIO()
         if split:
+            output.write(struct.pack('!B', 0))
+            cPickle.dump(schema[1:],output,1)
             colnum = len(schema)-1
-            fileIter.write(struct.pack('!B', 0))
-            cPickle.dump(schema[1:],fileIter,1)
+            cz = output.getvalue()
+            fileIter.write(struct.pack('!i', len(cz)))
+            fileIter.write(cz)
+            
         else:
             colnum = len(schema)
             fileIter.write(struct.pack('!B', 0))
             cPickle.dump(schema,fileIter,1)
-
+        if hasattr(sys, 'pypy_version_info'):
+            from __pypy__ import newlist_hint
+            
+        else:
+            newlist_hint = lambda size: []
         paxcols = []
         blocknum = 0
-        output = StringIO()
+        
 #        tempio = cStringIO.StringIO()
 #        fastPickler = cPickle.Pickler(tempio, 2)
 #        fastPickler.fast = 1
@@ -307,10 +294,10 @@ def outputData(diter, schema, connection, *args, **formatArgs):
             compress = bz2.compress
         if lencols == 0:
             (yield)
+
         
         while not exitGen:
-            #output.truncate(0)
-            output = StringIO()
+            output.truncate(0)
             mrows = newlist_hint(lencols)
             try:
                 for i in xrange(lencols):
@@ -319,10 +306,20 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 exitGen = True
             
             count = len(mrows)
+            output.write(struct.pack('!B', 1))
+            if compression == BZ2:
+                output.write(struct.pack('!B', 0))
+            else:
+                output.write(struct.pack('!B', 1))
+            
             headindex = [0 for _ in xrange((colnum*2)+1)]
             type = '!'+'i'*len(headindex)
+            output.write(struct.pack(type, *headindex))
+
             if mrows != []:
-                for i, col in enumerate((tuple(x[c] for x in mrows) for c in xrange(colnum))):
+                
+                for i, col in enumerate(([x[c] for x in mrows] for c in xrange(colnum))):
+
                     if blocknum==0:
                         s = sorted(set(col))
                         lens = len(s)
@@ -371,18 +368,16 @@ def outputData(diter, schema, connection, *args, **formatArgs):
 
                 blocknum=1
                 headindex[colnum*2] = count
-                #output.seek(0)
+                output.seek(0)
                 type = '!'+'i'*len(headindex)
-                fileIter.write(struct.pack(type, *headindex))
-                #output.write(struct.pack(type, *headindex))
-                cz = output.getvalue()
-                fileIter.write(struct.pack('!B', 1))
+                output.write(struct.pack('!B', 1))
                 if compression == BZ2:
-                    fileIter.write(struct.pack('!B', 0))
+                    output.write(struct.pack('!B', 0))
                 else:
-                    fileIter.write(struct.pack('!B', 1))
+                    output.write(struct.pack('!B', 1))
+                output.write(struct.pack(type, *headindex))
+                cz = output.getvalue()
                 fileIter.write(struct.pack('!i',len(cz)))
-
                 fileIter.write(cz)
         fileIter.close()
 
@@ -414,7 +409,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 exitGen = True
                 
             index = indexinit[:]
-            output = StringIO()
+            output = cStringIO.StringIO()
             
             output.write(struct.pack('!B', 1))
             output.write(struct.pack(structHeader, *index))
@@ -428,8 +423,6 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                 output.seek(1)
                 output.write(struct.pack(structHeader, *index))
                 fileObject.write(output.getvalue())
-
-
         fileObject.close()
 
    

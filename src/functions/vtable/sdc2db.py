@@ -2,24 +2,56 @@ import os.path
 import sys
 import functions
 import os
-from itertools import izip , repeat, imap
+from itertools import repeat, imap
 import cPickle
 import cStringIO
 import vtbase
 import functions
 import struct
 import vtbase
-import functions
 import os
-import gc
 import re
 import zlib
-### Classic stream iterator
-registered=True
-BLOCK_SIZE = 200000000
 import apsw
 from array import array
 import marshal
+import msgpack
+import bz2
+import decompression
+
+if hasattr(sys, 'pypy_version_info'):
+    from __pypy__ import newlist_hint
+
+    def izip(*iterables):
+        # izip('ABCD', 'xy') --> Ax By
+        iterators = tuple(map(iter, iterables))
+        ilen = len(iterables)
+        res = [None] * ilen
+        while True:
+            ci = 0
+            while ci < ilen:
+                res[ci] = iterators[ci].next()
+                ci += 1
+            yield res
+else:
+    from itertools import izip
+    newlist_hint = lambda size: []
+
+serializer = msgpack
+
+registered=True
+
+
+
+def imapm(function, iterable):
+    # imap(pow, (2,3,10), (5,2,3)) --> 32 9 1000
+    it = iter(iterable)
+    while True:
+        yield function(it.next())
+
+def repeatm(object, times):
+    for i in xrange(times):
+        yield object
 
 class SDC2DB(vtbase.VT):
 
@@ -50,6 +82,7 @@ class SDC2DB(vtbase.VT):
             end = int(dictargs['end'])
 
         fullpath = str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(where)))))
+
         fileIterlist = []
         for x in xrange(start,end+1):
             try:
@@ -64,6 +97,7 @@ class SDC2DB(vtbase.VT):
                 raise  functions.OperatorError(__name__.rsplit('.')[-1],"No such file")
         cursor = []
         for filenum,fileIter in enumerate(fileIterlist):
+            blocksize = struct.unpack('!i',fileIter.read(4))
             b = struct.unpack('!B',fileIter.read(1))
             schema = cPickle.load(fileIter)
             colnum = len(schema)
@@ -88,32 +122,43 @@ class SDC2DB(vtbase.VT):
             while True:
                     input.truncate(0)
                     try:
-                        b = struct.unpack('!B', fileIter.read(1))
+                        blocksize = struct.unpack('!i', fileIter.read(4))
                     except:
                         break
-                    if b[0]:
-                        blocksize = struct.unpack('!i', fileIter.read(4))
+                    if blocksize[0]:
                         input.write(fileIter.read(blocksize[0]))
                         input.seek(0)
-                        type = '!'+'i'*(colnum*2+1)
-                        ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
-                        cols = [[] for _ in xrange(colnum)]
-                        for c in xrange(colnum):
-                            s = marshal.loads(zlib.decompress(input.read(ind[c*2])))
-                            if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
-                                cols[c] = s
+                        b = struct.unpack('!B', input.read(1))
+                        if b[0]:
+                            decompression = struct.unpack('!B', input.read(1))
+                            if decompression[0] :
+                                decompress = zlib.decompress
                             else:
-                                if len(s)==1:
-                                    cols[c] = repeat(s[0], ind[colnum*2])
-                                elif len(s)<256:
-                                    cols[c] = imap(s.__getitem__, array('B', zlib.decompress(input.read(ind[c*2+1]))))
+                                decompress = bz2.decompress
+
+                            type = '!'+'i'*(colnum*2+1)
+                            ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
+
+                            cols = [None]*colnum
+                            for c in xrange(colnum):
+                                s = serializer.loads(decompress(input.read(ind[c*2])))
+                                if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
+                                    cols[c] = s
                                 else:
-                                    cols[c] = imap(s.__getitem__, array('H', zlib.decompress(input.read(ind[c*2+1]))))
-                        gc.disable()
-                        cursor.executemany(insertquery, izip(*cols))
-                        gc.enable()
-                    elif not b[0]:
-                        schema = cPickle.load(fileIter)
+                                    if len(s)==1:
+                                        tmp = s[0]
+                                        cols[c] = repeat(tmp, ind[colnum*2])
+                                    elif len(s)<256:
+                                        cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
+                                    else:
+                                        cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
+
+    #                        for r in izip(*cols):
+    #                            pass
+                            cursor.executemany(insertquery, izip(*cols))
+
+                        elif not b[0]:
+                            schema = cPickle.load(fileIter)
         list(cursor.execute('commit'))
         cur.close()
         try:
