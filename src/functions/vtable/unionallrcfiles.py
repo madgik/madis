@@ -18,6 +18,9 @@ import zlib
 registered=True
 BLOCK_SIZE = 200000000
 import marshal
+import msgpack
+
+serializer = msgpack
 
 class UnionAllRC(vtbase.VT):
 
@@ -79,7 +82,7 @@ class UnionAllRC(vtbase.VT):
                     ind = struct.unpack(readtype,fileObject.read(readsize))
                     input.write(fileObject.read(sum(ind)))
                     input.seek(0)
-                    for row in izip(*tuple(marshal.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))):
+                    for row in izip(*tuple(serializer.loads(zlib.decompress(input.read(ind[col]))) for col in xrange(colnum))):
                         yield row
                 elif not b[0]:
                     schema = cPickle.load(fileObject)
