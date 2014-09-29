@@ -45,10 +45,11 @@ class doall(object):
         self.kargs=kargs
         self.returnalways=returnalways
         self.passconnection=passconnection
+
     def run(self):        
-        c=self.connection.cursor()
+        c = self.connection.cursor()
         try:
-            cexec = c.execute(self.query, parse = False)
+            cexec = c.execute(self.query, parse=False)
 
             try:
                 schema = c.getdescriptionsafe()
@@ -57,21 +58,21 @@ class doall(object):
         
             if self.passconnection:
                 try:
-                    self.func(cexec, schema,self.connection,*self.args,**self.kargs)
+                    self.func(cexec, schema, self.connection, *self.args, **self.kargs)
                 except apsw.AbortError:
-                    cexec = c.execute(self.query, parse = False)
-                    self.func(cexec, schema,self.connection,*self.args,**self.kargs)
+                    cexec = c.execute(self.query, parse=False)
+                    self.func(cexec, schema, self.connection, *self.args, **self.kargs)
             else:
                 try:
-                    self.func(cexec, schema,*self.args,**self.kargs)
+                    self.func(cexec, schema, *self.args, **self.kargs)
                 except apsw.AbortError:
-                    cexec = c.execute(self.query, parse = False)
-                    self.func(cexec, schema,*self.args,**self.kargs)
+                    cexec = c.execute(self.query, parse=False)
+                    self.func(cexec, schema, *self.args, **self.kargs)
 
-            ret=True
+            ret = True
         except Exception,e:
             if functions.settings['logging']:
-                lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+                lg = logging.LoggerAdapter(logging.getLogger(__name__), {"flowname": functions.variables.flowname})
                 lg.exception(e)
             if self.returnalways:
                 return False
@@ -89,7 +90,7 @@ class doall(object):
         return ret
 
 class SourceNtoOne:
-    def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):
+    def __init__(self, func, boolargs=None, nonstringargs=None, needsescape=None, notsplit=None, connectionhandler=False, retalways=False):
         self.func=func
         if boolargs==None:
             self.boolargs=[]
@@ -174,7 +175,7 @@ class Cursor:
         return self.row[col]
 
     def Next(self):  
-        self.eof=True
+        self.eof = True
 
     def Close(self):
         pass
