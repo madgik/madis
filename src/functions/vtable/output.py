@@ -323,10 +323,8 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             it = t[1].executesplit(t[2])
                             iters.append(it)
                             senders.append(it.send)
-                            cursors.append(t[1].execute)
                             it.send(None)
                             dbcon.append((t[0], t[1]))
-                        cursors = tuple(cursors)
                         senders = tuple(senders)
 
                         for row in diter:
