@@ -15,9 +15,13 @@ registered=True
 
 class Decompression:
     
-    def __init__ (self,dbname = None):
-        self.dbname = dbname
+    def __init__ (self):
         self.blocknumber = 0
+
+    def decompressblockiter(self,inputblock):
+        cols = self.decompressblock(inputblock)
+        
+
         
     def decompressblock(self,inputblock):
         self.blocknumber += 1
@@ -29,24 +33,7 @@ class Decompression:
                 self.schema = cPickle.load(input)
             else :
                 raise error('Not a schema block!')
-            
-            if self.dbname is not None :
-
-                def createdb(where, tname, schema, page_size=16384):
-                    c=apsw.Connection(where)
-                    cursor=c.cursor()
-                    list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
-                    create_schema='create table '+tname+' ('
-                    create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
-                    for colname, coltype in schema[1:]:
-                        create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
-                    create_schema+='); begin exclusive;'
-                    list(cursor.execute(create_schema))
-                    insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
-                    return c, cursor, insertquery
-
-                self.cur, self.cursor, self.insertquery=createdb(self.dbname+".db", self.dbname, self.schema)
-            return self.schema
+            yield self.schema
         else :
             colnum = len(self.schema)
             input = cStringIO.StringIO(inputblock)
@@ -79,109 +66,498 @@ class Decompression:
                             else:
                                 cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
 
-                    if self.dbname is not None:
-                        if hasattr(sys, 'pypy_version_info'):
-                            from __pypy__ import newlist_hint
+                    if hasattr(sys, 'pypy_version_info'):
+                        iterators = tuple(map(iter, cols))
+                        ilen = len(cols)
+                        res = [None] * ilen
 
-                            def izip(*iterables):
-                                iterators = map(iter, iterables)
-                                ilen = len(iterables)
-                                res = [None] * len(iterables)
-                                while True:
-                                    ci = 0
-                                    while ci < ilen:
-                                        res[ci] = iterators[ci].next()
-                                        ci += 1
-                                    yield tuple(res)
-                        else:
-                            from itertools import izip
-                            newlist_hint = lambda size: []
-                        self.cursor.executemany(self.insertquery, izip(*cols))
-                    else :
-                        return cols
-
+                        while True:
+                            ci = 0
+                            try:
+                                while ci < ilen:
+                                    res[ci] = iterators[ci].next()
+                                    ci += 1
+                                yield res
+                            except:
+                                break
                 elif not b[0]:
                     cPickle.load(fileIter)
 
-    def finalize(self):
-        list(self.cursor.execute('commit'))
-        self.cur.close()
+
+
+class Compression:
+
+    def __init__ (self):
+        self.blocknumber = 0
+        self.maxpresets
+
+    def decompressblockiter(self,inputblock):
+        cols = self.decompressblock(inputblock)
+
+
+    def outputData(diter, schema, *args, **formatArgs):
+    ### Parameter handling ###
+        where=None
+        mode = 'sdc'
+        compression = 'zlib'
+        level = 2
+        split = 0
+        if 'split' in formatArgs:
+            split = 1
+        if len(args)>0:
+            where=args[0]
+        elif 'file' in formatArgs:
+            where=formatArgs['file']
+        else:
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"No destination provided")
+        if 'file' in formatArgs:
+            del formatArgs['file']
+        if 'mode' in formatArgs:
+            mode = formatArgs['mode']
+        if 'compr'  in formatArgs:
+            if formatArgs['compr'] == "zlib":
+                compression = ZLIB
+            elif formatArgs['compr'] == "bz2":
+                compression = BZ2
+            else:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Wrong compression algorithm provided. Choose between zlib or bz2")
+
+        if 'level' in formatArgs:
+            l = formatArgs['level']
+            try:
+                if int(l)>=0 and int(l) <=9 :
+                    level = int(l)
+                else :
+                    raise functions.OperatorError(__name__.rsplit('.')[-1],"Compression level should range from 0 to 9")
+            except:
+                raise functions.OperatorError(__name__.rsplit('.')[-1],"Compression level should range from 0 to 9")
+        filename, ext=os.path.splitext(os.path.basename(where))
+        fullpath=os.path.split(where)[0]
+        if split == 0:
+            fileIter=open(where, "w+b")
+            fastPickler = cPickle.Pickler(fileIter, 1)
+            fastPickler.fast = 1
+        else:
+            fileIter = 1
 
 
 
-#class Decompress :
-#
-#    def __init__(self, dbname):
-#        self.dbname = dbname
-#
-#    def setschema(self,inputblock):
-#        input = cStringIO.StringIO(inputblock)
-#        b = struct.unpack('!B',input.read(1))
-#        if not b[0]:
-#            self.schema = cPickle.load(input)
-#        else :
-#            raise error('Not a schema block!')
-#
-#
-#        def createdb(where, tname, schema, page_size=16384):
-#            c=apsw.Connection(where)
-#            cursor=c.cursor()
-#            list(cursor.execute('pragma page_size='+str(page_size)+';pragma cache_size=-1000;pragma legacy_file_format=false;pragma synchronous=0;pragma journal_mode=OFF;PRAGMA locking_mode = EXCLUSIVE'))
-#            create_schema='create table '+tname+' ('
-#            create_schema+='`'+unicode(schema[0][0])+'`'+ (' '+unicode(schema[0][1]) if schema[0][1]!=None else '')
-#            for colname, coltype in schema[1:]:
-#                create_schema+=',`'+unicode(colname)+'`'+ (' '+unicode(coltype) if coltype!=None else '')
-#            create_schema+='); begin exclusive;'
-#            list(cursor.execute(create_schema))
-#            insertquery="insert into "+tname+' values('+','.join(['?']*len(schema))+')'
-#            return c, cursor, insertquery
-#
-#        self.cur, self.cursor, self.insertquery=createdb(self.dbname+".db", self.dbname, self.schema)
-#        return self.schema
-#
-#    def decompression(self,inputblock):
-#
-#        colnum = len(self.schema)
-#        input = cStringIO.StringIO(inputblock)
-#        while True:
-#                try:
-#                    b = struct.unpack('!B', input.read(1))
-#                except:
-#                    break
-#                if b[0]:
-#                    decompression = struct.unpack('!B', input.read(1))
-#                    if decompression[0] :
-#                        decompress = zlib.decompress
-#                    else:
-#                        decompress = bz2.decompress
-#
-#                    type = '!'+'i'*(colnum*2+1)
-#                    ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
-#
-#                    cols = [None]*colnum
-#                    for c in xrange(colnum):
-#                        s = serializer.loads(decompress(input.read(ind[c*2])))
-#                        if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
-#                            cols[c] = s
-#                        else:
-#                            if len(s)==1:
-#                                tmp = s[0]
-#                                cols[c] = repeat(tmp, ind[colnum*2])
-#                            elif len(s)<256:
-#                                cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
-#                            else:
-#                                cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
-#
-#                    self.cursor.executemany(self.insertquery, izip(*cols))
-#
-#                elif not b[0]:
-#                    cPickle.load(fileIter)
-#
-#    def finalize(self):
-#        list(self.cursor.execute('commit'))
-#        self.cur.close()
-#
+        def spac(fileObject,lencols):
+            colnum = len(schema)-1
+            serializer.dump(schema[1:],fileObject,2)
+            setcol = [set([]) for _ in xrange(colnum)]
+            dictsize = 65536
+            paxcols = []
+            indextype = 'H'
+            index_init = [0 for _ in xrange(3)]
+            coldicts = [{} for _ in xrange(colnum)]
+            prevsets =  [[] for _ in xrange(colnum)]
+            count = 0
+            blocknum = 0
+            compress = bz2.compress
+
+
+            while True:
+                maxlen = 0
+                exitGen = False
+                rows = []
+                try:
+                    for i in xrange(lencols):
+                        rows.append((yield))
+                except GeneratorExit:
+                    exitGen = True
+                listofvals = zip(*rows)
+
+                if listofvals!=[]:
+
+                    for i,col in enumerate(listofvals):
+                        if i not in paxcols:
+                            setcol[i].update(col)
+
+                    prev = fileObject.tell() + 8*(colnum+2)
+                    output = cStringIO.StringIO()
+                    headindex = [0 for _ in xrange(colnum+2)]
+
+                    if blocknum == 0:
+                        for i in xrange(colnum):
+                            headindex[i] = output.tell() + prev
+                            if (len(setcol[i])*1.0/lencols>0.67):
+                                paxcols.append(i)
+                                l = index_init[:]
+                                t = output.tell()
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.write(compress(serializer.dumps(listofvals[i],2)))
+                                l[0] = output.tell()
+                                output.seek(t)
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.seek(l[0])
+                            else:
+                                prevsets[i] = list(set(setcol[i]).copy())
+                                coldicts[i] = dict(((x,y) for y,x in enumerate(prevsets[i])))
+                                coldict = coldicts[i]
+                                if len(prevsets[i])<256:
+                                    indextype='B'
+                                else:
+                                    indextype='H'
+                                l = index_init[:]
+                                t = output.tell()
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.write(compress(serializer.dumps(prevsets[i],2)))
+                                l[0] = output.tell()
+                                output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                                l[1] = output.tell()
+                                output.seek(t)
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.seek(l[1])
+                    else:
+                        for i in xrange(colnum):
+                            headindex[i] = output.tell() + prev
+                            if i in paxcols:
+                                l = index_init[:]
+                                t = output.tell()
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.write(compress(serializer.dumps(listofvals[i],2)))
+                                l[0] = output.tell()
+                                output.seek(t)
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.seek(l[0])
+
+                            else:
+                                pset = set(prevsets[i])
+                                difnew = list(setcol[i] - pset)
+                                s = prevsets[i] + difnew
+                                d = 0
+                                if len(s) > dictsize:
+                                    difold = list(pset - setcol[i])
+                                    while len(s)>dictsize:
+                                        s.remove(difold[d])
+                                        d+=1
+
+                                prevsets[i] = s
+                                coldicts[i] = dict(((x,y) for y,x in enumerate(s)))
+                                coldict = coldicts[i]
+                                towritevalues = (x for x in xrange(len(coldict)-d, len(coldict)))
+
+
+                                l = index_init[:]
+                                t = output.tell()
+                                output.write(struct.pack('L'*len(l), *l))
+                                if len(prevsets[i]) != 0 :
+                                    if len(prevsets[i])<256:
+                                        indextype='B'
+                                    else:
+                                        indextype='H'
+                                    output.write(compress(serializer.dumps(difnew,2)))
+                                    l[0] = output.tell()
+                                    output.write(compress(array(indextype,towritevalues).tostring()))
+                                    l[1] = output.tell()
+
+                                output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
+                                l[2] = output.tell()
+                                output.seek(t)
+                                output.write(struct.pack('L'*len(l), *l))
+                                output.seek(l[2])
+
+                    headindex[i+1] = output.tell()+ prev
+                    headindex[i+2] = count
+                    count=0
+                    fileObject.write(struct.pack('L'*len(headindex), *headindex))
+                    fileObject.write(output.getvalue())
+                    for s in setcol:
+                        s.clear()
+                    gc.collect()
+                    blocknum+=1
+
+                if exitGen:
+                    fileObject.close()
+                    break
+
+
+        def sorteddictpercol(fileIter,lencols,compression,level):
+            output = StringIO.StringIO()
+            if split:
+                output.write(struct.pack('!B', 0))
+                cPickle.dump(schema[1:],output,1)
+                colnum = len(schema)-1
+                cz = output.getvalue()
+                fileIter.write(struct.pack('!i', len(cz)))
+                fileIter.write(cz)
+
+            else:
+                colnum = len(schema)
+                fileIter.write(struct.pack('!B', 0))
+                cPickle.dump(schema,fileIter,1)
+            if hasattr(sys, 'pypy_version_info'):
+                from __pypy__ import newlist_hint
+
+            else:
+                newlist_hint = lambda size: []
+            paxcols = []
+            blocknum = 0
+
+        #        tempio = cStringIO.StringIO()
+        #        fastPickler = cPickle.Pickler(tempio, 2)
+        #        fastPickler.fast = 1
+            exitGen=False
+            compress = zlib.compress
+            if compression == BZ2:
+                compress = bz2.compress
+            if lencols == 0:
+                (yield)
+
+
+            while not exitGen:
+                output.truncate(0)
+                mrows = newlist_hint(lencols)
+                try:
+                    for i in xrange(lencols):
+                        mrows.append((yield))
+                except GeneratorExit:
+                    exitGen = True
+
+                count = len(mrows)
+                output.write(struct.pack('!B', 1))
+                if compression == BZ2:
+                    output.write(struct.pack('!B', 0))
+                else:
+                    output.write(struct.pack('!B', 1))
+
+                headindex = [0 for _ in xrange((colnum*2)+1)]
+                type = '!'+'i'*len(headindex)
+                output.write(struct.pack(type, *headindex))
+
+                if mrows != []:
+
+                    for i, col in enumerate(([x[c] for x in mrows] for c in xrange(colnum))):
+
+                        if blocknum==0:
+                            s = sorted(set(col))
+                            lens = len(s)
+                            if lens>50*1.0*count/100:
+                                paxcols.append(i)
+                                l = output.tell()
+        #                            tempio.truncate(0)
+        #                            fastPickler.dump(col)
+                                output.write(compress(serializer.dumps(col),level))
+                                headindex[i*2] = output.tell() - l
+                            else:
+                                coldict = dict(((x,y) for y,x in enumerate(s)))
+                                l = output.tell()
+        #                            tempio.truncate(0)
+        #                            fastPickler.dump(s)
+                                output.write(compress(serializer.dumps(s),level))
+                                headindex[i*2] = output.tell()-l
+                                if lens>1:
+                                    if lens<256:
+                                        output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                    else:
+                                        output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                                headindex[i*2+1] = output.tell()-l-headindex[i*2]
+                        else:
+                            if i in paxcols:
+                                l = output.tell()
+        #                            tempio.truncate(0)
+        #                            fastPickler.dump(col)
+                                output.write(compress(serializer.dumps(col),level))
+                                headindex[i*2] = output.tell() - l
+                            else:
+                                s = sorted(set(col))
+                                lens = len(s)
+                                coldict = dict(((x,y) for y,x in enumerate(s)))
+                                l = output.tell()
+        #                            tempio.truncate(0)
+        #                            fastPickler.dump(s)
+                                output.write(compress(serializer.dumps(s),level))
+                                headindex[i*2] = output.tell()-l
+                                if lens>1:
+                                    if lens<256:
+                                        output.write(compress(array('B',[coldict[y] for y in col]).tostring(),level))
+                                    else:
+                                        output.write(compress(array('H',[coldict[y] for y in col]).tostring(),level))
+                                headindex[i*2+1] = output.tell()-l-headindex[i*2]
+
+                    blocknum=1
+                    headindex[colnum*2] = count
+                    output.seek(0)
+                    type = '!'+'i'*len(headindex)
+                    output.write(struct.pack('!B', 1))
+                    if compression == BZ2:
+                        output.write(struct.pack('!B', 0))
+                    else:
+                        output.write(struct.pack('!B', 1))
+                    output.write(struct.pack(type, *headindex))
+                    cz = output.getvalue()
+                    fileIter.write(struct.pack('!i',len(cz)))
+                    fileIter.write(cz)
+            fileIter.close()
 
 
 
+
+        def rcfile(fileObject,lencols,compression,level):
+            colnum = len(schema) - 1
+            structHeader = '!'+'i' * colnum
+            indexinit = [0 for _ in xrange(colnum)]
+            fileObject.write(struct.pack('!B', 0))
+            cPickle.dump(schema[1:],fileObject,1)
+        #        l = cStringIO.StringIO()
+        #        fastPickler = cPickle.Pickler(l, 2)
+        #        fastPickler.fast = 1
+            exitGen = False
+            compress = zlib.compress
+            if compression == BZ2:
+                compress = bz2.compress
+            if lencols == 0:
+                (yield)
+
+            while not exitGen:
+                rows = []
+                try:
+                    for i in xrange(lencols):
+                        rows.append((yield))
+                except GeneratorExit:
+                    exitGen = True
+
+                index = indexinit[:]
+                output = cStringIO.StringIO()
+
+                output.write(struct.pack('!B', 1))
+                output.write(struct.pack(structHeader, *index))
+                if rows != []:
+                    for i, col in enumerate(([x[c] for x in rows] for c in xrange(colnum))):
+        #                    l.truncate(0)
+        #                    fastPickler.dump(col)
+                        cz = zlib.compress(serializer.dumps(col), 5)
+                        output.write(cz)
+                        index[i] = len(cz)
+                    output.seek(1)
+                    output.write(struct.pack(structHeader, *index))
+                    fileObject.write(output.getvalue())
+            fileObject.close()
+
+
+
+        def calclencols(mode):
+                if mode==RCFILE:
+                    count = 0
+                    bsize = 0
+                    rows = []
+                    try:
+                        while bsize<BLOCK_SIZE:
+                            row = diter.next()
+                            rows.append(row)
+                            count += 1
+                            if split:
+                                bsize += sum((getSize(v) for v in row[1:]))
+                            else:
+                                bsize += sum((getSize(v) for v in row))
+                    except StopIteration:
+                        pass
+                    return count+10*count/100 , rows
+                if mode==SDC or mode==SPAC:
+                    count = 0
+                    bsize = 0
+                    rows = []
+                    try:
+                        while bsize<BLOCK_SIZE and count<65535:
+                            row = diter.next()
+                            rows.append(row)
+                            count += 1
+                            if split:
+                                bsize += sum((getSize(v) for v in row[1:]))
+                            else:
+                                bsize += sum((getSize(v) for v in row))
+
+
+                    except StopIteration:
+                        pass
+                    return count , rows
+
+
+        if mode == 'spac':
+            if 'split' in formatArgs:
+                filesNum = int(formatArgs['split'])
+                filesList = [None]*filesNum
+                lencols , rows = calclencols(SPAC)
+                for key in xrange(int(formatArgs['split'])) :
+                    filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'a')
+
+                spacgen = [spac(x,lencols) for x in filesList]
+                spacgensend = [x.send for x in spacgen]
+                for j in spacgensend:
+                    j(None)
+                for row in rows:
+                    spacgensend[row[0]](row[1:])
+                del(rows)
+                for row in diter:
+                    spacgensend[row[0]](row[1:])
+                for j in spacgen:
+                    j.close()
+
+
+
+        elif mode == 'sdc':
+            if 'split' in formatArgs:
+                filesNum = int(formatArgs['split'])
+                filesList = [None]*filesNum
+                lencols , rows = calclencols(SDC)
+                for key in xrange(int(formatArgs['split'])) :
+                    filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+                sdcgen = [sorteddictpercol(x,lencols,compression,level) for x in filesList]
+                sdcgensend = [x.send for x in sdcgen]
+                for j in sdcgensend:
+                    j(None)
+                for row in rows:
+                    sdcgensend[row[0]](row[1:])
+                del(rows)
+                for row in diter:
+                    sdcgensend[row[0]](row[1:])
+                for j in sdcgen:
+                    j.close()
+            else:
+                lencols , rows = calclencols(SDC)
+                sdcgen = sorteddictpercol(fileIter,lencols,compression,level)
+                sdcgensend = sdcgen.send
+                sdcgensend(None)
+                for row in rows:
+                    sdcgensend(row)
+                del(rows)
+                for row in diter:
+                    sdcgensend(row)
+                sdcgen.close()
+
+
+
+        elif mode == 'rcfile':
+            if 'split' in formatArgs:
+                filesNum = int(formatArgs['split'])
+                filesList = [None]*filesNum
+                lencols , rows = calclencols(RCFILE)
+                for key in xrange(int(formatArgs['split'])) :
+                    filesList[key] = open(os.path.join(fullpath, filename+'.'+str(key)), 'wb')
+
+
+                rcgen = [rcfile(x,lencols,compression,level) for x in filesList]
+                rcgensend = [x.send for x in rcgen]
+                for j in rcgensend:
+                    j(None)
+                for row in rows:
+                    rcgensend[row[0]](row[1:])
+                del(rows)
+                for row in diter:
+                    rcgensend[row[0]](row[1:])
+                for j in rcgen:
+                    j.close()
+
+        elif mode :
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Wrong compression format provided.Choose between sdc,rcfile or spac")
+
+
+
+
+        try:
+            if 'split' not in formatArgs:
+                fileIter.close()
+        except NameError:
+            pass
 

@@ -6,10 +6,8 @@ from itertools import izip
 import cPickle
 import cStringIO
 import vtbase
-import functions
 import struct
 import vtbase
-import functions
 import os
 import gc
 import re
