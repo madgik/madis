@@ -27,6 +27,16 @@ text_tokens = re.compile(ur'([\d.]+\b|\w+|\$[\d.]+)', re.UNICODE)
 strip_remove_newlines=re.compile(u'(?:\\s+$|^\\s+|(?<=[^\\s\\d\\w.;,!?])\n+)', re.UNICODE)
 reduce_spaces=re.compile(ur'\s+', re.UNICODE)
 cqlterms=('title', 'subject', 'person', 'enter', 'creator', 'isbn')
+replchars = re.compile(r'[\n\r]')
+
+def escapechars(*args):
+    def replchars_to_hex(match):
+        return r'\x{0:02x}'.format(ord(match.group()))
+
+    return replchars.sub(replchars_to_hex, ''.join(args))
+
+escapechars.registered = True
+
 
 def keywords(*args):
 

@@ -86,7 +86,7 @@ class clipboard(vtbase.VT):
                 delim = ' '
 
         if delim != None:
-            data=[i.split(delim) for i in data]
+            data=[[x.strip() for x in i.split(delim)] for i in data]
             self.schema = None
             header = False
 
@@ -106,7 +106,7 @@ class clipboard(vtbase.VT):
                     
                 self.schema=[('C'+str(i),'text') for i in xrange(1, count)]
         else:
-            data = [[r] for r in data]
+            data = [[r.strip()] for r in data]
 
         yield self.schema
 
