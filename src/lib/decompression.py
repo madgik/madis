@@ -7,9 +7,8 @@ import zlib
 import apsw
 from array import array
 import marshal
-import msgpack
 import bz2
-serializer = msgpack
+serializer = marshal
 
 registered=True
 
