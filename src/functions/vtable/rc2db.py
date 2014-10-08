@@ -18,9 +18,9 @@ BLOCK_SIZE = 200000000
 import apsw
 import time
 import marshal
-import msgpack
 
-serializer = msgpack
+
+serializer = marshal
 
 
 class RC2DB(vtbase.VT):

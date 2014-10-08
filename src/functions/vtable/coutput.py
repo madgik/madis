@@ -62,10 +62,9 @@ import zlib
 from collections import OrderedDict
 from array import array
 import bz2
-import msgpack
 
 
-serializer = msgpack
+serializer = marshal
 BLOCK_SIZE = 65536000
 ZLIB = "zlib"
 BZ2 = "bzip"
