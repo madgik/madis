@@ -15,7 +15,6 @@ import zlib
 import apsw
 from array import array
 import marshal
-import msgpack
 import bz2
 import decompression
 
@@ -37,7 +36,7 @@ else:
     from itertools import izip
     newlist_hint = lambda size: []
 
-serializer = msgpack
+serializer = marshal
 
 registered=True
 

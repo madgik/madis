@@ -18,9 +18,9 @@ import zlib
 registered=True
 BLOCK_SIZE = 200000000
 import marshal
-import msgpack
 
-serializer = msgpack
+
+serializer = marshal
 
 class UnionAllRC(vtbase.VT):
 

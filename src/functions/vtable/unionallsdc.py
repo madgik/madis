@@ -12,12 +12,11 @@ import gc
 import re
 import zlib
 from array import array
-import msgpack
 import marshal
 ### Classic stream iterator
 registered=True
 BLOCK_SIZE = 200000000
-serializer = msgpack
+serializer = marshal
 
 class UnionAllSDC(vtbase.VT):
 
