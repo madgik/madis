@@ -8,7 +8,7 @@ import apsw
 from array import array
 import marshal
 import bz2
-serializer = marshal
+
 
 registered=True
 
@@ -23,6 +23,8 @@ class Decompression:
 
         
     def decompressblock(self,inputblock):
+        import msgpack
+        serializer = msgpack
         self.blocknumber += 1
         if self.blocknumber == 1 :
             # schema block

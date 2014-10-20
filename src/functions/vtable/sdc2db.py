@@ -35,9 +35,7 @@ if hasattr(sys, 'pypy_version_info'):
 else:
     from itertools import izip
     newlist_hint = lambda size: []
-
-serializer = marshal
-
+    
 registered=True
 
 
@@ -56,6 +54,8 @@ class SDC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        import msgpack
+        serializer = msgpack
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'

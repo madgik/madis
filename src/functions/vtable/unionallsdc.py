@@ -16,12 +16,13 @@ import marshal
 ### Classic stream iterator
 registered=True
 BLOCK_SIZE = 200000000
-serializer = marshal
 
 class UnionAllSDC(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        import msgpack
+        serializer = msgpack
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'

@@ -20,14 +20,13 @@ import time
 import marshal
 
 
-serializer = marshal
-
 
 class RC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
-        time1 = time.time()
+        import msgpack
+        serializer = msgpack
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'
@@ -113,11 +112,7 @@ class RC2DB(vtbase.VT):
                 fileObject.close()
         except NameError:
             pass
-        time2 = time.time()
-        stats = open('compressionstatistics.tsv', 'a')
-        stat = where
-        statstr = stat + "\t" + str(time2-time1) + "\n"
-        stats.write(statstr)
+       
 
 def Source():
     return vtbase.VTGenerator(RC2DB)

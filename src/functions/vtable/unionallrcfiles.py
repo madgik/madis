@@ -20,12 +20,12 @@ BLOCK_SIZE = 200000000
 import marshal
 
 
-serializer = marshal
-
 class UnionAllRC(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        import msgpack
+        serializer = msgpack
         largs, dictargs = self.full_parse(args)
         where = None
         mode = 'row'

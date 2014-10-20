@@ -64,7 +64,7 @@ from array import array
 import bz2
 
 
-serializer = marshal
+
 BLOCK_SIZE = 65536000
 ZLIB = "zlib"
 BZ2 = "bzip"
@@ -85,6 +85,8 @@ def getSize(v):
     return 37 + len(v)
 
 def outputData(diter, schema, connection, *args, **formatArgs):
+    import msgpack
+    serializer = msgpack
     ### Parameter handling ###
     where=None
     mode = 'sdc'
