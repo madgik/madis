@@ -59,7 +59,6 @@ import StringIO as StringIO
 import cStringIO as cStringIO
 import marshal
 import zlib
-from collections import OrderedDict
 from array import array
 import bz2
 
