@@ -15,7 +15,7 @@ import zlib
 import apsw
 from array import array
 import marshal
-import bz2
+
 import decompression
 
 if hasattr(sys, 'pypy_version_info'):
@@ -55,6 +55,7 @@ class SDC2DB(vtbase.VT):
 
     def VTiter(self, *args,**formatArgs):
         import msgpack
+        import bz2
         serializer = msgpack
         largs, dictargs = self.full_parse(args)
         where = None

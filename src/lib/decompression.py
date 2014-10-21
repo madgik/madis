@@ -7,7 +7,7 @@ import zlib
 import apsw
 from array import array
 import marshal
-import bz2
+
 
 
 registered=True
@@ -23,6 +23,7 @@ class Decompression:
 
         
     def decompressblock(self,inputblock):
+        import bz2
         import msgpack
         serializer = msgpack
         self.self.blocknumberber += 1

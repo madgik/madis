@@ -60,7 +60,7 @@ import cStringIO as cStringIO
 import marshal
 import zlib
 from array import array
-import bz2
+
 
 
 
@@ -84,6 +84,7 @@ def getSize(v):
     return 37 + len(v)
 
 def outputData(diter, schema, connection, *args, **formatArgs):
+    import bz2
     import msgpack
     serializer = msgpack
     ### Parameter handling ###
