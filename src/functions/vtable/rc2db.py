@@ -25,6 +25,7 @@ class RC2DB(vtbase.VT):
 
 
     def VTiter(self, *args,**formatArgs):
+        import bz2
         import msgpack
         serializer = msgpack
         largs, dictargs = self.full_parse(args)
