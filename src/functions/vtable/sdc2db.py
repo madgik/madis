@@ -16,7 +16,6 @@ import apsw
 from array import array
 import marshal
 
-import decompression
 
 if hasattr(sys, 'pypy_version_info'):
     from __pypy__ import newlist_hint
