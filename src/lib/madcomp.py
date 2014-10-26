@@ -76,20 +76,19 @@ class Decompression:
                         else:
                             cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
 
-                if hasattr(sys, 'pypy_version_info'):
-                    iterators = tuple(map(iter, cols))
-                    ilen = len(cols)
-                    res = [None] * ilen
+                iterators = tuple(map(iter, cols))
+                ilen = len(cols)
+                res = [None] * ilen
 
-                    while True:
-                        ci = 0
-                        try:
-                            while ci < ilen:
-                                res[ci] = iterators[ci].next()
-                                ci += 1
-                            yield res
-                        except:
-                            break
+                while True:
+                    ci = 0
+                    try:
+                        while ci < ilen:
+                            res[ci] = iterators[ci].next()
+                            ci += 1
+                        yield res
+                    except:
+                        break
             elif not b[0]:
                 cPickle.load(input)
 
