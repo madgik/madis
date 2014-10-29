@@ -59,17 +59,18 @@ settings={
 'syspath':str(os.path.abspath(os.path.expandvars(os.path.expanduser(os.path.normcase(sys.path[0])))))
 }
 
-functions = {'row':{},'aggregate':{}, 'vtable':{}}
+functions = {'row': {}, 'aggregate': {}, 'vtable': {}}
 multiset_functions = {}
-iterheader='ITER'+chr(30)
+iterheader = 'ITER'+chr(30)
 
-variables=lambda x:x
-variables.flowname=''
-variables.execdb=None
+variables = lambda _: _
+variables.flowname = ''
+variables.execdb = None
+variables.filename = ''
 
-privatevars=lambda x:x
+privatevars=lambda _: _
 
-rowfuncs=lambda x:x
+rowfuncs=lambda _: _
 
 oldexecdb=-1
 
@@ -310,20 +311,21 @@ class Connection(apsw.Connection):
 def register(connection=None):
     global firstimport, oldexecdb
 
-    if connection==None:
+    if connection == None:
         if 'SQLITE_OPEN_URI' in apsw.__dict__:
-            connection=Connection(':memory:', flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
+            connection = Connection(':memory:', flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI)
         else:
-            connection=Connection(':memory:')
+            connection = Connection(':memory:')
 
     connection.openiters = {}
-    connection.registered=True
+    connection.registered = True
+    connection.cursor().execute("attach database ':memory:' as mem;", parse=False)
 
-    connection.cursor().execute("attach database ':memory:' as mem;",parse=False)
+    variables.filename = connection.filename
 
     # To avoid db corruption set connection to fullfsync mode when MacOS is detected
-    if sys.platform=='darwin':
-        c=connection.cursor().execute('pragma fullfsync=1;', parse=False)
+    if sys.platform == 'darwin':
+        c = connection.cursor().execute('pragma fullfsync=1;', parse=False)
 
     functionspath=os.path.abspath(__path__[0])
 
