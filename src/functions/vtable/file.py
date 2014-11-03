@@ -338,7 +338,12 @@ class FileCursor:
         if filenameExt == '.json' or filenameExt == '.js' or ('dialect' in rest and type(rest['dialect']) == str and rest['dialect'].lower()=='json'):
             self.fast = True
             firstline = self.fileiter.readline()
-            schemaline = json.loads(firstline)
+            try:
+                schemaline = json.loads(firstline)
+            except ValueError:
+                namelist.append(['C1', 'text'])
+                self.iter = directfile(itertools.chain([firstline], self.fileiter), self.encoding)
+                return
             schemalinetype = type(schemaline)
 
             if schemalinetype == list:
@@ -346,11 +351,13 @@ class FileCursor:
                     namelist.append( ['C'+str(i), 'text'] )
                 self.fileiter = itertools.chain([firstline], self.fileiter)
 
-            elif schemalinetype == dict:
+            elif schemalinetype == dict and 'schema' in schemaline:
                 namelist += schemaline['schema']
 
             else:
-                raise functions.OperatorError(__name__.rsplit('.')[-1], "Input file is not in line JSON format")
+                namelist.append(['C1', 'text'])
+                self.iter = directfile(itertools.chain([firstline], self.fileiter), self.encoding)
+                return
 
             if "MSPW" in functions.apsw_version:
                 self.iter = (json.loads(x) for x in self.fileiter)
@@ -358,7 +365,6 @@ class FileCursor:
                 jsonload = json.JSONDecoder().scan_once
                 self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
             return
-
 
         if filenameExt =='.csv':
             if self.fast:
