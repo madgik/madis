@@ -330,12 +330,13 @@ class FileCursor:
                 self.fileiter = gzip.GzipFile(mode = 'rb', fileobj=self.fileiter)
 
         except Exception,e:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],e)
+            raise functions.OperatorError(__name__.rsplit('.')[-1], e)
 
         _, filenameExt = os.path.splitext(filename)
         filenameExt = filenameExt.lower()
 
-        if filenameExt == '.json' or filenameExt == '.js' or ('dialect' in rest and type(rest['dialect']) == str and rest['dialect'].lower()=='json'):
+        if filenameExt == '.json' or filenameExt == '.js' or ('dialect' in rest and type(rest['dialect']) == str
+                                                              and rest['dialect'].lower() == 'json'):
             self.fast = True
             firstline = self.fileiter.readline()
             try:
@@ -348,7 +349,7 @@ class FileCursor:
 
             if schemalinetype == list:
                 for i in xrange(1, len(schemaline)+1):
-                    namelist.append( ['C'+str(i), 'text'] )
+                    namelist.append(['C'+str(i), 'text'])
                 self.fileiter = itertools.chain([firstline], self.fileiter)
 
             elif schemalinetype == dict and 'schema' in schemaline:
@@ -366,15 +367,15 @@ class FileCursor:
                 self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
             return
 
-        if filenameExt =='.csv':
+        if filenameExt == '.csv':
             if self.fast:
                 rest['delimiter'] = ','
-            rest['dialect']=lib.inoutparsing.defaultcsv()
+            rest['dialect'] = lib.inoutparsing.defaultcsv()
 
         if filenameExt == '.tsv':
             if self.fast:
                 rest['delimiter'] = '\t'
-            rest['dialect']=lib.inoutparsing.tsv()
+            rest['dialect'] = lib.inoutparsing.tsv()
 
         if self.fast:
             if 'delimiter' not in rest:
@@ -382,7 +383,7 @@ class FileCursor:
             if self.dialect == 'tsv':
                 rest['delimiter'] = '\t'
 
-        if hasheader or len(rest)>0: #if at least one csv argument default dialect is csv else line
+        if hasheader or len(rest) > 0:  #if at least one csv argument default dialect is csv else line
             if 'dialect' not in rest:
                 rest['dialect']=lib.inoutparsing.defaultcsv()
 
