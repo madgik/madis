@@ -128,33 +128,33 @@ import types
 comment_line=re.compile(r'/\*.*?\*/(.*)$')
 registered=True
 
-def execflow(diter, schema, connection,*args,**kargs):
-    ignoreflag='ignorefail'
+def execflow(diter, schema, connection, *args, **kargs):
+    ignoreflag = 'ignorefail'
 
-    if functions.variables.execdb==None:
-        con=functions.Connection('')
+    if functions.variables.execdb is None:
+        con = functions.Connection('')
     else:
-        con=functions.Connection(functions.variables.execdb)
+        con = functions.Connection(functions.variables.execdb)
     
     functions.register(con)
-    oldvars=functions.variables
-    newvars=lambda :x
-    newpath=None
-    path=os.getcwd()
+    oldvars = functions.variables
+    newvars = lambda x: x
+    newpath = None
+    path = os.getcwd()
 
     if 'path' in kargs:
-        newpath=os.path.abspath(kargs['path'])
+        newpath = os.path.abspath(kargs['path'])
         del kargs['path']
         os.chdir(newpath)
 
     newvars.execdb=functions.variables.execdb
-    newvars.flowname='notset'
+    newvars.flowname = 'notset'
     for v in args:
         if hasattr(functions.variables,v):
             newvars.__dict__[v]=functions.variables.__dict__[v]
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Variable %s doen't exist" %(v))
-    for newv,oldv in kargs.items():
+    for newv, oldv in kargs.items():
         if hasattr(functions.variables,oldv):
             newvars.__dict__[newv]=functions.variables.__dict__[oldv]
         else:
@@ -164,24 +164,24 @@ def execflow(diter, schema, connection,*args,**kargs):
     if functions.settings['logging']:
         lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
         lg.info("############FLOW START###################")
-    before=datetime.datetime.now()
+    before = datetime.datetime.now()
 
     try:
 
-        line=0
+        line = 0
         for query in diter:
             
-            if len(query)>1:
+            if len(query) > 1:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Ambiguous query column, result has more than one columns")
-            line+=1
+            line += 1
             if type(query[0]) not  in types.StringTypes:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Content is not sql query")
             #Skip empty queries or comment lines
-            query=query[0].strip()
+            query = query[0].strip()
             if query.startswith("--"):
                 continue
-            cmatch=comment_line.match(query)
-            if query=='' or (cmatch!=None and cmatch.groups()[0]==''):
+            cmatch = comment_line.match(query)
+            if query == '' or (cmatch is not None and cmatch.groups()[0] == ''):
                 continue
 
             if functions.settings['logging']:
@@ -214,10 +214,10 @@ def execflow(diter, schema, connection,*args,**kargs):
 
             if functions.settings['logging']:
                 lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-                after=datetime.datetime.now()
-                tmdiff=after-before
-                duration="%s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
-                lg.info("FINISHED in %s: %s" %(duration,query))
+                after = datetime.datetime.now()
+                tmdiff = after-before
+                duration = "%s min. %s sec %s msec" % ((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60), (int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+                lg.info("FINISHED in %s: %s" %(duration, query))
             c.close()
 
     except Exception,e:
@@ -230,14 +230,14 @@ def execflow(diter, schema, connection,*args,**kargs):
             con.close()
         except:
             pass
-        after=datetime.datetime.now()
-        tmdiff=after-before
-        fltm="Flow executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+        after = datetime.datetime.now()
+        tmdiff = after-before
+        fltm = "Flow executed in %s min. %s sec %s msec" %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
         if functions.settings['logging']:
             lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
             lg.info(fltm)
             lg.info("#############FLOW END####################")
-        functions.variables=oldvars
+        functions.variables = oldvars
         if newpath:
             os.chdir(path)
 
@@ -259,4 +259,3 @@ if not ('.' in __name__):
         sys.setdefaultencoding('utf-8')
         import doctest
         doctest.testmod()
-        
