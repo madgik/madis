@@ -470,8 +470,8 @@ def _java_to_py(java_method):
         return getattr(java_val, java_method)()
     return to_py
 
-_to_double = lambda x: getattr(x, 'doubleValue')()
-_to_int = lambda x: getattr(x, 'intValue')()
+_to_double = lambda x: getattr(x, 'doubleValue', x)()
+_to_int = lambda x: getattr(x, 'intValue', x)()
 
 def _init_converters(types_map):
     """Prepares the converters for conversion of java types to python
