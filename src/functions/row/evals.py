@@ -1,8 +1,6 @@
 # coding: utf-8
 
 import setpath
-import datetime
-
 import functions
 from string import Template
 
@@ -16,6 +14,12 @@ class myTemplate(Template):
       (?P<invalid>)              # Other ill-formed delimiter exprs
     )
     """%{'delim' : delimiter, 'id': Template.idpattern }
+
+
+def query(*args):
+    return args[0] + ';'
+
+query.registered = True
 
 
 def pyeval(*args):
