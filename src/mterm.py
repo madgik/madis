@@ -14,9 +14,9 @@ if sys.platform == 'darwin':
 #except ImportError: pass
 #else: del lib.winunicode
 
+import functions
 import re
 import apsw
-import functions
 import traceback
 import json
 import math
