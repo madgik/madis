@@ -1,11 +1,11 @@
 """functions
 """
-VERSION="1.7"
+VERSION = "1.9"
 
+import setpath
 import os.path
 import os
 import apsw
-import setpath
 import sqltransform
 import traceback
 import logging
@@ -13,7 +13,6 @@ import re
 import sys
 import copy
 
-import compiler.consts
 try:
     from collections import OrderedDict
 except ImportError:
