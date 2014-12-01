@@ -141,7 +141,7 @@ class Transclass:
 
         query = None
 
-        #Expand functions with spaces between them and their parenthesis
+        # Expand functions with spaces between them and their parenthesis
         for t in s_orig.tokens:
             tfm = re.match('(\w+)\s\(', unicode(t), re.UNICODE)
             if isinstance(t, sqlparse.sql.Function) and tfm and (
@@ -150,6 +150,26 @@ class Transclass:
                 s_orig.tokens[tidx:tidx + 1] = t.tokens
 
         fs = [x for x in expand_tokens(s)]
+
+        # Process external_query VTs
+        tmatch = re.match(r'\s*(\w+)\s+(.*|$)', unicode(s), re.DOTALL | re.UNICODE)
+        if tmatch is not None and tmatch.groups()[0].lower() in self.vtables:
+            op_for_inv = tmatch.groups()[0].lower()
+            if hasattr(self.vtables[op_for_inv], 'external_query'):
+                rest = tmatch.groups()[1]
+                op_for_inv = unicode(op_for_inv)
+                params, preposition, subq = break_inversion_subquery.match(rest).groups()
+                if subq != '':
+                    paramslist = [format_query(subq)]
+                else:
+                    paramslist = []
+                paramslist += [format_param(''.join(x)) for x in
+                               re.findall(r"'([^']*?)'|(\w+:[^\s]+)", params, re.UNICODE)]
+                inv_s = ','.join(paramslist)
+                vname = vt_name(op_for_inv)
+                self.direct_exec += [(op_for_inv, paramslist, subq)]
+                s_orig.tokens[s_orig.token_index(s.tokens[0]):s_orig.token_index(s.tokens[-1]) + 1] = [sqlparse.sql.Token(Token.Keyword, 'select * from ' + vname + ' ')]
+                return unicode(s), vt_distinct([(vname, op_for_inv, inv_s)]), self.direct_exec
 
         # Process internal parenthesis
         for t in fs:
@@ -185,7 +205,7 @@ class Transclass:
 
         fs = [x for x in expand_tokens(s)]
 
-        #Proccess vtable inversion
+        # Process vtable inversion
         for t in fs:
             if t.ttype == Token.Keyword.DML:
                 break
@@ -226,7 +246,6 @@ class Transclass:
                             paramslist) + ') ' + subq
                 subs = sqlparse.parse(inv_s)[0]
                 self.direct_exec += [(op_for_inv, paramslist, orig_subq)]
-                #print self.direct_exec
                 s_orig.tokens[s_orig.token_index(s.tokens[0]):s_orig.token_index(s.tokens[-1]) + 1] = subs.tokens
                 s = subs
                 break

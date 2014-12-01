@@ -30,12 +30,21 @@ Examples:
 import vtbase
 
 registered=True
+external_query = True
 
 class examplevt(vtbase.VT):
     def VTiter(self, *parsedArgs, **envars):
-        yield [('varname', 'text'), ('value', 'text')]
+        yield [('varname', ), ('value', 'text')]
 
-        yield ["parsedargs", unicode(parsedArgs)]
+        largs, dictargs = self.full_parse(parsedArgs)
+
+        li = 0
+        for i in largs:
+            yield [li, unicode(i)]
+            li += 1
+
+        for k, v in dictargs.iteritems():
+            yield [unicode(k), unicode(v)]
 
         for x,y in envars.iteritems():
             yield ["envar:"+x, str(y)]
