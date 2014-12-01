@@ -116,6 +116,7 @@ import os.path
     
 import setpath          #for importing from project root directory  KEEP IT IN FIRST LINE
 from vtout import SourceNtoOne
+import apsw
 import functions
 import logging
 import datetime
@@ -125,8 +126,36 @@ import re
 import time
 import types
 
-comment_line=re.compile(r'/\*.*?\*/(.*)$')
-registered=True
+comment_line = re.compile(r'/\*.*?\*/(.*)$')
+registered = True
+
+def filterlinecomment(s):
+    if re.match(r'\s*--', s, re.DOTALL|re.UNICODE):
+        return ''
+    else:
+        return s
+
+def breakquery(q):
+    if len(q) > 1:
+        raise functions.OperatorError(__name__.rsplit('.')[-1], "Ambiguous query column, result has more than one columns")
+    st = ''
+    for row in q[0].splitlines():
+        strow = filterlinecomment(row)
+        if strow == '':
+            continue
+        if st != '':
+            st += '\n'+strow
+        else:
+            st += strow
+        if apsw.complete(st):
+            yield st
+            st = ''
+
+    if len(st) > 0 and not re.match(r'\s+$', st, re.DOTALL| re.UNICODE):
+        if len(st) > 35:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Incomplete statement found : %s ... %s" % (st[:15], st[-15:]))
+        else:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Incomplete statement found : %s" % (st,))
 
 def execflow(diter, schema, connection, *args, **kargs):
     ignoreflag = 'ignorefail'
@@ -146,83 +175,81 @@ def execflow(diter, schema, connection, *args, **kargs):
         del kargs['path']
         os.chdir(newpath)
 
-    newvars.execdb=functions.variables.execdb
+    newvars.execdb = functions.variables.execdb
     newvars.flowname = 'notset'
     for v in args:
         if hasattr(functions.variables,v):
             newvars.__dict__[v]=functions.variables.__dict__[v]
         else:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Variable %s doen't exist" %(v))
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Variable %s doen't exist" % (v,))
     for newv, oldv in kargs.items():
         if hasattr(functions.variables,oldv):
             newvars.__dict__[newv]=functions.variables.__dict__[oldv]
         else:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Variable %s doen't exist" %(oldv))
-    functions.variables=newvars
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Variable %s doen't exist" % (oldv,))
+    functions.variables = newvars
 
     if functions.settings['logging']:
         lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
         lg.info("############FLOW START###################")
     before = datetime.datetime.now()
 
+    query = ''
     try:
-
         line = 0
-        for query in diter:
-            if len(query) > 1:
-                raise functions.OperatorError(__name__.rsplit('.')[-1],"Ambiguous query column, result has more than one columns")
-            line += 1
-            if type(query[0]) not  in types.StringTypes:
-                raise functions.OperatorError(__name__.rsplit('.')[-1],"Content is not sql query")
-            #Skip empty queries or comment lines
-            query = query[0].strip()
-            if query.startswith("--"):
-                continue
-            cmatch = comment_line.match(query)
-            if query == '' or (cmatch is not None and cmatch.groups()[0] == ''):
-                continue
-
-            if functions.settings['logging']:
-                lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-                lg.info("STARTING: %s" %(query))
-            before=datetime.datetime.now()
-            c=con.cursor()
-            # check ignore flag
-            catchexception=False
-            if query.startswith(ignoreflag):
-                catchexception=True
-                query=query[len(ignoreflag):]
-            try:
-                for i in c.execute(query):
-                    pass
-            except Exception,e: #Cathing IGNORE FAIL EXCEPTION          
-                if catchexception:
-                    if functions.settings['logging']:
-                        lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-                        lg.exception("Ignoring Exception: "+str(e))
+        for t in diter:
+            for query in breakquery(t):
+                line += 1
+                if type(query) not in types.StringTypes:
+                    raise functions.OperatorError(__name__.rsplit('.')[-1], "Content is not sql query")
+                #Skip empty queries or comment lines
+                query = query.strip()
+                if query.startswith("--"):
                     continue
-                else:
-                    try:
-                        c.close()
-                        c=con.cursor()
-                        c.execute('rollback')
-                    except:
+                cmatch = comment_line.match(query)
+                if query == '' or (cmatch is not None and cmatch.groups()[0] == ''):
+                    continue
+
+                if functions.settings['logging']:
+                    lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+                    lg.info("STARTING: %s" %(query))
+                before = datetime.datetime.now()
+                c = con.cursor()
+                # check ignore flag
+                catchexception = False
+                if query.startswith(ignoreflag):
+                    catchexception=True
+                    query = query[len(ignoreflag):]
+                try:
+                    for i in c.execute(query):
                         pass
-                    raise e
+                except Exception,e: #Cathing IGNORE FAIL EXCEPTION
+                    if catchexception:
+                        if functions.settings['logging']:
+                            lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+                            lg.exception("Ignoring Exception: "+str(e))
+                        continue
+                    else:
+                        try:
+                            c.close()
+                            c = con.cursor()
+                            c.execute('rollback')
+                        except:
+                            pass
+                        raise e
 
-            if functions.settings['logging']:
-                lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
-                after = datetime.datetime.now()
-                tmdiff = after-before
-                duration = "%s min. %s sec %s msec" % ((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60), (int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
-                lg.info("FINISHED in %s: %s" %(duration, query))
-            c.close()
-
-    except Exception,e:
+                if functions.settings['logging']:
+                    lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
+                    after = datetime.datetime.now()
+                    tmdiff = after-before
+                    duration = "%s min. %s sec %s msec" % ((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60), (int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
+                    lg.info("FINISHED in %s: %s" % (duration, query))
+                c.close()
+    except Exception, e:
         if functions.settings['logging']:
             lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
             lg.exception(e)
-        raise functions.OperatorError(__name__.rsplit('.')[-1],"Error in statement no. %s query '%s':\n%s" %(line,query,str(e)))
+        raise functions.OperatorError(__name__.rsplit('.')[-1], "Error in statement no. %s query '%s':\n%s" % (line, query, str(e)))
     finally:
         try:
             con.close()
