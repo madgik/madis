@@ -182,10 +182,10 @@ def execflow(diter, schema, connection, *args, **kargs):
     newvars.execdb = functions.variables.execdb
     newvars.flowname = 'notset'
     for v in args:
-        if hasattr(functions.variables,v):
-            newvars.__dict__[v]=functions.variables.__dict__[v]
+        if hasattr(functions.variables, v):
+            newvars.__dict__[v] = functions.variables.__dict__[v]
         else:
-            raise functions.OperatorError(__name__.rsplit('.')[-1], "Variable %s doen't exist" % (v,))
+            raise functions.OperatorError(__name__.rsplit('.')[-1], "Variable %s doesn't exist" % (v,))
     for newv, oldv in kargs.items():
         if hasattr(functions.variables,oldv):
             newvars.__dict__[newv]=functions.variables.__dict__[oldv]
