@@ -132,9 +132,8 @@ def execflow(diter, schema, connection, *args, **kargs):
     ignoreflag = 'ignorefail'
 
     if functions.variables.execdb is None:
-        con = functions.Connection('')
-    else:
-        con = functions.Connection(functions.variables.execdb)
+        functions.variables.execdb = connection.filename
+    con = functions.Connection(functions.variables.execdb)
     
     functions.register(con)
     oldvars = functions.variables
@@ -170,7 +169,6 @@ def execflow(diter, schema, connection, *args, **kargs):
 
         line = 0
         for query in diter:
-            
             if len(query) > 1:
                 raise functions.OperatorError(__name__.rsplit('.')[-1],"Ambiguous query column, result has more than one columns")
             line += 1
