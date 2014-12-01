@@ -1,8 +1,12 @@
 """
 .. function:: exec(query:None,[path:None,variables])
 
-Executes the input query. Gets the first column of the returned result and executes its rows content supposing it is an sql statement. *Path* parameter sets the current working directory while executing the statements.
-*Variables* are named parameters that set variables in execution environment. For example *c:v* named parameter sets the variable *c* in the new environment, initialized with current variable's *v* value.
+Executes the input query. Gets the first column of the returned result and executes its rows content supposing it is an sql statement.
+
+*Path* parameter sets the current working directory while executing the statements.
+
+*Variables* are named parameters that set variables in execution environment. For example *c:v* named parameter
+sets the variable *c* in the new environment, initialized with current variable's *v* value.
 
 :Returned table schema:
     - *return_value* int
@@ -68,7 +72,7 @@ Nesting flows. Usage of *path* and variables parameters.
     ------------------------------------------------------------------------------
     create table %{tablename} as select * from getvars() where variable!='execdb';
 
-    >>> sql("select * from getvars() where variable!='execdb'")
+    >>> sql("select * from variables() where variable!='execdb'")
     variable | value
     ----------------
     flowname |
@@ -92,7 +96,7 @@ Nesting flows. Usage of *path* and variables parameters.
     c         | 5
     tablename | internaltable
 
-    >>> sql("select * from getvars() where variable!='execdb'")
+    >>> sql("select * from variables() where variable!='execdb'")
     variable | value
     ----------------
     flowname |
