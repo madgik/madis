@@ -17,7 +17,8 @@ import vtbase
 import functions
 from types import NoneType
 
-registered=True
+registered = True
+external_query = True
 
 class MySQL(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
