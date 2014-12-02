@@ -18,6 +18,7 @@ import functions
 import os
 
 registered=True
+external_query = True
 
 class SQLite(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
