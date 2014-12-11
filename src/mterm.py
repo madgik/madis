@@ -642,7 +642,7 @@ process_args()
 
 sqlandmtermstatements=['select ', 'create ', 'where ', 'table ', 'group by ', 'drop ', 'order by ', 'index ', 'from ', 'alter ', 'limit ', 'delete ', '..',
     "attach database '", 'detach database ', 'distinct', 'exists ']
-dotcompletions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.quote', '.explain ', '.vacuum', '.quit']
+dotcompletions=['.help ', '.colnums', '.schema ', '.functions ', '.tables', '.explain ', '.vacuum', '.queryplan ']
 allfuncs=functions.functions['vtable'].keys()+functions.functions['row'].keys()+functions.functions['aggregate'].keys()
 alltables=[]
 alltablescompl=[]
