@@ -300,14 +300,15 @@ class FileCursor:
             if compression and compressiontype=='zip':
                 self.fileiter=ZipIter(filename,"r")
             elif not isurl:
-                pathname=filename.strip()
-                if self.fast or compression or (pathname!=None and ( pathname.endswith('.gz') or pathname.endswith('.gzip') )):
-                    self.fileiter=open(filename,"r", buffering=1000000)
+                pathname = filename.strip()
+                if self.fast or compression or \
+                        (pathname is not None and (pathname.endswith('.gz') or pathname.endswith('.gzip') or pathname.endswith('.avro'))):
+                    self.fileiter = open(filename, "rb", buffering=1000000)
                 else:
                     if "MSPW" in functions.apsw_version:
-                        self.fileiter=open(filename,"r", buffering=1000000)
+                        self.fileiter = open(filename, "r", buffering=1000000)
                     else:
-                        self.fileiter=open(filename,"rU", buffering=1000000)
+                        self.fileiter = open(filename, "rU", buffering=1000000)
             else:
                 pathname=urlparse.urlparse(filename)[2]
                 req=urllib2.Request(filename,None,extraurlheaders)
@@ -365,6 +366,19 @@ class FileCursor:
             else:
                 jsonload = json.JSONDecoder().scan_once
                 self.iter = (jsonload(x, 0)[0] for x in self.fileiter)
+            return
+
+        if filenameExt == '.avro':
+            self.fast = True
+            from lib import fastavro as avro
+
+            reader = avro.reader(self.fileiter)
+            fields = [x['name'] for x in reader.schema['fields']]
+            print fields
+            namelist.extend([[x, ''] for x in fields])
+            # for x in reader:
+            #     print [x[y] for y in fields]
+            self.iter = ([x[y] for y in fields] for x in reader)
             return
 
         if filenameExt == '.csv':
