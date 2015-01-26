@@ -374,10 +374,7 @@ class FileCursor:
 
             reader = avro.reader(self.fileiter)
             fields = [x['name'] for x in reader.schema['fields']]
-            print fields
             namelist.extend([[x, ''] for x in fields])
-            # for x in reader:
-            #     print [x[y] for y in fields]
             self.iter = ([x[y] for y in fields] for x in reader)
             return
 
