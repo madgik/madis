@@ -372,10 +372,10 @@ class FileCursor:
             self.fast = True
             from lib import fastavro as avro
 
-            reader = avro.reader(self.fileiter)
-            fields = [x['name'] for x in reader.schema['fields']]
+            afi = avro.reader(self.fileiter)
+            fields = [x['name'] for x in afi.schema['fields']]
             namelist.extend([[x, ''] for x in fields])
-            self.iter = ([x[y] for y in fields] for x in reader)
+            self.iter = ([x[y] for y in fields] for x in afi)
             return
 
         if filenameExt == '.csv':
@@ -404,7 +404,7 @@ class FileCursor:
                     delim = rest['delimiter']
                     self.iter=peekable((unicode(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter))
                 else:
-                    self.iter=peekable(nullify(reader(self.fileiter,encoding=self.encoding,**rest)))
+                    self.iter=peekable(nullify(reader(self.fileiter, encoding=self.encoding,**rest)))
                     if self.strict == None:
                         self.strict = 1
                 sample=self.iter.peek()
