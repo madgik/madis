@@ -862,7 +862,7 @@ while True:
         before = datetime.datetime.now()
         try:
             if queryplan:
-                cexec = connection.queryplan(origstatement[10:])
+                cexec = connection.queryplan(statement)
                 desc = cexec.next()
             else:
                 cursor = connection.cursor()
