@@ -91,16 +91,16 @@ class UnionAllSDC(vtbase.VT):
                             ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
                             cols = [None] * colnum
                             for c in xrange(colnum):
-                                s = serializer.loads(zlib.decompress(input.read(ind[c*2])))
+                                s = serializer.loads(decompress(input.read(ind[c*2])))
                                 if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
                                     cols[c] = s
                                 else:
                                     if len(s)==1:
                                         cols[c] = repeat(s[0], ind[colnum*2])
                                     elif len(s)<256:
-                                        cols[c] = imap(s.__getitem__, array('B', zlib.decompress(input.read(ind[c*2+1]))))
+                                        cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
                                     else:
-                                        cols[c] = imap(s.__getitem__, array('H', zlib.decompress(input.read(ind[c*2+1]))))
+                                        cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
 
                             if hasattr(sys, 'pypy_version_info'):
                                 iterators = tuple(map(iter, cols))
