@@ -1145,7 +1145,8 @@ class Connection(object):
 
             def xEof(vtabcursor): #int (*xEof)(sqlite3_vtab_cursor*);
                 try:
-                    return self._vtcursoreof[vtabcursor.n]()
+                    # return self._vtcursoreof[vtabcursor.n]()
+                    return self._vtcursorinstances[vtabcursor.n].eof
                 except KeyboardInterrupt:
                     return SQLITE_INTERRUPT
                 except:
