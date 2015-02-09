@@ -135,7 +135,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
   
     def spac(fileObject,lencols):
         colnum = len(schema)-1
-        serializer.dump(schema[1:],fileObject,2)
+        serializer.dump(schema[1:],fileObject)
         setcol = [set([]) for _ in xrange(colnum)]
         dictsize = 65536
         paxcols = []
@@ -177,7 +177,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = index_init[:]
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
-                            output.write(compress(serializer.dumps(listofvals[i],2)))
+                            output.write(compress(serializer.dumps(listofvals[i]),2))
                             l[0] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
@@ -193,7 +193,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = index_init[:]
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
-                            output.write(compress(serializer.dumps(prevsets[i],2)))
+                            output.write(compress(serializer.dumps(prevsets[i]),2))
                             l[0] = output.tell()
                             output.write(compress(array(indextype,[coldict[val] for val in listofvals[i]] ).tostring()))
                             l[1] = output.tell()
@@ -207,7 +207,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                             l = index_init[:]
                             t = output.tell()
                             output.write(struct.pack('L'*len(l), *l))
-                            output.write(compress(serializer.dumps(listofvals[i],2)))
+                            output.write(compress(serializer.dumps(listofvals[i]),2))
                             l[0] = output.tell()
                             output.seek(t)
                             output.write(struct.pack('L'*len(l), *l))
@@ -238,7 +238,7 @@ def outputData(diter, schema, connection, *args, **formatArgs):
                                     indextype='B'
                                 else:
                                     indextype='H'
-                                output.write(compress(serializer.dumps(difnew,2)))
+                                output.write(compress(serializer.dumps(difnew),2))
                                 l[0] = output.tell()
                                 output.write(compress(array(indextype,towritevalues).tostring()))
                                 l[1] = output.tell()

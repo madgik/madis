@@ -61,34 +61,38 @@ class Decompression:
 
                 type = '!'+'i'*(colnum*2+1)
                 ind = list(struct.unpack(type, input.read(4*(colnum*2+1))))
-
-                cols = [None]*colnum
-                for c in xrange(colnum):
-                    s = serializer.loads(decompress(input.read(ind[c*2])))
-                    if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
-                        cols[c] = s
-                    else:
-                        if len(s)==1:
-                            tmp = s[0]
-                            cols[c] = repeat(tmp, ind[colnum*2])
-                        elif len(s)<256:
-                            cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
+                if sum(ind)==0:   # rowstore
+                    s = serializer.loads(input.read())
+                    for rec in s:
+                        yield rec
+                else:
+                    cols = [None]*colnum
+                    for c in xrange(colnum):
+                        s = serializer.loads(decompress(input.read(ind[c*2])))
+                        if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
+                            cols[c] = s
                         else:
-                            cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
+                            if len(s)==1:
+                                tmp = s[0]
+                                cols[c] = repeat(tmp, ind[colnum*2])
+                            elif len(s)<256:
+                                cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
+                            else:
+                                cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
 
-                iterators = tuple(map(iter, cols))
-                ilen = len(cols)
-                res = [None] * ilen
+                    iterators = tuple(map(iter, cols))
+                    ilen = len(cols)
+                    res = [None] * ilen
 
-                while True:
-                    ci = 0
-                    try:
-                        while ci < ilen:
-                            res[ci] = iterators[ci].next()
-                            ci += 1
-                        yield res
-                    except:
-                        break
+                    while True:
+                        ci = 0
+                        try:
+                            while ci < ilen:
+                                res[ci] = iterators[ci].next()
+                                ci += 1
+                            yield res
+                        except:
+                            break
             elif not b[0]:
                 cPickle.load(input)
 
@@ -103,15 +107,16 @@ class Compression:
         self.currentalgorithm = 'sdicc'
         self.blocknumber = 0
         self.comprblocknumber = 0
-        self.maxlevel = 6
+        self.maxlevel = 7
         self.compressiondict = {
-        0:('sdicc',zlib.compress,0),
-        1:('sdicc',zlib.compress,1),
-        2:('sdicc',zlib.compress,4),
-        3:('sdicc',zlib.compress,5),
-        4:('sdicc',zlib.compress,6),
-        5:('sdicc',bz2.compress,1),
-        6:('sdicc',bz2.compress,9)
+        0:('row',zlib.compress,0),
+        1:('sdicc',zlib.compress,0),
+        2:('sdicc',zlib.compress,1),
+        3:('sdicc',zlib.compress,4),
+        4:('sdicc',zlib.compress,5),
+        5:('sdicc',zlib.compress,6),
+        6:('sdicc',bz2.compress,1),
+        7:('sdicc',bz2.compress,9)
         }
 
     def getmaxlevel(self):
@@ -182,7 +187,36 @@ class Compression:
                     formatArgs = yield self.sdicc(rows, count)
                 else :
                     formatArgs = yield output.getvalue()+self.sdicc(rows, count)
-                
+            elif self.currentalgorithm == "row" :
+                if self.blocknumber > 0 :
+                    formatArgs = yield self.row(rows, count)
+                else :
+                    formatArgs = yield output.getvalue()+self.row(rows, count)
+
+
+    def row(self, diter, lencols):
+        try:
+            import msgpack
+        except ImportError:
+            import marshal as msgpack
+        import bz2
+        serializer = msgpack
+        output = StringIO.StringIO()
+        colnum = len(self.schema)
+        output.truncate(0)
+
+        output.write(struct.pack('!B', 1))
+        if self.compress == bz2.compress:
+            output.write(struct.pack('!B', 0))
+        else:
+            output.write(struct.pack('!B', 1))
+
+        headindex = [0 for _ in xrange((colnum*2)+1)]
+        type = '!'+'i'*len(headindex)
+        output.write(struct.pack(type, *headindex))
+        output.write(serializer.dumps(diter))
+        
+        return output.getvalue()
 
 
     def sdicc(self, diter, lencols):
