@@ -210,7 +210,7 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
             self.eof = True
             self.Close()
 
-    @echocall
+    # @echocall
     def Close(self):
         if hasattr(self.openIter, 'close'):
             self.openIter.close()
