@@ -1091,7 +1091,6 @@ class Connection(object):
                     self._vtcursorinstances[vtabcursor.n].Close()
                     self._vtcursors[vtabcursor.n] = None
                     self._vtcursorcolumn[vtabcursor.n] = None
-                    self._vtcursoreof[vtabcursor.n] = None
                     tmp = list(self._vtcursoreof)
                     tmp[vtabcursor.n] = None
                     self._vtcursoreof = tuple(tmp)
