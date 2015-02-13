@@ -1027,10 +1027,13 @@ class Connection(object):
                 if hasattr(self._vttables[pvtab], 'xDisconnect'):
                     self._vttables[pvtab].xDisconnect()
                 __delVT__(pvtab)
+                return SQLITE_OK
+
 
             def xDestroy(pvtab): #int (*xDisconnect)(sqlite3_vtab *pVTab);
                 self._vttables[pvtab].Destroy()
                 __delVT__(pvtab)
+                return SQLITE_OK
 
             def __delVT__(pvtab):
                 del self._vttables[pvtab]
