@@ -108,6 +108,7 @@ class Compression:
         self.blocknumber = 0
         self.comprblocknumber = 0
         self.maxlevel = 7
+        self.lencols = 0
         self.compressiondict = {
         0:('row',zlib.compress,0),
         1:('sdicc',zlib.compress,0),
@@ -128,6 +129,7 @@ class Compression:
         self.currentalgorithm = 'sdicc'
         self.blocknumber = 0
         self.comprblocknumber = 0
+        self.lencols = 0
 
 
     def setlevel(self,formatArgs):
@@ -179,9 +181,12 @@ class Compression:
                     break
                 else:
                     rows.append(row)
-                    count += 1
-                    bsize += sum((self.getSize(v) for v in row))
-                    
+                    if self.lencols == 0:
+                        count += 1
+                        bsize += sum((self.getSize(v) for v in row))
+                if self.lencols == 0:
+                    self.lencols = count
+                count = self.lencols
             if self.currentalgorithm == 'sdicc':
                 if self.blocknumber > 0 :
                     formatArgs = yield self.sdicc(rows, count)
@@ -206,11 +211,7 @@ class Compression:
         output.truncate(0)
 
         output.write(struct.pack('!B', 1))
-        if self.compress == bz2.compress:
-            output.write(struct.pack('!B', 0))
-        else:
-            output.write(struct.pack('!B', 1))
-
+        output.write(struct.pack('!B', 0))
         headindex = [0 for _ in xrange((colnum*2)+1)]
         type = '!'+'i'*len(headindex)
         output.write(struct.pack(type, *headindex))
