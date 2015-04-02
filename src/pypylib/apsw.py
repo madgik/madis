@@ -36,7 +36,6 @@ SQLITE_DENY = 1
 # BEGIN Wrapped SQLite C API and constants
 ###########################################
 
-
 ffi.cdef("""
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_stmt sqlite3_stmt;
@@ -468,10 +467,10 @@ class Connection(object):
         self._vtmodules = {}
         self._vttables = {}
         self._vtcursors = []
-        self._vttablecursors = {}
         self._vtcursorinstances = tuple()
         self._vtcursorcolumn = []
         self._vtcursoreof = tuple()
+        self._vtcursortables = []
         self.aggregate_instances = {}
         self._collations = {}
         if check_same_thread:
@@ -981,7 +980,6 @@ class Connection(object):
                 newvtab = ffi.new("sqlite3_vtab *")
                 ppvtab[0] = newvtab
                 self._vttables[newvtab] = table
-                self._vttablecursors[newvtab] = []
                 vret = sqlite.sqlite3_declare_vtab(db, schema.encode('utf-8'))
 
                 if ret != SQLITE_OK:
@@ -1026,32 +1024,31 @@ class Connection(object):
                 return SQLITE_OK
 
             def xDisconnect(pvtab): #int (*xDisconnect)(sqlite3_vtab *pVTab);
-                self._vttables[pvtab].Destroy()
-                del self._vttables[pvtab]
-                try:
-                    for vtabcursor in self._vttablecursors[pvtab]:
-                        xClose(vtabcursor)
-                except KeyboardInterrupt:
-                    return SQLITE_INTERRUPT
-                except:
-                    pass
-                del self._vttablecursors[pvtab]
+                if hasattr(self._vttables[pvtab], 'xDisconnect'):
+                    self._vttables[pvtab].xDisconnect()
+                __delVT__(pvtab)
                 return SQLITE_OK
+
 
             def xDestroy(pvtab): #int (*xDisconnect)(sqlite3_vtab *pVTab);
                 self._vttables[pvtab].Destroy()
+                __delVT__(pvtab)
+                return SQLITE_OK
+
+            def __delVT__(pvtab):
                 del self._vttables[pvtab]
                 try:
-                    for vtabcursor in self._vttablecursors[pvtab]:
-                        xClose(vtabcursor)
+                    for i in self._vtcursortables:
+                        if self._vtcursortables == pvtab:
+                            xCloseID(i)
                 except KeyboardInterrupt:
                     return SQLITE_INTERRUPT
                 except:
                     pass
-                del self._vttablecursors[pvtab]
                 return SQLITE_OK
 
-            def xOpen(pvtab , ppcursor):  # int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
+
+            def xOpen(pvtab, ppcursor):  # int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
                 newcursor = ffi.new("sqlite3_vtab_cursor *")
                 instance = self._vttables[pvtab].Open()
                 length = len(self._vtcursors)
@@ -1067,6 +1064,7 @@ class Connection(object):
                     self._vtcursorinstances += tuple([instance])
                     self._vtcursorcolumn.append(instance.Column)
                     self._vtcursoreof += tuple([instance.Eof])
+                    self._vtcursortables.append(pvtab)
                 else:
                     self._vtcursors[i] = newcursor
 
@@ -1079,51 +1077,66 @@ class Connection(object):
                     self._vtcursoreof = tuple(tmp)
 
                     self._vtcursorcolumn[i] = instance.Column
-
-                self._vttablecursors[pvtab].append(newcursor)
+                    self._vtcursortables[i] = pvtab
 
                 ppcursor[0] = newcursor
-
                 return SQLITE_OK
 
             def xClose(vtabcursor): # int (*xClose)(sqlite3_vtab_cursor*);
                 try:
-                    self._vtcursorinstances[vtabcursor.n].Close()
                     self._vtcursors[vtabcursor.n] = None
                     self._vtcursorcolumn[vtabcursor.n] = None
-                    self._vtcursoreof[vtabcursor.n] = None
                     tmp = list(self._vtcursoreof)
                     tmp[vtabcursor.n] = None
                     self._vtcursoreof = tuple(tmp)
+                    self._vtcursorinstances[vtabcursor.n].Close()
                     tmp = list(self._vtcursorinstances)
                     tmp[vtabcursor.n] = None
                     self._vtcursorinstances = tuple(tmp)
+                    self._vtcursortables[vtabcursor.n] = None
                 except:
                     pass
 
                 return SQLITE_OK
 
+            def xCloseID(n):
+                # try:
+                self._vtcursors[n] = None
+                self._vtcursorcolumn[n] = None
+                tmp = list(self._vtcursoreof)
+                tmp[n] = None
+                self._vtcursoreof = tuple(tmp)
+                self._vtcursorinstances[n].Close()
+                tmp = list(self._vtcursorinstances)
+                tmp[n] = None
+                self._vtcursorinstances = tuple(tmp)
+                self._vtcursortables[n] = None
+                # except:
+                #     pass
+
+                return SQLITE_OK
+
             def xFilter(vtabcursor, idxnum, cidxstr, argc, argv) : # int (*xFilter)(sqlite3_vta788b_cursor*, int idxNum, const char *idxStr, int argc, sqlite3_value **argv);
-                if cidxstr == ffi.NULL:
-                    idxstr = None
-                else:
-                    idxstr = ffi.string(cidxstr)
-                constraints = newlist_hint(argc)
-                ci = 0
-                while ci < argc:
-                    t = sqlite.sqlite3_value_type(argv[ci])
-                    if t == 1:
-                        constraints.append(sqlite.sqlite3_value_int64(argv[ci]))
-                    elif t == 2:
-                        constraints.append(sqlite.sqlite3_value_double(argv[ci]))
-                    elif t == 3:
-                        constraints.append(utf_8_decode(ffi.string(sqlite.sqlite3_value_text(argv[ci])))[0])
-                    elif t == 4:
-                        constraints.append(buffer(ffi.buffer(sqlite.sqlite3_value_blob(argv[ci]), sqlite.sqlite3_value_bytes(argv[ci]))[:]))
-                    else:
-                        constraints.append(None)
-                    ci += 1
                 try:
+                    if cidxstr == ffi.NULL:
+                        idxstr = None
+                    else:
+                        idxstr = ffi.string(cidxstr)
+                    constraints = newlist_hint(argc)
+                    ci = 0
+                    while ci < argc:
+                        t = sqlite.sqlite3_value_type(argv[ci])
+                        if t == 1:
+                            constraints.append(sqlite.sqlite3_value_int64(argv[ci]))
+                        elif t == 2:
+                            constraints.append(sqlite.sqlite3_value_double(argv[ci]))
+                        elif t == 3:
+                            constraints.append(utf_8_decode(ffi.string(sqlite.sqlite3_value_text(argv[ci])))[0])
+                        elif t == 4:
+                            constraints.append(buffer(ffi.buffer(sqlite.sqlite3_value_blob(argv[ci]), sqlite.sqlite3_value_bytes(argv[ci]))[:]))
+                        else:
+                            constraints.append(None)
+                        ci += 1
                     self._vtcursorinstances[vtabcursor.n].Filter(idxnum, idxstr, tuple(constraints))
                 except KeyboardInterrupt, e:
                     self._vttables[vtabcursor.pVtab].Disconnect()
@@ -1145,7 +1158,8 @@ class Connection(object):
 
             def xEof(vtabcursor): #int (*xEof)(sqlite3_vtab_cursor*);
                 try:
-                    return self._vtcursoreof[vtabcursor.n]()
+                    # return self._vtcursoreof[vtabcursor.n]()
+                    return self._vtcursorinstances[vtabcursor.n].eof
                 except KeyboardInterrupt:
                     return SQLITE_INTERRUPT
                 except:
