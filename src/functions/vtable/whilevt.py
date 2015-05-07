@@ -77,6 +77,7 @@ import setpath
 import functions
 import vtbase
 registered = True
+external_query = True
 
 class WhileVT(vtbase.VT):
     def VTiter(self, *parsedArgs, **envars):
@@ -116,7 +117,6 @@ class WhileVT(vtbase.VT):
             raise functions.OperatorError(__name__.rsplit('.')[-1], "Needs a query")
         else:
             query = dictargs['query']
-
         yield [('C1', 'int')]
 
         if checkfirst:
