@@ -206,6 +206,27 @@ def jlen(*args):
 
 jlen.registered=True
 
+def jrange(num):
+    """
+    .. function:: jrange(num) -> jrange
+
+    Returns a jrange of integer numbers.
+
+    Examples:
+
+    >>> sql("select jrange(5)")
+    jrange('a')
+    -----------------
+    ["0","1","2","3"]
+
+    """
+    jran = [None]*num
+    for i in xrange(num):
+        jran[i] = str(i)
+    return jopts.toj(jran)
+
+jrange.registered=True
+
 def jfilterempty(*args):
     """
     .. function:: jfilterempty(jpacks.) -> jpack
