@@ -139,11 +139,18 @@ def echofunctionmember(func):
         return func(*args, **kw)
     return wrapper
 
-def iterwrapper(connection, func, *args):
+def iterwrapper(con, func, *args):
     global iterheader
     i=func(*args)
     si=iterheader+str(i)
-    connection.openiters[si]=i
+    con.openiters[si]=i
+    return buffer(si)
+
+def iterwrapperaggr(con, func, self):
+    global iterheader
+    i=func(self)
+    si=iterheader+str(i)
+    con.openiters[si]=i
     return buffer(si)
 
 class Cursor(object):
@@ -430,8 +437,11 @@ def register_ops(module, connection):
             return False
 
 
-    def wrapfunction(connection, opfun):
-        return lambda *args: iterwrapper(connection, opfun, *args)
+    def wrapfunction(con, opfun):
+        return lambda *args: iterwrapper(con, opfun, *args)
+
+    def wrapaggr(con, opfun):
+        return lambda self: iterwrapperaggr(con, opfun, self)
 
     multaggr = {}
     for f in module.__dict__:
@@ -470,15 +480,11 @@ def register_ops(module, connection):
                 functions['aggregate'][opname] = fobject
 
                 if isgeneratorfunction(fobject.final):
-                    cfobject=copy.deepcopy(fobject)
-                    cfobject.__iterated_final__=cfobject.final
-                    cfobject.final=wrapfunction(connection, cfobject.__iterated_final__)
+                    wlambda = wrapaggr(connection, fobject.final)
+                    multaggr[opname] = wlambda
                     fobject.multiset=True
-                    cfobject.multiset=True
-                    multaggr[opname] = cfobject
-
-                    setattr(cfobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
-                    connection.createaggregatefunction(opname, cfobject.factory)
+                    setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, wlambda)))
+                    connection.createaggregatefunction(opname, fobject.factory)
                 else:
                     setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
                     connection.createaggregatefunction(opname, fobject.factory)
