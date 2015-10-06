@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append((os.path.join(sys.path[0],'..')))
-
+print sys.path[0]
 import functions
 from shutil import copyfile
 
