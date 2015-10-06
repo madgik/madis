@@ -1,4 +1,4 @@
-# madis
+# About
 
 madIS is an extensible relational database system built on top of the SQLite database with extensions implemented in Python (via APSW SQLite wrapper).
 
