@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,15 +8,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Examples &mdash; madIS 1.9 documentation</title>
+    <title>Examples &mdash; madIS 1.7 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.9',
+        URL_ROOT:    '',
+        VERSION:     '1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +27,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="madIS 1.9 documentation" href="index.html" />
-    <link rel="next" title="People" href="people.html" />
+    <link rel="top" title="madIS 1.7 documentation" href="index.html" />
+    <link rel="next" title="Row functions list" href="row.html" />
     <link rel="prev" title="Useful notes" href="usefulnotes.html" /> 
   </head>
   <body>
@@ -37,12 +39,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="people.html" title="People"
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="row.html" title="Row functions list"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="usefulnotes.html" title="Useful notes"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,7 +60,7 @@
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="pivot">
 <h2>Pivot<a class="headerlink" href="#pivot" title="Permalink to this headline">¶</a></h2>
-<p>First import data from a tsv file (Tab Separated Values) with <tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt> virtual table function.
+<p>First import data from a tsv file (Tab Separated Values) with <a class="reference internal" href="vtable.html#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> virtual table function.
 <a class="reference download internal" href="_downloads/sales.tsv"><tt class="xref download docutils literal"><span class="pre">sales.tsv</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;&quot;&quot;create table sales as</span>
 <span class="gp">... </span><span class="s">            select Product,Region,Month,cast(Sales as int) as Sales</span>
@@ -129,7 +134,7 @@ so as to assign a country code to each one of the logged sessions</li>
 </div>
 <p><strong>Step 1</strong></p>
 <p>Initially, log files which are available in the Tab Separated Value format, are imported into a relational table.
-The import process is easily implemented in madIS using the <tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt> function,
+The import process is easily implemented in madIS using the <a class="reference internal" href="vtable.html#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> function,
 by selecting the appropriate columns from the &#8221;.tsv&#8221; file.</p>
 <div class="highlight-mysql"><div class="highlight"><pre><span class="k">create</span> <span class="k">table</span> <span class="n">logs</span> <span class="k">as</span>
    <span class="k">select</span> <span class="n">C1</span> <span class="k">as</span> <span class="n">id</span><span class="p">,</span> <span class="n">C2</span> <span class="k">as</span> <span class="n">userid</span><span class="p">,</span> <span class="n">C3</span> <span class="k">as</span> <span class="n">userip</span><span class="p">,</span> <span class="n">C4</span> <span class="k">as</span> <span class="n">sesid</span><span class="p">,</span> <span class="n">C6</span> <span class="k">as</span> <span class="n">query</span><span class="p">,</span> <span class="n">c7</span> <span class="k">as</span> <span class="n">action</span><span class="p">,</span> <span class="n">C8</span> <span class="k">as</span> <span class="kt">date</span>
@@ -139,7 +144,7 @@ by selecting the appropriate columns from the &#8221;.tsv&#8221; file.</p>
 <p><strong>Step 2</strong></p>
 <p>Thereafter, session reconstruction, a common task in web usage mining, is performed.
 In this example it uses a predefined inactivity thresholds to break in-coming sessions.
-Such functionality is performed in madIS through the <tt class="xref py py-func docutils literal"><span class="pre">datediffbreak()</span></tt> function,
+Such functionality is performed in madIS through the <a class="reference internal" href="aggregate.html#functions.aggregate.subgroup.datediffbreak" title="functions.aggregate.subgroup.datediffbreak"><tt class="xref py py-func docutils literal"><span class="pre">datediffbreak()</span></tt></a> function,
 which takes as an argument the inactivity threshold (as well as some additional parameters) and returns the new session ids.
 In the following madSQL segment, where the efficient employment of the described function is presented,
 the inactivity threshold has been set to 30 minutes (provided in milliseconds).</p>
@@ -159,10 +164,10 @@ the inactivity threshold has been set to 30 minutes (provided in milliseconds).<
 <p>Then, focusing on issued queries, the distinct queries per session are retrieved from the logs
 and a variety of query text processing steps take place.
 However, a great amount of malformed queries has been observed, so it is only queries of valid text in utf8 encoding that are selected.
-This filtering step is performed using the <tt class="xref py py-func docutils literal"><span class="pre">isvalidutf8()</span></tt> function in the where clause of the corresponding madSQL fragment.</p>
+This filtering step is performed using the <a class="reference internal" href="row.html#functions.row.text.isvalidutf8" title="functions.row.text.isvalidutf8"><tt class="xref py py-func docutils literal"><span class="pre">isvalidutf8()</span></tt></a> function in the where clause of the corresponding madSQL fragment.</p>
 <p>Thereafter, stop word removal is performed over the selected queries through the corresponding function.
 Moreover, since queries are issued and logged using the Common Query Language (CQL) syntax, an additional filtering step is executed for removing <em>CQL</em> constructs,
-through the madIS function <tt class="xref py py-func docutils literal"><span class="pre">cqlkeywords()</span></tt>. The processed queries are then stored in table <em>QueriesPerSession</em>.
+through the madIS function <a class="reference internal" href="row.html#functions.row.text.cqlkeywords" title="functions.row.text.cqlkeywords"><tt class="xref py py-func docutils literal"><span class="pre">cqlkeywords()</span></tt></a>. The processed queries are then stored in table <em>QueriesPerSession</em>.
 One of the advantages offered by madIS framework, is that all the powerful Python capabilities and
 open source libraries for text processing can be exploited for the rapid implementation of customized functions,
 hence significantly easing the “flow-level programming”, in madSQL.</p>
@@ -176,12 +181,12 @@ hence significantly easing the “flow-level programming”, in madSQL.</p>
 <p><strong>Step 4</strong></p>
 <p>Aiming towards the extraction of term associations per country, an external data source is fetched from the web,
 containing the mapping between IP ranges and countries.
-Again, the <tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt> function is employed for fetching the URL resource and importing the corresponding data in a main memory
-indexed table using the&nbsp;<tt class="xref py py-func docutils literal"><span class="pre">cache()</span></tt> function of madIS.&nbsp;The fetched data source specifies the IP ranges in IP long number format,
-so the logged IPs have to be converted to the same format by using <tt class="xref py py-func docutils literal"><span class="pre">ip2long()</span></tt> function, and then to be subsequently matched
+Again, the <a class="reference internal" href="vtable.html#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> function is employed for fetching the URL resource and importing the corresponding data in a main memory
+indexed table using the&nbsp;<a class="reference internal" href="vtable.html#functions.vtable.cache.cache" title="functions.vtable.cache.cache"><tt class="xref py py-func docutils literal"><span class="pre">cache()</span></tt></a> function of madIS.&nbsp;The fetched data source specifies the IP ranges in IP long number format,
+so the logged IPs have to be converted to the same format by using <a class="reference internal" href="row.html#functions.row.iptools.ip2long" title="functions.row.iptools.ip2long"><tt class="xref py py-func docutils literal"><span class="pre">ip2long()</span></tt></a> function, and then to be subsequently matched
 to the imported ranges. However, since each session may contain requests from multiple IPs (due to dynamic IPs, etc.),
 it is only the first encountered IP that is considered for each session.
-The first IP for each session is obtained using the <tt class="xref py py-func docutils literal"><span class="pre">minrow()</span></tt> function, comparing the corresponding records’ ids.
+The first IP for each session is obtained using the <a class="reference internal" href="aggregate.html#functions.aggregate.selection.minrow" title="functions.aggregate.selection.minrow"><tt class="xref py py-func docutils literal"><span class="pre">minrow()</span></tt></a> function, comparing the corresponding records’ ids.
 The generated mapping from each session to a country code is stored in table Session2Country.</p>
 <div class="highlight-mysql"><div class="highlight"><pre><span class="k">create</span> <span class="n">temporary</span> <span class="k">table</span> <span class="n">Session2Country</span> <span class="k">as</span>
 <span class="k">select</span> <span class="n">sesidnew</span><span class="p">,</span> <span class="n">CountryCode</span>
@@ -196,7 +201,7 @@ The generated mapping from each session to a country code is stored in table Ses
 </div>
 <p><strong>Step 5</strong></p>
 <p>Then information regarding text of queries, and session to country mappings is jointly used so as to extract term associations,
-with an <a class="reference external" href="http://en.wikipedia.org/wiki/Apriori_algorithm">apriori-like</a> technique, using the aggregate function <tt class="xref py py-func docutils literal"><span class="pre">freqitemsets()</span></tt>.
+with an <a class="reference external" href="http://en.wikipedia.org/wiki/Apriori_algorithm">apriori-like</a> technique, using the aggregate function <a class="reference internal" href="aggregate.html#functions.aggregate.mining.freqitemsets" title="functions.aggregate.mining.freqitemsets"><tt class="xref py py-func docutils literal"><span class="pre">freqitemsets()</span></tt></a>.
 Frequent query term sets are computed over each one of the country codes that occur in Session2Country table.</p>
 <div class="highlight-mysql"><div class="highlight"><pre><span class="k">create</span> <span class="k">table</span> <span class="n">FrequentItemsets</span> <span class="k">as</span>
 <span class="k">select</span> <span class="s1">&#39;nat&#39;</span><span class="p">,</span> <span class="n">CountryCode</span><span class="p">,</span>
@@ -231,8 +236,8 @@ Frequent query term sets are computed over each one of the country codes that oc
   <p class="topless"><a href="usefulnotes.html"
                         title="previous chapter">Useful notes</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="people.html"
-                        title="next chapter">People</a></p>
+  <p class="topless"><a href="row.html"
+                        title="next chapter">Row functions list</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/examples.txt"
@@ -262,17 +267,20 @@ Frequent query term sets are computed over each one of the country codes that oc
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="people.html" title="People"
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="row.html" title="Row functions list"
              >next</a> |</li>
         <li class="right" >
           <a href="usefulnotes.html" title="Useful notes"
              >previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

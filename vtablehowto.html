@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,15 +8,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual table concept in madIS &mdash; madIS 1.9 documentation</title>
+    <title>Virtual table concept in madIS &mdash; madIS 1.7 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.9',
+        URL_ROOT:    '',
+        VERSION:     '1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="madIS 1.9 documentation" href="index.html" /> 
+    <link rel="top" title="madIS 1.7 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,7 +36,10 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -47,26 +52,24 @@
 <h1>Virtual table concept in madIS<a class="headerlink" href="#virtual-table-concept-in-madis" title="Permalink to this headline">¶</a></h1>
 <p>Virtual table can be any piece of code that returns its results as list of lists. It will be used in madSQL in the FROM part of a query.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>select * from file(&#39;data.tsv&#39;);
-</pre></div>
+<div class="highlight-python"><pre>select * from file('data.tsv');</pre>
 </div>
 <p>In this case data are produced from external sources. Many madis virtual tables take a query as an input, execute it and returns its results transformed.
 (See <a class="reference internal" href="usefulnotes.html#unoteqparameter"><em>Query parameter</em></a>). In that case the vtable &#8220;call&#8221; could be inverted in the query. (see <a class="reference internal" href="manual.html#inversion"><em>SQL extensions</em></a>).</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>rowidvt select * from table1 limit 3;
-</pre></div>
+<div class="highlight-python"><pre>rowidvt select * from table1 limit 3;</pre>
 </div>
 <div class="section" id="creating-a-virtual-table-function">
 <h2>Creating a virtual table function<a class="headerlink" href="#creating-a-virtual-table-function" title="Permalink to this headline">¶</a></h2>
 <p>Virtual table fuctions are the most advanced operator in madIS. Existing virtual table functions can be organized by increasing implementation complexity in three categories:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Single boolean output vt functions with query input: Virtual table functions that take an input, do sth and return 1 or 0. Example table fuctions are <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></li>
+<li>Single boolean output vt functions with query input: Virtual table functions that take an input, do sth and return 1 or 0. Example table fuctions are <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a></li>
 <li>Iterative output: Vts that take input and returns many data (iterator of list).</li>
 </ul>
-<p>Its call of the iterator retuns a list with each row data. In this category falls <tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt> operator, as well as <tt class="xref py py-mod docutils literal"><span class="pre">expand</span></tt>, <tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt>, etc.</p>
+<p>Its call of the iterator retuns a list with each row data. In this category falls <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a> operator, as well as <a class="reference internal" href="vtable.html#module-functions.vtable.expand" title="functions.vtable.expand"><tt class="xref py py-mod docutils literal"><span class="pre">expand</span></tt></a>, <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt></a>, etc.</p>
 <ul class="simple">
-<li>Advanced: Advanced vt&#8217;s that need the index capability of virtual tables. In this category falls only <tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt> functions. These functions must implement virtual tables from scratch as described in</li>
+<li>Advanced: Advanced vt&#8217;s that need the index capability of virtual tables. In this category falls only <a class="reference internal" href="vtable.html#module-functions.vtable.cache" title="functions.vtable.cache"><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></a> functions. These functions must implement virtual tables from scratch as described in</li>
 </ul>
 <p><a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW documentation</a>.</p>
 </div></blockquote>
@@ -78,25 +81,24 @@ So implementing a virtual table function, is feasible either by following the <a
 and adding the flags for madIS, either by using the helper libraries, as explained below.
 To continue reading, have a look to the Virtual table function API in APSW and play with toggle function and a virtual table call.
 Example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; toggle tracing;
+<div class="highlight-python"><pre>mterm&gt; toggle tracing;
 tracing is now: True
 Query executed in 0 min. 0 sec 4 msec
 
-mterm&gt; select * from (file &#39;data.csv&#39;);
-executetrace(u&quot;create virtual table temp.vt_144176563 using file(&#39;data.csv&#39;,&#39;automatic_vtable:1&#39;)&quot;)
-executetrace(u&#39;select * from (SELECT * FROM vt_144176563 );&#39;,None)
+mterm&gt; select * from (file 'data.csv');
+executetrace(u"create virtual table temp.vt_144176563 using file('data.csv','automatic_vtable:1')")
+executetrace(u'select * from (SELECT * FROM vt_144176563 );',None)
 ...
-executetrace(u&#39;drop table temp.vt_144176563;&#39;)
+executetrace(u'drop table temp.vt_144176563;')
 Query executed in 0 min. 0 sec 14 msec
 
 mterm&gt; toggle vtdebug;
-executetrace(u&quot;SELECT toggle(&#39;vtdebug&#39;);&quot;,None)
+executetrace(u"SELECT toggle('vtdebug');",None)
 vtdebug is now: True
 Query executed in 0 min. 0 sec 4 msec
 
-mterm&gt; select * from (file &#39;data.csv&#39;);
-....
-</pre></div>
+mterm&gt; select * from (file 'data.csv');
+....</pre>
 </div>
 <p>Toggle is a row function that toggles the value of <em class="xref std std-ref">madIS global settings</em></p>
 </div>
@@ -265,12 +267,15 @@ external_stream=True (if the operator does not accept query parameter)</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

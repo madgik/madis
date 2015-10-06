@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,15 +8,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manual &mdash; madIS 1.9 documentation</title>
+    <title>Manual &mdash; madIS 1.7 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.9',
+        URL_ROOT:    '',
+        VERSION:     '1.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="madIS 1.9 documentation" href="index.html" />
+    <link rel="top" title="madIS 1.7 documentation" href="index.html" />
     <link rel="next" title="Useful notes" href="usefulnotes.html" />
     <link rel="prev" title="About" href="about.html" /> 
   </head>
@@ -37,12 +39,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="usefulnotes.html" title="Useful notes"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="about.html" title="About"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -63,12 +68,12 @@ The are three kinds of functions:</p>
 <li>Virtual tables</li>
 </ul>
 <p>madIS also provides syntactic extensions, in its supported SQL, that simplify the use of above functions.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">row-functions-list</em></li>
-<li><em class="xref std std-ref">aggregate-functions-list</em></li>
-<li><em class="xref std std-ref">vtable-functions-list</em></li>
+<li><a class="reference internal" href="row.html#row-functions-list"><em>Row functions list</em></a></li>
+<li><a class="reference internal" href="aggregate.html#aggregate-functions-list"><em>Aggregate functions list</em></a></li>
+<li><a class="reference internal" href="vtable.html#vtable-functions-list"><em>Vtable functions list</em></a></li>
 </ul>
 </div>
 <p>Row functions</p>
@@ -89,11 +94,11 @@ On the above example the snippet is a Voltaire quote, and the correct answer fro
 </pre></div>
 </div>
 <p>In general external row functions can be used in exactly the same way as SQLite&#8217;s internal row functions.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">row-functions-list</em></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></li>
+<li><a class="reference internal" href="row.html#row-functions-list"><em>Row functions list</em></a></li>
+<li><a class="reference internal" href="row.html#functions.row.langtools.detectlang" title="functions.row.langtools.detectlang"><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></a></li>
 </ul>
 </div>
 <div class="section" id="creating-and-using-a-simple-row-function">
@@ -138,10 +143,10 @@ Most of the time a custom function can be based on an already existing one.</p>
 The madIS convention is to put the library files in the &#8220;src/lib/&#8221; path of madIS and then create a row function in the &#8220;row&#8221; path of madIS which imports and calls the necessary methods of the actual library in &#8220;lib&#8221; path.
 For an example of this see <em>detectlang.</em></p>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">row-functions-list</em></li>
+<li><a class="reference internal" href="row.html#row-functions-list"><em>Row functions list</em></a></li>
 </ul>
 </div>
 <p>Aggregate functions</p>
@@ -156,7 +161,7 @@ Their implementation is done in Python, and as is also the case for row function
 <span class="n">term1</span><span class="o">+</span><span class="n">term2</span> <span class="n">term2</span> <span class="n">term3</span>
 </pre></div>
 </div>
-<p>The statement above, executes the <tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt> function, which concatenates strings of terms together, while keeping the terms disjoint.</p>
+<p>The statement above, executes the <a class="reference internal" href="aggregate.html#functions.aggregate.text.concatterms" title="functions.aggregate.text.concatterms"><tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt></a> function, which concatenates strings of terms together, while keeping the terms disjoint.</p>
 <p>Using the aggregate function above, together with a row function is also possible.
 To concatenate together only the input string keywords we could execute the following SQL:</p>
 <div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">concatterms</span><span class="p">(</span><span class="n">keywords</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
@@ -164,11 +169,11 @@ To concatenate together only the input string keywords we could execute the foll
 <span class="n">term1</span> <span class="n">term2</span> <span class="n">term2</span> <span class="n">term3</span>
 </pre></div>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">aggregate-functions-list</em></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt></li>
+<li><a class="reference internal" href="aggregate.html#aggregate-functions-list"><em>Aggregate functions list</em></a></li>
+<li><a class="reference internal" href="aggregate.html#functions.aggregate.text.concatterms" title="functions.aggregate.text.concatterms"><tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt></a></li>
 <li><tt class="xref py py-func docutils literal"><span class="pre">keywords()</span></tt></li>
 </ul>
 </div>
@@ -209,10 +214,10 @@ aggregate function (notice the single quotes around each input string in the res
 <p>As is the case with aggregate functions it is very useful to browse through the
 already developed aggregate functions, in the &#8220;functions/aggregate&#8221; path of
 madIS, to find snippets of code implementing wished for, functionality.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">aggregate-functions-list</em></li>
+<li><a class="reference internal" href="aggregate.html#aggregate-functions-list"><em>Aggregate functions list</em></a></li>
 </ul>
 </div>
 <p>Virtual tables</p>
@@ -246,14 +251,14 @@ Using the standard <em>limit</em> SQL directive, the output is limited to only 2
 <span class="n">Mon</span><span class="o">|</span><span class="n">Feb</span><span class="o">||</span><span class="mi">1</span><span class="o">|</span><span class="mi">12</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">56</span><span class="o">|</span><span class="n">EET</span><span class="o">|</span><span class="mi">2000</span>
 </pre></div>
 </div>
-<p>The first of the above examples executes system&#8217;s &#8220;date&#8221; command through the use of the <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt> virtual table.
-Notice that the <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt> virtual table has a default returned schema, having one column named <em>output.</em></p>
-<p>The second of the above examples does the same as the previous one, however it also splits <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt>&#8216;s output,
-using space as a delimiter, into multiple columns through <tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt> row function.</p>
+<p>The first of the above examples executes system&#8217;s &#8220;date&#8221; command through the use of the <a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a> virtual table.
+Notice that the <a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a> virtual table has a default returned schema, having one column named <em>output.</em></p>
+<p>The second of the above examples does the same as the previous one, however it also splits <a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a>&#8216;s output,
+using space as a delimiter, into multiple columns through <a class="reference internal" href="row.html#functions.row.formating.strsplit" title="functions.row.formating.strsplit"><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></a> row function.</p>
 <p>At this point, we should skip a little ahead, and mention two peculiarities on the queries above.
-The first one is the &#8220;query:date&#8221; parameter of <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt>.
+The first one is the &#8220;query:date&#8221; parameter of <a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a>.
 This in madIS is called a <em>named parameter</em>, where the part before the &#8221;:&#8221; is a parameter&#8217;s name and the second part is a parameter&#8217;s value.</p>
-<p>The second peculiarity is the that the row function <tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt> returns multiple columns.
+<p>The second peculiarity is the that the row function <a class="reference internal" href="row.html#functions.row.formating.strsplit" title="functions.row.formating.strsplit"><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></a> returns multiple columns.
 This is a <a class="reference internal" href="#tutmultiset"><em>multiset</em></a> function, able to return as many columns and rows as it wishes.
 To see the column names and column types of second query above, we can execute:</p>
 <div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">coltypes</span> <span class="k">select</span> <span class="n">strsplit</span><span class="p">(</span><span class="k">output</span><span class="p">,</span><span class="s1">&#39;delimiter: &#39;</span><span class="p">)</span> <span class="k">from</span> <span class="n">pipe</span><span class="p">(</span><span class="s1">&#39;query:date&#39;</span><span class="p">);</span>
@@ -272,21 +277,21 @@ of the inside query and as second column the column types of the inside query.</
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <ul class="last simple">
-<li><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt> is able to be used in front of a query because it is in its <a class="reference internal" href="#inversion"><em>inverted form</em></a>.
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.coltypes" title="functions.vtable.coltypes"><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt></a> is able to be used in front of a query because it is in its <a class="reference internal" href="#inversion"><em>inverted form</em></a>.
 We&#8217;ll discuss madIS SQL extensions in the following section.</li>
 <li>We won&#8217;t present a simple virtual table implementation as they are too complex to be presented here.
 For more see the already existing tables in the &#8220;/src/functions/vtable&#8221; path of madIS, and the
 <a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW documentation</a> concerning virtual tables.</li>
 </ul>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><em class="xref std std-ref">vtable-functions-list</em></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt></li>
+<li><a class="reference internal" href="vtable.html#vtable-functions-list"><em>Vtable functions list</em></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a></li>
+<li><a class="reference internal" href="row.html#functions.row.formating.strsplit" title="functions.row.formating.strsplit"><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.coltypes" title="functions.vtable.coltypes"><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt></a></li>
 </ul>
 </div>
 </div>
@@ -386,13 +391,13 @@ What &#8220;FROM&#8221; does is to transform the query in its non inverted synta
 <p class="first admonition-title">Note</p>
 <p class="last">Both &#8220;FROM&#8221; and &#8220;OF&#8221; are accepted as synonyms, when specifying the use of embedded query results.</p>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">var()</span></tt></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.output" title="functions.vtable.output"><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.pipe" title="functions.vtable.pipe"><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></a></li>
+<li><a class="reference internal" href="row.html#functions.row.langtools.detectlang" title="functions.row.langtools.detectlang"><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></a></li>
+<li><a class="reference internal" href="row.html#functions.row.variables.var" title="functions.row.variables.var"><tt class="xref py py-func docutils literal"><span class="pre">var()</span></tt></a></li>
 </ul>
 </div>
 </div>
@@ -423,11 +428,11 @@ To flag a row or aggregate function as a multiset one, the programmer has to set
 </pre></div>
 </div>
 <p>Both of the functions above, break their input on &#8220;comma&#8221; by default.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></li>
-<li><tt class="xref py py-func docutils literal"><span class="pre">strsplitv()</span></tt></li>
+<li><a class="reference internal" href="row.html#functions.row.formating.strsplit" title="functions.row.formating.strsplit"><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></a></li>
+<li><a class="reference internal" href="row.html#functions.row.formating.strsplitv" title="functions.row.formating.strsplitv"><tt class="xref py py-func docutils literal"><span class="pre">strsplitv()</span></tt></a></li>
 </ul>
 </div>
 </div>
@@ -478,11 +483,11 @@ The first query doesn&#8217;t do any caching at all, so it is forced to do multi
 The second query, using the inverted syntax, caches the &#8220;continents&#8221; file and creates the required indexes to execute the join quickly.</p>
 <p>The speed difference between the two queries is quite significant (cached version of query is 28x faster).
 For bigger datasets and more constraints the speed advantage could be even greater.</p>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.cache" title="functions.vtable.cache"><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a></li>
 </ul>
 </div>
 </div>
@@ -490,15 +495,15 @@ For bigger datasets and more constraints the speed advantage could be even great
 <h2>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h2>
 <p>From the beginning madIS was designed for building complete data processing systems with it.
 In madIS, workflows are viewed as a series of queries to be executed sequentially.</p>
-<p>The main function that implements madIS&#8217; workflow engine is <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> virtual table:</p>
+<p>The main function that implements madIS&#8217; workflow engine is <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a> virtual table:</p>
 <div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="s1">&#39;select 5&#39;</span><span class="p">;</span>
 <span class="k">select</span> <span class="mi">5</span>
 <span class="n">mterm</span><span class="o">&gt;</span> <span class="k">exec</span> <span class="k">select</span> <span class="s1">&#39;select 5&#39;</span><span class="p">;</span>
 <span class="mi">1</span>
 </pre></div>
 </div>
-<p>Virtual table <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt>, takes as input an SQL query, executes it and then operates on the <strong>results</strong> of the input query, executing them sequentially and returning &#8220;1&#8221; if all the queries executed successfully, or throwing an error if any queries failed to execute correctly.</p>
-<p>This peculiar design (its a meta-meta function), enables <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> to work in tandem with other virtual tables that feed to it the workflows to be executed.
+<p>Virtual table <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a>, takes as input an SQL query, executes it and then operates on the <strong>results</strong> of the input query, executing them sequentially and returning &#8220;1&#8221; if all the queries executed successfully, or throwing an error if any queries failed to execute correctly.</p>
+<p>This peculiar design (its a meta-meta function), enables <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a> to work in tandem with other virtual tables that feed to it the workflows to be executed.
 The most frequent combination is:</p>
 <div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">exec</span> <span class="n">flow</span> <span class="n">file</span> <span class="s1">&#39;workflow.sql&#39;</span><span class="p">;</span>
 </pre></div>
@@ -506,7 +511,7 @@ The most frequent combination is:</p>
 <p>What the query above does, is to open and read the &#8220;workflow.sql&#8221; filesystem file via
 the <em>file</em> virtual table, then feed its results into the <em>flow</em> virtual table
 which collects in one line the &#8220;broken into multiple lines&#8221; queries, and finally
-to feed the resulting queries to <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> virtual table which will execute them.</p>
+to feed the resulting queries to <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a> virtual table which will execute them.</p>
 <p>The above combination of virtual tables presents, one the most powerful aspects of madIS.
 Namely the ability to create complex functionality (in this instance a workflow engine), by quickly combining simple entities.</p>
 <div class="admonition note">
@@ -515,12 +520,12 @@ Namely the ability to create complex functionality (in this instance a workflow 
 of the database are still present during the workflow processing. Unfortunately due to limitations of the SQLite core,
 transactional execution of madIS workflows isn&#8217;t fully working yet (see <a class="reference internal" href="#tutlimitations"><em>Limitations of madIS</em></a>).</p>
 </div>
-<div class="admonition seealso">
+<div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">flow</span></tt></li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.flow" title="functions.vtable.flow"><tt class="xref py py-mod docutils literal"><span class="pre">flow</span></tt></a></li>
+<li><a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a></li>
 </ul>
 </div>
 </div>
@@ -620,17 +625,20 @@ This will be solved whenever SQLite fixes the problem where the database&#8217;s
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="usefulnotes.html" title="Useful notes"
              >next</a> |</li>
         <li class="right" >
           <a href="about.html" title="About"
              >previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
