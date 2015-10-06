@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Virtual table concept in madIS &mdash; madIS 1.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="madIS 1.7 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="virtual-table-concept-in-madis">
+<h1>Virtual table concept in madIS<a class="headerlink" href="#virtual-table-concept-in-madis" title="Permalink to this headline">¶</a></h1>
+<p>Virtual table can be any piece of code that returns its results as list of lists. It will be used in madSQL in the FROM part of a query.</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>select * from file('data.tsv');</pre>
+</div>
+<p>In this case data are produced from external sources. Many madis virtual tables take a query as an input, execute it and returns its results transformed.
+(See <a class="reference internal" href="usefulnotes.html#unoteqparameter"><em>Query parameter</em></a>). In that case the vtable &#8220;call&#8221; could be inverted in the query. (see <a class="reference internal" href="manual.html#inversion"><em>SQL extensions</em></a>).</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>rowidvt select * from table1 limit 3;</pre>
+</div>
+<div class="section" id="creating-a-virtual-table-function">
+<h2>Creating a virtual table function<a class="headerlink" href="#creating-a-virtual-table-function" title="Permalink to this headline">¶</a></h2>
+<p>Virtual table fuctions are the most advanced operator in madIS. Existing virtual table functions can be organized by increasing implementation complexity in three categories:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Single boolean output vt functions with query input: Virtual table functions that take an input, do sth and return 1 or 0. Example table fuctions are <a class="reference internal" href="vtable.html#module-functions.vtable.exec" title="functions.vtable.exec"><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></a></li>
+<li>Iterative output: Vts that take input and returns many data (iterator of list).</li>
+</ul>
+<p>Its call of the iterator retuns a list with each row data. In this category falls <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a> operator, as well as <a class="reference internal" href="vtable.html#module-functions.vtable.expand" title="functions.vtable.expand"><tt class="xref py py-mod docutils literal"><span class="pre">expand</span></tt></a>, <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt></a>, etc.</p>
+<ul class="simple">
+<li>Advanced: Advanced vt&#8217;s that need the index capability of virtual tables. In this category falls only <a class="reference internal" href="vtable.html#module-functions.vtable.cache" title="functions.vtable.cache"><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></a> functions. These functions must implement virtual tables from scratch as described in</li>
+</ul>
+<p><a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW documentation</a>.</p>
+</div></blockquote>
+<p>All virtual table functions are created in XXXX folder. Every virtual table function must be single module.
+Detailed documentation of virtual table API could be found in <a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW documentation</a>.
+In madIS there are used mostly two specific types of Virtual table functions, that helper libraries have been implemented to simplify
+their implementation.
+So implementing a virtual table function, is feasible either by following the <a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW API</a>
+and adding the flags for madIS, either by using the helper libraries, as explained below.
+To continue reading, have a look to the Virtual table function API in APSW and play with toggle function and a virtual table call.
+Example:</p>
+<div class="highlight-python"><pre>mterm&gt; toggle tracing;
+tracing is now: True
+Query executed in 0 min. 0 sec 4 msec
+
+mterm&gt; select * from (file 'data.csv');
+executetrace(u"create virtual table temp.vt_144176563 using file('data.csv','automatic_vtable:1')")
+executetrace(u'select * from (SELECT * FROM vt_144176563 );',None)
+...
+executetrace(u'drop table temp.vt_144176563;')
+Query executed in 0 min. 0 sec 14 msec
+
+mterm&gt; toggle vtdebug;
+executetrace(u"SELECT toggle('vtdebug');",None)
+vtdebug is now: True
+Query executed in 0 min. 0 sec 4 msec
+
+mterm&gt; select * from (file 'data.csv');
+....</pre>
+</div>
+<p>Toggle is a row function that toggles the value of <em class="xref std std-ref">madIS global settings</em></p>
+</div>
+<div class="section" id="important-flags-for-madis-vt-functions">
+<h2>Important flags for madIS VT functions<a class="headerlink" href="#important-flags-for-madis-vt-functions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>registered=True # set this flag to register in madis the function, if set to false the module is not loaded.</p>
+<p>external_stream=True # Set this flag if no query parameter can be used.</p>
+</div></blockquote>
+</div>
+<div class="section" id="impementing-single-boolean-output-virtual-table-function">
+<h2>Impementing single boolean output virtual table function<a class="headerlink" href="#impementing-single-boolean-output-virtual-table-function" title="Permalink to this headline">¶</a></h2>
+<p>The</p>
+<blockquote>
+<div><p>def function()
+from madis.vtout import SourceNtoOne</p>
+<dl class="docutils">
+<dt>class SourceNtoOne:</dt>
+<dd>def __init__(self,func,boolargs=None,nonstringargs=None,needsescape=None,notsplit=None,connectionhandler=False,retalways=False):</dd>
+</dl>
+</div></blockquote>
+<p>To create iterative VT&#8217;s the madIS vtiterable could be used that hide some of the implementation details, or it can be build from scratch as in APSW, documentation. (<a class="reference external" href="http://apsw.googlecode.com/svn/publish/vtable.html">http://apsw.googlecode.com/svn/publish/vtable.html</a>) If vtiterable is not used, no standard parameter parsing will be available.</p>
+<dl class="docutils">
+<dt>MUST BE SET TO USE VT in madis:</dt>
+<dd><p class="first">One VT - one file in vtable folder
+registered=True ( as in all operators)
+external_stream=True (if the operator does not accept query parameter)</p>
+<p class="last">Source function must be implemented!!</p>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#Cursor Iterator</span>
+
+<span class="k">class</span> <span class="nc">TableCursor</span><span class="p">:</span> <span class="c"># INTERFACE</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># when called for first time, it must probably identify the schema, if it is not dynamic</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">TableVT</span><span class="p">:</span> <span class="c">#INTERFACE</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">envdict</span><span class="p">,</span><span class="n">largs</span><span class="p">,</span><span class="n">dictargs</span><span class="p">):</span> <span class="c">#DO NOT DO ANYTHING HEAVY it, will be called before querying the table</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">getdescription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        must return a list of tuples (column name, columntype), if type not available leave it empty or None eg.(col,)</span>
+<span class="sd">        example:</span>
+<span class="sd">        [(&#39;column1&#39;,&#39;int&#39;),(&#39;column2&#39;,),(&#39;column3&#39;,&#39;text&#39;)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">schemalist</span>
+
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        After the first time it is called getdescription function must return table instance schema</span>
+<span class="sd">        Must returns VT cursor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TableCursor</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c"># Called when Table instance is destroyed (on drop statement), OPTIONAL</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="TableVT.__init__">
+<tt class="descclassname">TableVT.</tt><tt class="descname">__init__</tt><big>(</big><em>self</em>, <em>envdict</em>, <em>largs</em>, <em>dictargs</em><big>)</big><a class="headerlink" href="#TableVT.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Parameters:</p>
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">envdict:</th><td class="field-body">Dictionary with enviromental variables (correspond to APSW parameters of VTModule.Create)
+:tablename: name of the table that will be created.
+:db: instance of the connection to the database
+:dbname: database name
+:modulename: The string name under which the module was registered???????</td>
+</tr>
+<tr class="field-even field"><th class="field-name">largs:</th><td class="field-body">table function list arguments</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">dictargs:</th><td class="field-body">dictionary table function named arguments eg. type:int -&gt; dictargs[&#8216;type&#8217;]=&#8217;int&#8217;</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="docutils">
+<dt>def Source():</dt>
+<dd>return SourceVT(TableVT,boolargs,nonstringargs,needsescape,notsplit)</dd>
+<dt>class SourceVT:</dt>
+<dd>def __init__(self,table,boolargs=None,nonstringargs=None,needsescape=None,staticschema=False,notsplit=None):</dd>
+</dl>
+<p>Parameters</p>
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">table:</th><td class="field-body">Class implementing TableVT interface</td>
+</tr>
+<tr class="field-even field"><th class="field-name">boolargs:</th><td class="field-body">List of parameter names that will be chnged to True/False if they are accordingly t/f</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">nonstringargs:</th><td class="field-body">Dictionary of parameter names that will be tranformed according to their value , eg. string input to dialect object {&#8216;dialect&#8217;:{&#8216;line&#8217;:line(),&#8217;tsv&#8217;:tsv(),&#8217;csv&#8217;:defaultcsv()}}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">needsescape:</th><td class="field-body">List of parameter names that that include escape sequences eg. n, t etc.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">staticschema:</th><td class="field-body">True if TableVT.open does not need to be executed before getdescription can be called</td>
+</tr>
+<tr class="field-even field"><th class="field-name">notsplit:</th><td class="field-body">List of parameter names that should not be splitted in named parameters eg. [&#8216;http&#8217;] for do not splitting <a class="reference external" href="http://server.com">http://server.com</a></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/madislog.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Virtual table concept in madIS</a><ul>
+<li><a class="reference internal" href="#creating-a-virtual-table-function">Creating a virtual table function</a></li>
+<li><a class="reference internal" href="#important-flags-for-madis-vt-functions">Important flags for madIS VT functions</a></li>
+<li><a class="reference internal" href="#impementing-single-boolean-output-virtual-table-function">Impementing single boolean output virtual table function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/vtablehowto.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

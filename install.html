@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing madIS &mdash; madIS 1.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="madIS 1.7 documentation" href="index.html" />
+    <link rel="next" title="About" href="about.html" />
+    <link rel="prev" title="madIS documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="madIS documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-madis">
+<h1>Installing madIS<a class="headerlink" href="#installing-madis" title="Permalink to this headline">¶</a></h1>
+<p>The requirements for using madIS are:</p>
+<ol class="arabic simple">
+<li><strong>Python 2.6.x</strong> or <strong>2.7.x</strong>: You can download a windows distribution of Python from
+<a class="reference external" href="http://www.python.org/download/releases/">http://www.python.org/download/releases/</a> .You need to download the latest
+Python in the 2.6 or 2.7 series. madIS doesn&#8217;t currently work with Python 3.0.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Most Linux distributions come with Python 2.6 or Python 2.7 preinstalled.</p>
+</div>
+<ol class="arabic" start="2">
+<li><p class="first"><strong>APSW</strong>:</p>
+<p>Windows:</p>
+<p>Download the windows distribution of <cite>APSW</cite> from <a class="reference external" href="http://code.google.com/p/apsw/downloads/list">http://code.google.com/p/apsw/downloads/list</a> .</p>
+<p>Linux:</p>
+<p>Most Linux distributions contain in their repositories a sufficiently recent version of <cite>APSW</cite>.
+If you use Ubuntu 10.04 and later, install the <cite>python-apsw</cite> package:</p>
+<div class="highlight-python"><pre>sudo apt-get install python-apsw</pre>
+</div>
+<p>In case <cite>APSW</cite> is not provided with your Linux distribution of choise, <cite>APSW</cite> should be build from source.
+The detailed instructions for building <cite>APSW</cite> can be found at:</p>
+<p><a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/build.html#recommended">http://apidoc.apsw.googlecode.com/hg/build.html#recommended</a></p>
+<p>A quick command line to build and install <cite>APSW</cite> is:</p>
+<div class="highlight-python"><pre>sudo python setup.py fetch --all --missing-checksum-ok build install</pre>
+</div>
+<p>If you are using Ubuntu and wish to build <cite>APSW</cite> from source, you also need the packages:</p>
+<div class="highlight-python"><pre>build-essential libreadline5-dev zlib1g-dev python-dev</pre>
+</div>
+<p>MacOS:</p>
+<p>On <em>MacOS 10.6</em> install <cite>APSW</cite> and <cite>readline</cite> via <cite>easy_install</cite>:</p>
+<div class="highlight-python"><pre>easy_install apsw
+easy_install readline</pre>
+</div>
+<p>On <em>MacOS 10.7</em> you have to build <cite>APSW</cite> from source (as showed above), for which you&#8217;ll
+also need <em>Xcode</em>.</p>
+<p>After building <cite>APSW</cite>, install <cite>readline</cite> via <cite>easy_install</cite>:</p>
+<div class="highlight-python"><pre>sudo easy_install readline</pre>
+</div>
+</li>
+<li><p class="first">Download the madIS archive (.zip) from:</p>
+<p><a class="reference external" href="http://code.google.com/p/madis/downloads/list">http://code.google.com/p/madis/downloads/list</a></p>
+</li>
+<li><p class="first">Uncompress above zip file</p>
+</li>
+<li><p class="first">Use madis by entering into the new &#8220;madis/&#8221; path and executing &#8220;python mterm.py&#8221;</p>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/madislog.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">madIS documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="about.html"
+                        title="next chapter">About</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="madIS documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">madIS 1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

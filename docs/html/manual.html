@@ -1,0 +1,636 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Manual &mdash; madIS 1.9 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="madIS 1.9 documentation" href="index.html" />
+    <link rel="next" title="Useful notes" href="usefulnotes.html" />
+    <link rel="prev" title="About" href="about.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="usefulnotes.html" title="Useful notes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="manual">
+<h1>Manual<a class="headerlink" href="#manual" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>Functions are the main mechanism with which extensions are implemented.
+The are three kinds of functions:</p>
+<ul class="simple">
+<li>Row functions</li>
+<li>Aggregate functions</li>
+<li>Virtual tables</li>
+</ul>
+<p>madIS also provides syntactic extensions, in its supported SQL, that simplify the use of above functions.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">row-functions-list</em></li>
+<li><em class="xref std std-ref">aggregate-functions-list</em></li>
+<li><em class="xref std std-ref">vtable-functions-list</em></li>
+</ul>
+</div>
+<p>Row functions</p>
+<p>Programmable row functions work in a similar way as standard SQL row functions such as <em>abs()</em>, <em>lower()</em> and <em>upper()</em>.
+Their implementation is done in Python, and they are able to use all Python facilities and libraries.</p>
+<p>An example of an SQL statement using an external row function is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">detectlang</span><span class="p">(</span><span class="s1">&#39;Il en est des livres comme du feu de nos foyers&#39;</span><span class="p">);</span>
+<span class="n">french</span>
+</pre></div>
+</div>
+<p>Above statement executes the <em>detectlang</em> function, which tries to detect the language of a snippet of text by analysing its statistical properties.
+On the above example the snippet is a Voltaire quote, and the correct answer from <em>detectlang</em> is that it is in french.</p>
+<p>If we wished to do the same for multiple quotes then we could use the following SQL statement (assuming the existence of a <em>quotes_table</em> which contains the column <em>quote</em>):</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">detectlang</span><span class="p">(</span><span class="n">quote</span><span class="p">)</span> <span class="k">from</span> <span class="n">quotes_table</span><span class="p">;</span>
+<span class="n">french</span>
+<span class="n">english</span>
+<span class="p">...</span>
+</pre></div>
+</div>
+<p>In general external row functions can be used in exactly the same way as SQLite&#8217;s internal row functions.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">row-functions-list</em></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></li>
+</ul>
+</div>
+<div class="section" id="creating-and-using-a-simple-row-function">
+<h3>Creating and using a simple row function<a class="headerlink" href="#creating-and-using-a-simple-row-function" title="Permalink to this headline">¶</a></h3>
+<p>Python files that implement row functions live in &#8220;/src/functions/row&#8221;. A single python file can contain many row functions.
+Now lets create a simple &#8220;hello world&#8221; row function.</p>
+<p>Go to the &#8220;src/functions/row/&#8221; path of madIS, and create &#8220;hello.py&#8221;. Then write the following code in it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;hello &quot;</span><span class="o">+</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">hello</span><span class="o">.</span><span class="n">registered</span><span class="o">=</span><span class="bp">True</span>
+</pre></div>
+</div>
+<p>The code above, looks like and indeed is, a simple python function that takes multiple arguments.
+The only peculiarity is the &#8220;hello.registered=True&#8221; line.
+What this line does, is to instruct madIS to register this function with the SQLite core.
+This way, Python functions that we don&#8217;t wish to become SQLite row functions, can simply be used without any change to them.</p>
+<p>To execute the above row function we start madIS and execute an SQL query which uses the new <em>hello</em> row function:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="o">%</span> <span class="n">python</span> <span class="n">mterm</span><span class="p">.</span><span class="n">py</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">hello</span><span class="p">(</span><span class="ss">&quot;world&quot;</span><span class="p">);</span>
+<span class="n">hello</span> <span class="n">world</span>
+</pre></div>
+</div>
+<p>The SQL query above, shows the results of calling <em>hello</em> function with &#8220;world&#8221; as a parameter.
+As happens very often in SQL queries, parameter values are retrieved from tables.
+Below we show such an example:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="ss">&quot;world&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;all&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">;</span>
+<span class="k">all</span>
+<span class="n">world</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span> <span class="k">min</span><span class="p">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">3</span> <span class="n">msec</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">hello</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="ss">&quot;world&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;all&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">);</span>
+<span class="n">hello</span> <span class="k">all</span>
+<span class="n">hello</span> <span class="n">world</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span> <span class="k">min</span><span class="p">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">7</span> <span class="n">msec</span>
+</pre></div>
+</div>
+<p>When developing custom row functions it is very useful to browse through the already developed row functions, in the &#8220;functions/row&#8221; path of madIS.
+Most of the time a custom function can be based on an already existing one.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If a developer wishes to add a row function that in essence is a part of a pre-existing Python library.
+The madIS convention is to put the library files in the &#8220;src/lib/&#8221; path of madIS and then create a row function in the &#8220;row&#8221; path of madIS which imports and calls the necessary methods of the actual library in &#8220;lib&#8221; path.
+For an example of this see <em>detectlang.</em></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">row-functions-list</em></li>
+</ul>
+</div>
+<p>Aggregate functions</p>
+<p>Programmable aggregate functions work in a similar way as standard SQL aggregate functions such as <em>sum()</em>, <em>min()</em> and <em>max()</em>.
+Their implementation is done in Python, and as is also the case for row functions, all Python facilities and libraries are available.</p>
+<p>An example of an SQL statement using an external aggregate function is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="ss">&quot;term1+term2&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;term2 term3&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">;</span>
+<span class="n">term1</span><span class="o">+</span><span class="n">term2</span>
+<span class="n">term2</span> <span class="n">term3</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">concatterms</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="ss">&quot;term1+term2&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;term2 term3&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">);</span>
+<span class="n">term1</span><span class="o">+</span><span class="n">term2</span> <span class="n">term2</span> <span class="n">term3</span>
+</pre></div>
+</div>
+<p>The statement above, executes the <tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt> function, which concatenates strings of terms together, while keeping the terms disjoint.</p>
+<p>Using the aggregate function above, together with a row function is also possible.
+To concatenate together only the input string keywords we could execute the following SQL:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">concatterms</span><span class="p">(</span><span class="n">keywords</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+         <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="ss">&quot;term1+term2&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;term2 term3&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">);</span>
+<span class="n">term1</span> <span class="n">term2</span> <span class="n">term2</span> <span class="n">term3</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">aggregate-functions-list</em></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">concatterms()</span></tt></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">keywords()</span></tt></li>
+</ul>
+</div>
+</div>
+<div class="section" id="creating-and-using-a-simple-aggregate-function">
+<h3>Creating and using a simple aggregate function<a class="headerlink" href="#creating-and-using-a-simple-aggregate-function" title="Permalink to this headline">¶</a></h3>
+<p>Python files that implement aggregate functions live in
+&#8220;/src/functions/aggregate&#8221;. A single python file can contain many aggregate functions.
+Now, lets create a simple aggregate function.</p>
+<p>Go to the &#8220;src/functions/aggregate/&#8221; path of madIS, and create &#8220;myconcat.py&#8221;. Then write the following code in it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">quotedconcatterms</span><span class="p">:</span>
+
+   <span class="n">registered</span><span class="o">=</span><span class="bp">True</span>
+
+   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+
+   <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+       <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span>
+
+   <span class="k">def</span> <span class="nf">final</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+       <span class="k">return</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>What the aggregate function above does, is to concatenate strings of terms together while inserting single quotes around each string.</p>
+<p>In the &#8220;__init__&#8221; method of class <em>quotedconcatterms</em> we initialize all needed variables (self.result).
+The &#8220;step&#8221; method, is called by SQLite&#8217;s engine for every tuple of the group which is fed into the aggregate function.
+At the end of the group, the &#8220;final&#8221; method is called to return the final result.</p>
+<p>The &#8220;registered=True&#8221; line above, as in row functions, instructs madIS to load the class into the SQLite engine as an aggregate function.</p>
+<p>To execute the above aggregate function we start madIS and execute an SQL query which uses the new <em>quotedconcatterms</em>
+aggregate function (notice the single quotes around each input string in the results):</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="o">%</span> <span class="n">python</span> <span class="n">mterm</span><span class="p">.</span><span class="n">py</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">quotedconcatterms</span><span class="p">(</span><span class="n">keywords</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="ss">&quot;term1+term2&quot;</span> <span class="k">as</span> <span class="n">a</span> <span class="k">UNION</span> <span class="k">select</span> <span class="ss">&quot;term2 term3&quot;</span> <span class="k">as</span> <span class="n">a</span><span class="p">);</span>
+<span class="s1">&#39;term1 term2&#39;</span> <span class="s1">&#39;term2 term3&#39;</span>
+</pre></div>
+</div>
+<p>As is the case with aggregate functions it is very useful to browse through the
+already developed aggregate functions, in the &#8220;functions/aggregate&#8221; path of
+madIS, to find snippets of code implementing wished for, functionality.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">aggregate-functions-list</em></li>
+</ul>
+</div>
+<p>Virtual tables</p>
+<p>Virtual tables are actually functions that take parameters and output table like data. They can be used in the SQL syntax wherever
+a regular table would be placed.</p>
+<p>Virtual tables are one of the most powerful function classes in madIS. They can function in a regular table fashion,
+where the output data is finite in number, or in a streaming fashion, where the output stream can be infinite.</p>
+<p>This, together with the SQL syntax extensions of madIS, creates a very powerful environment with which a variety
+of standard madIS features have been developed, such as the <em>multisets</em>, <em>workflow engine</em>,
+<em>direct data load from filesystem or network</em>, etc.</p>
+<p>Typical examples of virtual tables sources are files, SQL query resulsets, or even external programs output.</p>
+<p>In addition to the above, virtual tables can also function as programmable indexes on the input data,
+negotiating with the database engine about which constraints or ordering they&#8217;ll be able to answer/produce quickly.
+The only madIS virtual table that implements and works as an index is <a class="reference internal" href="#tutcache"><em>cache</em></a>, which offers, a created on the fly,
+multidimensional index.</p>
+<p>Using virtual tables can be done in a variety of ways.
+The first is <strong>parametric table</strong>:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="o">%</span> <span class="n">python</span> <span class="n">mterm</span><span class="p">.</span><span class="n">py</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">file</span><span class="p">(</span><span class="s1">&#39;./demo/continents.tsv&#39;</span><span class="p">)</span> <span class="k">limit</span> <span class="mi">2</span><span class="p">;</span>
+<span class="n">Asia</span><span class="o">|</span><span class="n">AF</span>
+<span class="n">Europe</span><span class="o">|</span><span class="n">AL</span>
+</pre></div>
+</div>
+<p>What the example above does, is to read the tab separated &#8220;continents.tsv&#8221; filesystem file as a table.
+Using the standard <em>limit</em> SQL directive, the output is limited to only 2 rows.</p>
+<p>An example showing the streaming nature of virtual tables is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="k">output</span> <span class="k">from</span> <span class="n">pipe</span><span class="p">(</span><span class="s1">&#39;query:date&#39;</span><span class="p">);</span>
+<span class="n">Fri</span> <span class="n">Feb</span> <span class="mi">1</span> <span class="mi">12</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">55</span> <span class="n">EET</span> <span class="mi">2000</span>
+<span class="ss">&quot;&quot;</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">strsplit</span><span class="p">(</span><span class="k">output</span><span class="p">,</span><span class="s1">&#39;delimiter: &#39;</span><span class="p">)</span> <span class="k">from</span> <span class="n">pipe</span><span class="p">(</span><span class="s1">&#39;query:date&#39;</span><span class="p">);</span>
+<span class="n">Mon</span><span class="o">|</span><span class="n">Feb</span><span class="o">||</span><span class="mi">1</span><span class="o">|</span><span class="mi">12</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">56</span><span class="o">|</span><span class="n">EET</span><span class="o">|</span><span class="mi">2000</span>
+</pre></div>
+</div>
+<p>The first of the above examples executes system&#8217;s &#8220;date&#8221; command through the use of the <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt> virtual table.
+Notice that the <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt> virtual table has a default returned schema, having one column named <em>output.</em></p>
+<p>The second of the above examples does the same as the previous one, however it also splits <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt>&#8216;s output,
+using space as a delimiter, into multiple columns through <tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt> row function.</p>
+<p>At this point, we should skip a little ahead, and mention two peculiarities on the queries above.
+The first one is the &#8220;query:date&#8221; parameter of <tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt>.
+This in madIS is called a <em>named parameter</em>, where the part before the &#8221;:&#8221; is a parameter&#8217;s name and the second part is a parameter&#8217;s value.</p>
+<p>The second peculiarity is the that the row function <tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt> returns multiple columns.
+This is a <a class="reference internal" href="#tutmultiset"><em>multiset</em></a> function, able to return as many columns and rows as it wishes.
+To see the column names and column types of second query above, we can execute:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">coltypes</span> <span class="k">select</span> <span class="n">strsplit</span><span class="p">(</span><span class="k">output</span><span class="p">,</span><span class="s1">&#39;delimiter: &#39;</span><span class="p">)</span> <span class="k">from</span> <span class="n">pipe</span><span class="p">(</span><span class="s1">&#39;query:date&#39;</span><span class="p">);</span>
+<span class="n">C1</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C2</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C3</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C4</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C5</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C6</span><span class="o">|</span><span class="nb">text</span>
+<span class="n">C7</span><span class="o">|</span><span class="nb">text</span>
+</pre></div>
+</div>
+<p>The &#8220;coltypes&#8221; in the above query may look like a special function of the terminal but in essence it is also
+a virtual table that takes as input a query and returns a table having as first column the column names
+of the inside query and as second column the column types of the inside query.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt> is able to be used in front of a query because it is in its <a class="reference internal" href="#inversion"><em>inverted form</em></a>.
+We&#8217;ll discuss madIS SQL extensions in the following section.</li>
+<li>We won&#8217;t present a simple virtual table implementation as they are too complex to be presented here.
+For more see the already existing tables in the &#8220;/src/functions/vtable&#8221; path of madIS, and the
+<a class="reference external" href="http://apidoc.apsw.googlecode.com/hg/vtable.html">APSW documentation</a> concerning virtual tables.</li>
+</ul>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><em class="xref std std-ref">vtable-functions-list</em></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="madis-sql-extensions">
+<span id="inversion"></span><h2>madIS SQL extensions<a class="headerlink" href="#madis-sql-extensions" title="Permalink to this headline">¶</a></h2>
+<p>While developing madIS, we realized that some simple ideas like virtual table chaining, were too difficult to be written in plain SQL.
+In addition using a virtual table was more difficult than it needed to be, due to having to &#8220;create&#8221; a virtual table before using it.</p>
+<p>To solve the problems above, we&#8217;ve extended SQL with the following features:</p>
+<ul class="simple">
+<li>Parametric virtual tables are automatically created and deleted</li>
+<li>Syntax inversion</li>
+</ul>
+<p>The first of above features, is quite apparent. The user doesn&#8217;t have to manage virtual tables,
+madIS does everything it is needed automatically in the background, creating a virtual table just before a query using it, is executed, and
+deleting it after the query&#8217;s execution completes. This is why we could directly
+read from the file system, with the <em>file</em> virtual table, in the previous section.</p>
+<p>Inversions are slightly more complex.
+So lets start with a simple virtual table chaining example and invert it:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="k">output</span><span class="p">(</span><span class="s1">&#39;d.txt&#39;</span><span class="p">,</span> <span class="ss">&quot;query:select * from pipe(&#39;query:date&#39;)&quot;</span><span class="p">);</span>
+<span class="mi">1</span>
+</pre></div>
+</div>
+<p>What the query above does, is to call system&#8217;s &#8220;date&#8221; command, through the <em>pipe</em> virtual table, and write the output back to the file system (in the file named &#8220;d.txt&#8221;).
+The <em>output</em> virtual table returns back if it succeeded or not (1 or 0).</p>
+<p>Because chaining virtual tables on the manner shown above, proved to require a lot of effort and in addition was error prone, syntax inversion was added to madIS&#8217; accepted SQL syntax.
+The inversion syntax is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">VTname</span> <span class="s1">&#39;param1&#39;</span> <span class="s1">&#39;param2&#39;</span><span class="p">...</span> <span class="n">namedparam1</span><span class="p">:</span><span class="n">valueofnamedparam1</span> <span class="p">...</span> <span class="n">SQL_query</span>
+</pre></div>
+</div>
+<p>Whenever madIS&#8217; SQL preprocessor &#8220;sees&#8221; above syntax it turns it into:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">Vtname</span><span class="p">(</span><span class="s1">&#39;param1&#39;</span><span class="p">,</span> <span class="s1">&#39;param2&#39;</span> <span class="p">...,</span> <span class="s1">&#39;namedparam1:valueofnamedparam1&#39;</span> <span class="p">...</span> <span class="p">,</span> <span class="s1">&#39;query:SQL_query&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So lets use the inverted syntax, to reissue the query above:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">output</span> <span class="s1">&#39;d.txt&#39;</span> <span class="n">pipe</span> <span class="nb">date</span><span class="p">;</span>
+<span class="mi">1</span>
+</pre></div>
+</div>
+<p>In practice a wide range of functionalities has been possible with inversions.
+The <em>coltypes</em> example shown in the previous section &#8220;feels&#8221; like special functionality that is implemented execution engine in other DB systems.
+In madIS, most of the special commands are in essence virtual tables (or row functions) in their inverted form.</p>
+<p>The same inverted syntax is also offered by madIS, for row functions.
+So instead of:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">detectlang</span><span class="p">(</span><span class="s1">&#39;Il en est des livres comme du feu de nos foyers&#39;</span><span class="p">);</span>
+<span class="n">french</span>
+</pre></div>
+</div>
+<p>We could have written it as such:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">detectlang</span> <span class="s1">&#39;Il en est des livres comme du feu de nos foyers&#39;</span><span class="p">;</span>
+<span class="n">french</span>
+</pre></div>
+</div>
+<p>A problem arises with row inversions.
+How to distinguish between the case of passing the actual query to a row function, and passing the <strong>results</strong> of the query to the row function.</p>
+<p>madIS has the <em>var</em> row function, which sets and retrieves a madIS variable.
+Some examples of its usage:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo&#39;</span> <span class="s1">&#39;time&#39;</span><span class="p">;</span> <span class="c1">-- This puts value &#39;time&#39; to the variable named &#39;demo&#39;</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo&#39;</span><span class="p">;</span> <span class="c1">-- This retrieves the value of variable &#39;demo&#39;</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">,</span><span class="s1">&#39;time&#39;</span><span class="p">);</span><span class="c1">--The same queries in their not inverted forms</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">);</span>
+<span class="n">time</span>
+</pre></div>
+</div>
+<p>What would happen if instead of the value &#8220;time&#8221; we had a plain query?:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span> <span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">);</span>
+<span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">)</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span><span class="p">;</span>
+<span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We see above, that instead of putting the result of the query &#8220;select var(&#8216;demo&#8217;)&#8221; into &#8220;demo2&#8221;, it put the query&#8217;s text in it.
+This makes it complex to pass values between variables, forcing us to do:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo2&#39;</span><span class="p">,</span> <span class="p">(</span><span class="k">select</span> <span class="n">var</span><span class="p">(</span><span class="s1">&#39;demo&#39;</span><span class="p">)));</span> <span class="c1">--Non inverted syntax</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span><span class="p">;</span>
+<span class="n">time</span>
+</pre></div>
+</div>
+<p>Due to this, a directive which forces the use of the results of the embedded query has been created, to ease use cases such as above:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span> <span class="s1">&#39;essence of&#39;</span><span class="p">;</span>
+<span class="n">essence</span> <span class="k">of</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo&#39;</span> <span class="s1">&#39;time&#39;</span><span class="p">;</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span> <span class="k">FROM</span> <span class="n">var</span> <span class="s1">&#39;demo&#39;</span><span class="p">;</span>
+<span class="n">time</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="n">var</span> <span class="s1">&#39;demo2&#39;</span><span class="p">;</span>
+<span class="n">time</span>
+</pre></div>
+</div>
+<p>Notice the &#8220;FROM&#8221; keyword after the &#8220;var &#8216;demo2&#8217;&#8221; part of the query.
+What &#8220;FROM&#8221; does is to transform the query in its non inverted syntax shown above.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Both &#8220;FROM&#8221; and &#8220;OF&#8221; are accepted as synonyms, when specifying the use of embedded query results.</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">detectlang()</span></tt></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">var()</span></tt></li>
+</ul>
+</div>
+</div>
+<div class="section" id="multisets">
+<span id="tutmultiset"></span><h2>Multisets<a class="headerlink" href="#multisets" title="Permalink to this headline">¶</a></h2>
+<p>Early in the development of madIS, the need to return multiple rows and columns from row and aggregate functions, arose.
+This need was satisfied through the use of <em>expand</em> virtual table and an accompanying Python API (<em>CompBuffer</em>) to create multisets.</p>
+<p>Virtual table <em>expand</em> works by looking into the results of a SQL query, and if
+it finds a specially formatted tuple (in <em>CompBuffer&#8217;s</em> format), it decompresses it,
+looks for schema information, and then starts returning one by one the compressed data to the outside query.
+If more than one <em>CompBuffers</em> are found, then their schemata are consolidated into one.</p>
+<p>CompBuffer tries to avoid writing on the hard disk, by compressing in memory, the data fed
+into it and only after a threshold of 10 Mb of compressed data is reached, spilling over into the hard disk.</p>
+<p>To make multiset usage transparent to the user, madIS&#8217; SQL preprocessor, inserts automatically
+the <em>expand</em> virtual table whenever a multiset producing function is met.
+To flag a row or aggregate function as a multiset one, the programmer has to set the function&#8217;s attribute
+&#8220;multiset&#8221; to &#8220;True&#8221;. This is done in the same way as for the &#8220;registered&#8221; function&#8217;s attribute.</p>
+<p>An example of a multiset row function which produces multiple columns is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">strsplit</span><span class="p">(</span><span class="ss">&quot;one,two,three&quot;</span><span class="p">);</span>
+<span class="n">one</span><span class="o">|</span><span class="n">two</span><span class="o">|</span><span class="n">three</span>
+</pre></div>
+</div>
+<p>And one which produces multiple rows is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">strsplitv</span><span class="p">(</span><span class="ss">&quot;one,two,three&quot;</span><span class="p">);</span>
+<span class="n">one</span>
+<span class="n">two</span>
+<span class="n">three</span>
+</pre></div>
+</div>
+<p>Both of the functions above, break their input on &#8220;comma&#8221; by default.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><tt class="xref py py-func docutils literal"><span class="pre">strsplit()</span></tt></li>
+<li><tt class="xref py py-func docutils literal"><span class="pre">strsplitv()</span></tt></li>
+</ul>
+</div>
+</div>
+<div class="section" id="on-the-fly-multidimensional-indexing-the-cache-virtual-table">
+<span id="tutcache"></span><h2>On the fly multidimensional indexing (the <em>cache</em> virtual table)<a class="headerlink" href="#on-the-fly-multidimensional-indexing-the-cache-virtual-table" title="Permalink to this headline">¶</a></h2>
+<p>Working with external sources directly, has the major problem of not being able to put acceleration structures on them (indexing), unless materializing them in the form of a database table.
+Joins with external sources, in particular, are very slow, forcing the SQLite core to do multiple sequential passes on the virtual tables tied to the external sources.</p>
+<p>To solve the problems above, the <em>cache</em> virtual table was created.
+The way it works is this:</p>
+<ul class="simple">
+<li>At the beginning it does one pass over the results of the input query, and keeps them in memory</li>
+<li>Then it negotiates with SQLite&#8217;s core about what constraints and order bys, the core would like to have answered as fast as possible</li>
+<li>It builds a very fast multidimensional index based on the negotiations above</li>
+<li>It waits until the core starts sending queries on the above constraints, and returns the results using the just build multidimensional index</li>
+<li>At the end of the query it throws away the cached query&#8217;s data and the multidimensional index</li>
+</ul>
+<p>The multidimensional index is based on kd-trees and is implemented in Python, using the virtual table indexing API.
+It is a very fast to be build index, and extremely fast on answering queries involving many constraints.
+The multidimensional index is also designed to be memory efficient, needing O(number_of_dataset_rows) memory no matter the number of indexed dimensions.</p>
+<p>In practice, it has been up to 10 times faster on interval joins compared to SQLite&#8217;s native indexing, and as the dimensions grow in number its speed advantage becomes bigger.</p>
+<p>An example of <em>cache</em> use is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="o">%</span> <span class="n">cd</span> <span class="n">demo</span>
+<span class="o">%</span> <span class="n">python</span> <span class="n">mterm</span><span class="p">.</span><span class="n">py</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">country</span><span class="p">.</span><span class="n">c2</span><span class="p">,</span> <span class="n">continent</span><span class="p">.</span><span class="n">c1</span>
+  <span class="k">from</span> <span class="n">file</span><span class="p">(</span><span class="s1">&#39;countries.tsv&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">country</span><span class="p">,</span>
+       <span class="n">file</span><span class="p">(</span><span class="s1">&#39;continents.tsv&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">continent</span>
+  <span class="k">where</span> <span class="n">country</span><span class="p">.</span><span class="n">c1</span><span class="o">=</span><span class="n">continent</span><span class="p">.</span><span class="n">c2</span><span class="p">;</span>
+<span class="n">Aruba</span><span class="o">|</span><span class="n">Americas</span>
+<span class="n">Antigua</span> <span class="k">and</span> <span class="n">Barbuda</span><span class="o">|</span><span class="n">Americas</span>
+<span class="n">United</span> <span class="n">Arab</span> <span class="n">Emirates</span><span class="o">|</span><span class="n">Asia</span>
+<span class="n">Afghanistan</span><span class="o">|</span><span class="n">Asia</span>
+<span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span> <span class="k">min</span> <span class="mi">2</span> <span class="n">sec</span> <span class="mi">40</span> <span class="n">msec</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="n">country</span><span class="p">.</span><span class="n">c2</span><span class="p">,</span> <span class="n">continent</span><span class="p">.</span><span class="n">c1</span>
+  <span class="k">from</span> <span class="n">file</span><span class="p">(</span><span class="s1">&#39;countries.tsv&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">country</span><span class="p">,</span>
+       <span class="p">(</span><span class="k">CACHE</span> <span class="n">file</span> <span class="s1">&#39;continents.tsv&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">continent</span>
+  <span class="k">where</span> <span class="n">country</span><span class="p">.</span><span class="n">c1</span><span class="o">=</span><span class="n">continent</span><span class="p">.</span><span class="n">c2</span><span class="p">;</span>
+<span class="n">Aruba</span><span class="o">|</span><span class="n">Americas</span>
+<span class="n">Antigua</span> <span class="k">and</span> <span class="n">Barbuda</span><span class="o">|</span><span class="n">Americas</span>
+<span class="n">United</span> <span class="n">Arab</span> <span class="n">Emirates</span><span class="o">|</span><span class="n">Asia</span>
+<span class="n">Afghanistan</span><span class="o">|</span><span class="n">Asia</span>
+<span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span> <span class="p">.</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="k">in</span> <span class="mi">0</span> <span class="k">min</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">71</span> <span class="n">msec</span>
+</pre></div>
+</div>
+<p>The queries above, do a direct join on the filesystem&#8217;s files &#8220;countries.tsv&#8221; and &#8220;continents.tsv&#8221; (in the &#8220;demo&#8221; path of madIS).
+The first query doesn&#8217;t do any caching at all, so it is forced to do multiple sequential reads of the &#8220;continents&#8221; file, to execute the join.
+The second query, using the inverted syntax, caches the &#8220;continents&#8221; file and creates the required indexes to execute the join quickly.</p>
+<p>The speed difference between the two queries is quite significant (cached version of query is 28x faster).
+For bigger datasets and more constraints the speed advantage could be even greater.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
+</ul>
+</div>
+</div>
+<div class="section" id="workflows">
+<h2>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h2>
+<p>From the beginning madIS was designed for building complete data processing systems with it.
+In madIS, workflows are viewed as a series of queries to be executed sequentially.</p>
+<p>The main function that implements madIS&#8217; workflow engine is <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> virtual table:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">select</span> <span class="s1">&#39;select 5&#39;</span><span class="p">;</span>
+<span class="k">select</span> <span class="mi">5</span>
+<span class="n">mterm</span><span class="o">&gt;</span> <span class="k">exec</span> <span class="k">select</span> <span class="s1">&#39;select 5&#39;</span><span class="p">;</span>
+<span class="mi">1</span>
+</pre></div>
+</div>
+<p>Virtual table <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt>, takes as input an SQL query, executes it and then operates on the <strong>results</strong> of the input query, executing them sequentially and returning &#8220;1&#8221; if all the queries executed successfully, or throwing an error if any queries failed to execute correctly.</p>
+<p>This peculiar design (its a meta-meta function), enables <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> to work in tandem with other virtual tables that feed to it the workflows to be executed.
+The most frequent combination is:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="n">mterm</span><span class="o">&gt;</span> <span class="k">exec</span> <span class="n">flow</span> <span class="n">file</span> <span class="s1">&#39;workflow.sql&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>What the query above does, is to open and read the &#8220;workflow.sql&#8221; filesystem file via
+the <em>file</em> virtual table, then feed its results into the <em>flow</em> virtual table
+which collects in one line the &#8220;broken into multiple lines&#8221; queries, and finally
+to feed the resulting queries to <tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> virtual table which will execute them.</p>
+<p>The above combination of virtual tables presents, one the most powerful aspects of madIS.
+Namely the ability to create complex functionality (in this instance a workflow engine), by quickly combining simple entities.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Another benefit of using (or abusing) a relational database to implement a workflow engine, is that all ACID properties
+of the database are still present during the workflow processing. Unfortunately due to limitations of the SQLite core,
+transactional execution of madIS workflows isn&#8217;t fully working yet (see <a class="reference internal" href="#tutlimitations"><em>Limitations of madIS</em></a>).</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">flow</span></tt></li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></li>
+</ul>
+</div>
+</div>
+<div class="section" id="designing-and-building-a-data-processing-system-with-madis">
+<h2>Designing and building a data processing system with madIS<a class="headerlink" href="#designing-and-building-a-data-processing-system-with-madis" title="Permalink to this headline">¶</a></h2>
+<p>Concerning the design of a data processing system.
+The required steps that have to be made when <strong>designing</strong> a data processing system with madIS are:</p>
+<ol class="arabic simple">
+<li>Define the problem you are trying to solve</li>
+<li>Break the problem into workflows</li>
+<li>Break the workflows into queries</li>
+<li>Find the functions that the queries will need</li>
+<li>Find the Python libraries that the functions will need</li>
+</ol>
+<p>The steps above, are mostly self evident, and should be made in the order that they are presented.</p>
+<p>To <strong>build</strong> the data processing system, the above steps have to be followed, finding/building the required entities (functions, queries), for each step, <strong>going from bottom to top</strong> (Step 5 to Step 2),</p>
+<p>In practice we have found that there is always some overlap between the designing and building stages and between steps.
+Great care should be given, when designing, on the most difficult and time consuming step, which is step 1. When step 1 is successfully executed, the speed with which the rest of the steps are designed and following that, building them from bottom to top, is extremely fast in our experience.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">An example of a madIS workflow can be found in the <a class="reference internal" href="examples.html#applexample"><em>examples section</em></a>.</p>
+</div>
+</div>
+<div class="section" id="limitations-of-madis">
+<span id="tutlimitations"></span><h2>Limitations of madIS<a class="headerlink" href="#limitations-of-madis" title="Permalink to this headline">¶</a></h2>
+<p>The limitations of madIS are:</p>
+<ul class="simple">
+<li>Due to SQLite&#8217;s inability to simultaneously use multiple CPUs to execute a query, madIS&#8217; query execution is done by only one CPU.
+This will be partially solved in the future through the use of the <em>map</em> virtual table, which will be able to execute a row function on multiple data rows in parallel.
+For more heavy processing concurrency, functions and virtual tables enabling madIS to be used on clusters are in the planning stage</li>
+<li>Due to SQLite&#8217;s locking semantics, workflows inside a parent workflow, aren&#8217;t in their own transactions.
+So when a child workflow fails, the whole parent transaction rolls back.
+This will be solved whenever SQLite fixes the problem where the database&#8217;s system schema table is locked whenever a table is deleted</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/madislog.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Manual</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#creating-and-using-a-simple-row-function">Creating and using a simple row function</a></li>
+<li><a class="reference internal" href="#creating-and-using-a-simple-aggregate-function">Creating and using a simple aggregate function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#madis-sql-extensions">madIS SQL extensions</a></li>
+<li><a class="reference internal" href="#multisets">Multisets</a></li>
+<li><a class="reference internal" href="#on-the-fly-multidimensional-indexing-the-cache-virtual-table">On the fly multidimensional indexing (the <em>cache</em> virtual table)</a></li>
+<li><a class="reference internal" href="#workflows">Workflows</a></li>
+<li><a class="reference internal" href="#designing-and-building-a-data-processing-system-with-madis">Designing and building a data processing system with madIS</a></li>
+<li><a class="reference internal" href="#limitations-of-madis">Limitations of madIS</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="about.html"
+                        title="previous chapter">About</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usefulnotes.html"
+                        title="next chapter">Useful notes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/manual.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="usefulnotes.html" title="Useful notes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="about.html" title="About"
+             >previous</a> |</li>
+        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
