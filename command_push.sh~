@@ -6,4 +6,3 @@ cp src/docs/html/* .
 git commit -am "update documentation"
 git push origin gh-pages
 git checkout master
-git push origin master
