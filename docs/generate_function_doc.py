@@ -1,12 +1,13 @@
 import sys, os
 sys.path.append((os.path.join(sys.path[0],'..')))
-print sys.path[0]
+temp = sys.path[0]
 import functions
+
 from shutil import copyfile
 
 functions.register()
 
-curpath = os.path.abspath(sys.path[0])
+curpath = os.path.abspath(temp)
 
 def gendoc(funtype, toplevelonly=False):
     file=open(os.path.join(curpath, 'source', funtype+'.txt'),'w')
