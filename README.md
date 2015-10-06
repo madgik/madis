@@ -9,6 +9,8 @@ madIS' main goal is to promote the handling of data related tasks within an exte
 madIS was designed and implemented by a small team of developers at the MaDgIK lab of the University of Athens, under the supervision of professor Yannis Ioannidis.
 
 
+# Documentation
 
+You'll find madIS [documentation here] (http://madgik.github.io/madis).
 
 
