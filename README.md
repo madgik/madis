@@ -30,4 +30,4 @@ You'll find madIS [documentation here] (http://madgik.github.io/madis).
 
 # Screenshot
 
-![ScreenShot] 
+![ScreenShot] (madis-screen.png)
