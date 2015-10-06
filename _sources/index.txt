@@ -21,7 +21,7 @@ madIS is a extensible relational database system build upon the SQLite database 
 The extensibility permits quick experimentation concerning data analysis tasks, rapid development of data processing workflows and serves in general as a simple and easy environment to test database related ideas without much effort.
 madIS' query language is SQL with some syntactic "extensions" aiming to simplify query composition.
 
-madIS is hosted at http://code.google.com/p/madis/
+madIS is hosted at http://github.com/madgik/madis
 
 Contents:
 
