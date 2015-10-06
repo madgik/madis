@@ -19,7 +19,7 @@ import sys, os
 sys.path.append(os.path.abspath('.'))
 sys.path.append(os.path.abspath(os.path.dirname(__file__)+'../../../'))
 import functions
-
+extensions = [ "sphinxtogithub" ]
 #sys.path.append(os.path.abspath(os.path.dirname(__file__)+'\\..\\..\\'))
 # -- General configuration -----------------------------------------------------
 
