@@ -27,7 +27,7 @@ You can easily develop and test a new indexing structure with madIS, as it uses 
 
 You'll find madIS [documentation here] (http://madgik.github.io/madis).
 
-##Istallation
+##Installation
 
 [Installation instructions] (http://madgik.github.io/madis/install.html)
 
