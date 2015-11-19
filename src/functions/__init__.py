@@ -443,7 +443,14 @@ def register_ops(module, connection):
     def wrapaggr(con, opfun):
         return lambda self: iterwrapperaggr(con, opfun, self)
 
-    multaggr = {}
+    def wrapaggregatefactory(wlambda):
+        return lambda cls: (cls(), cls.step, wlambda)
+
+    if hasattr(connection, 'multaggr'):
+        multaggr = connection.multaggr
+    else:
+        multaggr = {}
+
     for f in module.__dict__:
         fobject = module.__dict__[f]
         if hasattr(fobject, 'registered') and type(fobject.registered).__name__ == 'bool' and fobject.registered == True:
@@ -482,16 +489,16 @@ def register_ops(module, connection):
                 if isgeneratorfunction(fobject.final):
                     wlambda = wrapaggr(connection, fobject.final)
                     multaggr[opname] = wlambda
-                    fobject.multiset=True
-                    setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, wlambda)))
+                    fobject.multiset = True
+                    setattr(fobject, 'factory', classmethod(wrapaggregatefactory(wlambda)))
                     connection.createaggregatefunction(opname, fobject.factory)
                 else:
-                    setattr(fobject,'factory',classmethod(lambda cls:(cls(), cls.step, cls.final)))
+                    setattr(fobject, 'factory', classmethod(lambda cls:(cls(), cls.step, cls.final)))
                     connection.createaggregatefunction(opname, fobject.factory)
 
             try:
-                if fobject.multiset == True:
-                    multiset_functions[opname]=True
+                if fobject.multiset:
+                    multiset_functions[opname] = True
             except:
                 pass
 
