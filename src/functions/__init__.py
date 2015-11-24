@@ -446,10 +446,6 @@ def register_ops(module, connection):
     def wrapaggregatefactory(wlambda):
         return lambda cls: (cls(), cls.step, wlambda)
 
-    if hasattr(connection, 'multaggr'):
-        multaggr = connection.multaggr
-    else:
-        multaggr = {}
 
     for f in module.__dict__:
         fobject = module.__dict__[f]
@@ -488,7 +484,6 @@ def register_ops(module, connection):
 
                 if isgeneratorfunction(fobject.final):
                     wlambda = wrapaggr(connection, fobject.final)
-                    multaggr[opname] = wlambda
                     fobject.multiset = True
                     setattr(fobject, 'factory', classmethod(wrapaggregatefactory(wlambda)))
                     connection.createaggregatefunction(opname, fobject.factory)
@@ -502,7 +497,6 @@ def register_ops(module, connection):
             except:
                 pass
 
-    connection.multaggr = multaggr
 
 def testfunction():
     global test_connection, settings
