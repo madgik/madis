@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
 import os
 import sys
@@ -127,7 +127,7 @@ def reloadfunctions():
         lib.reimport.reimport('functionslocal')
     except ValueError:
         pass
-    
+
     connection = createConnection(db)
     functions.settings=tmp_settings
     functions.variables=tmp_vars
@@ -142,7 +142,7 @@ def raw_input_no_history(*args):
             connection.close()
             exit(0)
         return input
-    
+
     try:
         input = raw_input(*args)
     except:
@@ -284,7 +284,7 @@ def update_cols_from_tables_in_text(t):
 
     if t==_update_cols_from_tables_last_text:
         return
-    
+
     _update_cols_from_tables_last_text=t
 
     stablesreg='|'.join( (x.replace('$','\$').replace('.', '\.') for x in sorted(alltablescompl, key=len, reverse=True)) )
@@ -297,7 +297,7 @@ def update_cols_from_tables_in_text(t):
 def mcomplete(textin,state):
     global number_of_kb_exceptions
     number_of_kb_exceptions = 0
-    
+
     def normalizename(col):
         if re.match(ur'\.*[\w_$\d.]+\s*$', col,re.UNICODE):
             return col
@@ -318,7 +318,7 @@ def mcomplete(textin,state):
     if text[-2:]=='\\t':
         if state==0: return text[:-2]+'\t'
         else: return
-        
+
     prefix=''
 
     localtables=[]
@@ -407,7 +407,7 @@ def mcomplete(textin,state):
     if state<len(hits):
         sqlstatem=set(sqlandmtermstatements)
         altset=set(localtables)
-        
+
         if hits[state]=='..':
             if text=='..' and lastcols!=[]:
                 return prefix+', '.join([normalizename(x) for x in lastcols])+' '
@@ -440,7 +440,7 @@ def schemaprint(cols):
 
     if pipedinput:
         return
-    
+
     if cols!=[]:
         sys.stdout.write(Style.BRIGHT+'--- '+Style.NORMAL+ Fore.RED+'['+Style.BRIGHT+'0'+Style.NORMAL+'|'+Style.RESET_ALL+Style.BRIGHT+'Column names '+'---'+Style.RESET_ALL+'\n')
         colschars=0
@@ -619,7 +619,7 @@ if not pipedinput:
         pass
     import atexit
     atexit.register(readline.write_history_file, histfile)
-    
+
     automatic_reload=True
     readline.set_completer(mcomplete)
     readline.parse_and_bind("tab: complete")
@@ -787,7 +787,7 @@ while True:
 
         elif command=='vacuum':
             statement="PRAGMA temp_store_directory = '.';VACUUM;PRAGMA temp_store_directory = '';"
-          
+
         elif command=='schema':
             if not argument:
                 statement="select sql from (select * from sqlite_master union all select * from sqlite_temp_master) where sql is not null;"
@@ -877,7 +877,7 @@ while True:
 
             colorama.init()
             rownum=0
-            
+
             if not pipedinput:
                 for row in cexec:
                     printrow(row)
@@ -908,7 +908,7 @@ while True:
                     print "in %s min. %s sec %s msec." %((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60),(int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
             if beeping:
                 printterm('\a\a')
-                
+
             colscompl=[]
             updated_tables=set()
 
