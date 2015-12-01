@@ -823,7 +823,8 @@ class Connection(object):
             self.__func_cache[callback] = authorizer
         ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
         if callback == None:
-            self.setauthorizer(self.authorizer)
+            callback = self.authorizer
+            ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
         if ret != SQLITE_OK:
             raise self._get_exception(ret)
 
@@ -1031,7 +1032,6 @@ class Connection(object):
                     schema, table = datasource.Create(self, ffi.string(argv[0]), ffi.string(argv[1]), ffi.string(argv[2]), *tuple([ffi.string(argv[i]) for i in xrange(3,argc)]))
                 except Exception as e:
                     error_msg = str(e)
-                    print 'kaka',error_msg
                     if "Error:" not in error_msg:
                         error_msg = type(e).__name__ +": " + error_msg
                     pzErr[0] = sqlite.sqlite3_mprintf(error_msg)
