@@ -35,7 +35,6 @@ class QueryPlan(vtbase.VT):
 
         _, dictargs = self.full_parse(parsedArgs)
 
-        yield [('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text')]
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1]," needs query argument ")
         query=dictargs['query']
@@ -54,7 +53,7 @@ class QueryPlan(vtbase.VT):
         cursor.execute(query)
 
         connection.setauthorizer(None)
-
+        yield [('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text')]
         for r in plan:
             yield r
     def destroy(self):

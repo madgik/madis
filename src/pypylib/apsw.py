@@ -788,43 +788,42 @@ class Connection(object):
     def setauthorizer(self, callback):
         if callback != None:
             self.authorizer = callback
-        try:
-            authorizer = self.__func_cache[callback]
-        except KeyError:
-            @ffi.callback("int(void*, int, const char*, const char*, "
-                           "const char*, const char*)")
-            def authorizer(userdata, action, arg1, arg2, dbname, source):
-                try:
-                    arg1 = unicode(ffi.string(arg1))
-                except:
-                    arg1 = None
-                try:
-                    arg2 = unicode(ffi.string(arg2))
-                except:
-                    arg2 = None
-                try:
-                    dbname = unicode(ffi.string(dbname))
-                except:
-                    dbname = None
-                try:
-                    source = unicode(ffi.string(source))
-                except:
-                    source = None
+            try:
+                authorizer = self.__func_cache[callback]
+            except KeyError:
+                @ffi.callback("int(void*, int, const char*, const char*, "
+                               "const char*, const char*)")
+                def authorizer(userdata, action, arg1, arg2, dbname, source):
+                    try:
+                        arg1 = unicode(ffi.string(arg1))
+                    except:
+                        arg1 = None
+                    try:
+                        arg2 = unicode(ffi.string(arg2))
+                    except:
+                        arg2 = None
+                    try:
+                        dbname = unicode(ffi.string(dbname))
+                    except:
+                        dbname = None
+                    try:
+                        source = unicode(ffi.string(source))
+                    except:
+                        source = None
 
-                try:
-                    ret = callback(action, arg1, arg2, dbname, source)
-                    assert isinstance(ret, int)
-                    # try to detect cases in which cffi would swallow
-                    # OverflowError when casting the return value
-                    assert int(ffi.cast('int', ret)) == ret
-                    return ret
-                except Exception:
-                    return SQLITE_DENY
-            self.__func_cache[callback] = authorizer
-        ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
-        if callback == None:
-            callback = self.authorizer
+                    try:
+                        ret = callback(action, arg1, arg2, dbname, source)
+                        assert isinstance(ret, int)
+                        # try to detect cases in which cffi would swallow
+                        # OverflowError when casting the return value
+                        assert int(ffi.cast('int', ret)) == ret
+                        return ret
+                    except Exception:
+                        return SQLITE_DENY
+                self.__func_cache[callback] = authorizer
             ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
+        if callback == None:
+            ret = sqlite.sqlite3_set_authorizer(self._db, ffi.NULL, ffi.NULL)
         if ret != SQLITE_OK:
             raise self._get_exception(ret)
 
