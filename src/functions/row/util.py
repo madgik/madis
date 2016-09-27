@@ -106,7 +106,7 @@ def urlrequest(*args):
 
         return unicode(hreq.read(), 'utf-8', errors = 'replace')
 
-    except urllib2.HTTPError,e:
+    except (urllib2.HTTPError, urllib2.URLError),e:
         if args[0] == None:
             return None
         else:
