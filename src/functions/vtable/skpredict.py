@@ -45,7 +45,7 @@ import lib.inoutparsing
 
 registered = True
 
-class orf_skpredict(vtbase.VT):
+class skpredict(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         import itertools
         # from sklearn import linear_model

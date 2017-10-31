@@ -51,7 +51,7 @@ import functions
 import gc
 import lib.inoutparsing
 
-class orf_sktrain(vtbase.VT):
+class sktrain(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
 
         largs, dictargs = self.full_parse(parsedArgs)
