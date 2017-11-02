@@ -7,27 +7,35 @@ skpredict filename: "mymodel" select * from t;
     data provided selected from the query. It returns a table with the new predictions
 
 
-    >>> table1(''' (Last column = response variable (classes or conitunous value in case of regression))
-    ... 5.1	3.5	1.4	0.2	1
-    ... 4.9	3	1.4	0.2	1
-    ... 4.7	3.2	1.3	0.2	2
-    ... 4.6	3.1	1.5	0.2	2
-    ... 5	3.6	1.4	0.2	0
-    ... 5.4	3.9	1.7	0.4	1
-    ... 4.6	3.4	1.4	0.3	1
-    ... 5	3.4	1.5	0.2	0
-    ... 4.4	2.9	1.4	0.2	0
-    ... 4.9	3.1	1.5	0.1	2
-    ... 5.4	3.7	1.5	0.2	2
-    ... 4.8	3.4	1.6	0.2	1
+    >>> table('''
+    ... 0.0   4.4   0
+    ... 2.1   2.2   2
+    ... -2.1   4.4   0
+    ... 2.1   2.2   0
+    ... 0.0   4.4   2
+    ... -4.2   4.4   2
+    ... -4.2   4.4   1
+    ... -2.1   -0.0   0
+    ... 2.1   -0.0   0
+    ... -2.1   -2.2   0
+    ... -4.2   -0.0   2
     ... --- [0|Column names ---
-    ... [1|C1 [2|C2 [3|C3 [4|C4 [5|C5
+    ... [1|C1 [2|C2 [3|C3
     ... ''')
-
-    sql("skpredict filename:SVMmodel")
-    skpredict filename:SVMmodel select C1,C2,C4 from table;
-
-    ------------------------------
+    >>> sql("skpredict filename:SVMmodel select C1,C2 from table;")
+    prediction  |
+    -------------
+    0           |
+    0           |
+    2           |
+    0           |
+    0           |
+    2           |
+    2           |
+    0           |
+    0           |
+    0           |
+    2           |
 
 """
 
@@ -51,6 +59,7 @@ registered = True
 class skpredict(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
         import itertools
+        import numpy as np
         # from sklearn import linear_model
         import cPickle as cp
         import zlib
@@ -83,8 +92,8 @@ class skpredict(vtbase.VT):
         model = cp.loads(fdecomp) # Deserialization
         yield [('prediction',)]
         for i in c:
-            # print int(model.predict(i)[0])
-            yield [int(model.predict(i)[0])]
+            # print np.reshape(i,(1,-1)),type(i)
+            yield [int(model.predict(np.reshape(i,(1,-1)))[0])]
 
 
 

@@ -21,9 +21,11 @@ class skdimred:
     .. function:: skdimred(initstr,cols)
 
         Implements dimensionality reduction on table t (based on algorithms from Machine Learning package scikit-learn.org).
+        Standarization is also performed to the features by removing the mean and scaling to unit variance
         Returns: the transformed data in the new space.
-        initstr: Initialization string of the algorithm (3 methods are supported: PCA, SVD and TSNE)
-        cols: Names of the input-variables
+        initstr: Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: PCA(n_components=3)).
+                 Three methods are supported: PCA, SVD and TSNE)
+        cols:    Names of the input-variables
 
         Examples:
         Sample from the iris dataset with 4 columns (SepalLength, SepalWidth, PetalLength, PetalWidth):
@@ -34,11 +36,19 @@ class skdimred:
         ... 4.7	3.2	1.3	0.2
         ... 4.6	3.1	1.5	0.2
         ... 5	3.6	1.4	0.2
+    ... --- [0|Column names ---
+    ... [1|SL [2|SW [3|PL [4]PW
         ... ''')
 
-        >>> sql("select skdimred('PCA(n_components=2)',SepalLength,SepalWidth,PetalLength,PetalWidth) from table1;")
-
+        >>> sql("select skdimred('PCA(n_components=2)',SL,SW,PL,PW) from table1;")
+        eig1            |  eig2
         ------------------------------
+        -1.52434877924  |  -0.436029188708
+        0.669710216202  |  0.234613817817
+        0.378259496001  |  1.74252845419
+        1.9247054679    |  -1.10077422234
+        -1.44832640086  |  -0.440338860953
+
 
     """
     registered = True  # Value to define db operator
@@ -92,7 +102,8 @@ class skdimred:
         Xr = self.initalg.fit_transform(data_scaled)
         # Xr = self.initalg.fit_transform(data)
         try:
-            print 'EXPLAINED VARIANCE (madis):',self.initalg.explained_variance_ratio_
+            # print 'EXPLAINED VARIANCE (madis):',self.initalg.explained_variance_ratio_
+            exp_var = self.initalg.explained_variance_ratio_
         except:
             pass
 

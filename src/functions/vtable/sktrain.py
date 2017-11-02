@@ -1,15 +1,26 @@
 """
-sktrain using yield
+.. function: sktrain(args,query:None)
 
     Fits data from specific database relations into cross-validated predictive models. A supervised algorithm initialized
     by initstr is trained on the selected data and returns its predictions for each sample (either for Regression or
-    Classification problems). The algorithm also implements the validation step via cross-validation and extra parameters
-    for the training can be provided as well:
-    initstr (with optional parameters): Initialization string (from scikit-learn api, ie: DecisionTreeClassifier(max_depth=3)
-    classname: The Column name for the response variable we want to classify/predict
-    cv: k for k-fold cross validation
+    Classification problems). The algorithm implements the validation step via cross-validation and extra parameters
+    for the training can be provided as well. The model is also stored in disk for future use. (see skpredict operator)
 
-    The model is also stored in disk for future use. (see skpredict operator)
+
+    Parameters:
+
+    :initstr(with optional parameters):
+
+        Initialization string (from scikit-learn api, ie: DecisionTreeClassifier(max_depth=3)
+
+    :classname:
+
+        The Column name for the response variable we want to classify/predict
+
+    :cv:
+
+        k for k-fold cross validation
+
 
     Examples:
 
@@ -29,9 +40,24 @@ sktrain using yield
     ... [1|C1 [2|C2 [3|C3
     ... ''')
 
-    sql("orf_sktrain classname:C3 initstr:SVC(kernel='linear') cv:10") //10-fold cross-validation
-    sktrain filename:SVMmodel initstr:SVC(kernel='linear') cv:10 select * from table;
-    
+    >>> sql("sktrain filename:SVMmodel initstr:SVC(kernel='linear') classname:C3 cv:10 select * from table;")
+    sktrain filename:SVMmodel initstr:SVC(kernel='linear') cv:10 select * from table;  //10-fold cross-validation
+
+    id |  predicted_label |  prediction_probability  |  probs_per_class
+    ------------------------------------------------------------------------------------------------------------------
+    0  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    1  | 0                |  0.0                     |  [0.0, 0.0, 0.0]
+    2  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    3  | 0                |  0.410210360487          |  [0.41021036048685278, 0.14907264577206564, 0.44071699374108164]
+    4  | 0                |  0.548051122534          |  [0.54805112253403776, 0.14785556444024275, 0.30409331302571929]
+    5  | 1                |  0.193336225736          |  [0.38875643772373958, 0.19333622573639794, 0.4179073365398624]
+    6  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    7  | 0                |  0.416031694023          |  [0.41603169402299173, 0.18204494673933225, 0.40192335923767586]
+    8  | 0                |  0.448463699747          |  [0.44846369974736427, 0.1393806568854721, 0.41215564336716359]
+    9  | 2                |  0.216144116096          |  [0.61342034424348868, 0.17043553966069536, 0.21614411609581588]
+    10 | 0                |  0.52171544466           |  [0.52171544465978703, 0.20100090883455271, 0.27728364650566051]
+
+
     NOTE about cross-validation on classification/regression tasks:
     For integer/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold() is used.
     Otherwise (like regression tasks), KFold() is used.
@@ -149,31 +175,16 @@ class sktrain(vtbase.VT):
                 if 'groupname' in dictargs:
                     groupList.append(row[idgroupname])
                     groups = np.array(groupList)
-                    # print trainList[i]
                     del trainList[i][idgroupname]
-                    # print 'groups:\n', set(groups)
-                    # print 'grouping variable: ', groupname
-                    # print 'number of groups: ', len(set(groups))
                 else:
                     groups=None
 
             X = np.array(trainList).astype(np.float)
             y = np.array(targetList).astype(np.int)
-            # print 'MADIS/TRAIN X: ',X
-            # print 'MADIS/TARGET y: ',y
-            # if 'groupname' in dictargs:
-            #     gkf = GroupKFold(n_splits=cv)
-            #     cv_func = gkf.split(X, y, groups)
-            #
-            # else:
-            #     skf = StratifiedKFold(n_splits=cv)
-            #     cv_func = skf.split(X, y)
-
 
             preds = []
             pred_probs = []
-            # preds = cross_val_predict(model, X, y, cv=cv_func)
-            print 'MADIS/GROUPS?: ',groups
+            # print 'MADIS/GROUPS?: ',groups
             preds = cross_val_predict(model, X, y, cv=cv, groups=groups)
                 # pred_probs = cross_val_predict(model, X, y, cv=cv_func,method='predict_proba')
             pred_probs = cross_val_predict(model, X, y, cv=cv, groups=groups, method='predict_proba')
@@ -198,63 +209,7 @@ class sktrain(vtbase.VT):
 
 
 def Source():
-    return vtbase.VTGenerator(orf_sktrain)
-
-
-
-# def outdata(diter, schema, connection, *args, **formatArgs):
-#     # -- IMPORT MODULES ---
-#     import itertools
-#     from sklearn.linear_model import *
-#     from sklearn.neighbors import *
-#     from sklearn.svm import *
-#     from sklearn.naive_bayes import *
-#     from sklearn.tree import *
-#     from sklearn.ensemble import *
-#     # from sklearn.cluster import AgglomerativeClustering
-#     import cPickle as cp
-#     import numpy as np
-#     # import unicodedata
-#     import zlib
-#     # ---------------------
-#
-#     f = open(formatArgs['filename'], 'w')
-#
-#     # Make rows -> cols
-#     gen = itertools.izip(*diter)
-#
-#     #Split data into train and target sets:
-#     train = itertools.islice(gen,0,len(schema)-1)
-#     target = itertools.islice(gen,0,1)
-#
-#     # Reverse again
-#     train = np.array(list(itertools.izip(*train))).astype(np.float)
-#     target = np.array(list(itertools.chain(*(itertools.izip(*target))))).astype(np.float) #target1 has 2 dimensions. Scikit expects 1: i.chain(reversed vector)
-#
-#     # Model initialization and training
-#     initalg = eval(formatArgs['initstr']) #initialize model
-#
-#     alg = initalg.fit(train,target) #fit model to data
-#     pstr = cp.dumps(alg, 2) # Serialization
-#     f.write(zlib.compress(pstr,3)) # Compression
-#
-#     f.close()
-#     f1 = open(formatArgs['filename'], 'r')
-#     fedecomp=zlib.decompress(f1.read())
-#     model = cp.loads(fedecomp)
-#     fimp=model.feature_importances_
-#     #print fimp
-#     yield ['colname','val']
-#
-#
-#
-# boolargs = lib.inoutparsing.boolargs
-#
-#
-# def Source():
-#     global boolargs, nonstringargs
-#     return SourceNtoOne(outdata, boolargs, lib.inoutparsing.nonstringargs, lib.inoutparsing.needsescape,
-#                         connectionhandler=True)
+    return vtbase.VTGenerator(sktrain)
 
 
 

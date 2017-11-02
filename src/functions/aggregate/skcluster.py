@@ -33,8 +33,7 @@ class skcluster:
     ... 0.81   0.74
     ... ''')
 
-    >>> sql("select scikitcluster('AffinityPropagation()',c1,c2) from table1")
-    scikitcluster('AffinityPropagation()',rowid,c1,c2)
+    >>> sql("select skcluster('AffinityPropagation()',c1,c2) from table1")
     ---------------------------
     id | label | center1 | center2
     --------------
@@ -45,8 +44,7 @@ class skcluster:
 
     In case algorithm doesn't compute centroids, only the 'id' and 'label' columns appeared in result
 
-    >>> sql("select scikitcluster('SpectralClustering(n_clusters=2)',c1,c2) from table1")
-    scikitcluster('SpectralClustering(n_clusters=2)',rowid,c1,c2)
+    >>> sql("select skcluster('SpectralClustering(n_clusters=2)',c1,c2) from table1")
     ---------------------------
     id | label
     --------------
