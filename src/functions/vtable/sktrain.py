@@ -9,6 +9,8 @@ sktrain using yield
     classname: The Column name for the response variable we want to classify/predict
     cv: k for k-fold cross validation
 
+    The model is also stored in disk for future use. (see skpredict operator)
+
     Examples:
 
     >>> table('''

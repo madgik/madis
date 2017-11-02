@@ -3,8 +3,8 @@
 
 skpredict filename: "mymodel" select * from t;
 
-    Loads a predictive model trained by sktrain operator and classifies the new data provided by the query.
-    Returns a table with the new labels
+    Loads a predictive model trained by sktrain operator from file (stored from sktrain operator) and classifies the new
+    data provided selected from the query. It returns a table with the new predictions
 
 
     >>> table1(''' (Last column = response variable (classes or conitunous value in case of regression))
@@ -20,8 +20,12 @@ skpredict filename: "mymodel" select * from t;
     ... 4.9	3.1	1.5	0.1	2
     ... 5.4	3.7	1.5	0.2	2
     ... 4.8	3.4	1.6	0.2	1
+    ... --- [0|Column names ---
+    ... [1|C1 [2|C2 [3|C3 [4|C4 [5|C5
     ... ''')
 
+    sql("skpredict filename:SVMmodel")
+    skpredict filename:SVMmodel select C1,C2,C4 from table;
 
     ------------------------------
 
