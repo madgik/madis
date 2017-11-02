@@ -1,10 +1,13 @@
 """
 sktrain using yield
 
-    Implements the supervised algorithm initialized by initstr and fits the data ("training") provided by table t.
-    User chooses the response variable (classname attribute) and the k for k-fold cross validation (cv attribute).
-    If no cv is provided, a defauld 5-fold cross-validation is applied.
-    Operator returns the predictions for each sample(either for Regression or Classification problems)
+    Fits data from specific database relations into cross-validated predictive models. A supervised algorithm initialized
+    by initstr is trained on the selected data and returns its predictions for each sample (either for Regression or
+    Classification problems). The algorithm also implements the validation step via cross-validation and extra parameters
+    for the training can be provided as well:
+    initstr (with optional parameters): Initialization string (from scikit-learn api, ie: DecisionTreeClassifier(max_depth=3)
+    classname: The Column name for the response variable we want to classify/predict
+    cv: k for k-fold cross validation
 
     Examples:
 

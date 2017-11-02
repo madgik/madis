@@ -3,8 +3,7 @@
 
 skpredict filename: "mymodel" select * from t;
 
-    Loads a predictive model trained by sktrain operator and classifies
-    the new data provided by t..
+    Loads a predictive model trained by sktrain operator and classifies the new data provided by the query.
     Returns a table with the new labels
 
 
