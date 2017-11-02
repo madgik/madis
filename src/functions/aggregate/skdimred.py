@@ -23,9 +23,16 @@ class skdimred:
         Implements dimensionality reduction on table t (based on algorithms from Machine Learning package scikit-learn.org).
         Standarization is also performed to the features by removing the mean and scaling to unit variance
         Returns: the transformed data in the new space.
-        initstr: Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: PCA(n_components=3)).
-                 Three methods are supported: PCA, SVD and TSNE)
-        cols:    Names of the input-variables
+
+        Parameters:
+
+        :initstr:
+
+                Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: PCA(n_components=3)).
+                Three methods are supported: PCA, SVD and TSNE)
+
+        :cols:
+                Names of the input-variables
 
         Examples:
         Sample from the iris dataset with 4 columns (SepalLength, SepalWidth, PetalLength, PetalWidth):

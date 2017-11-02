@@ -98,7 +98,7 @@ class skpredict(vtbase.VT):
 
 
 def Source():
-    return vtbase.VTGenerator(orf_skpredict)
+    return vtbase.VTGenerator(skpredict)
 
 if not ('.' in __name__):
     """

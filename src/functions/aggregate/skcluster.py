@@ -23,6 +23,16 @@ class skcluster:
     cluster centroids in which the dato belongs to. For instance, if dataset consists of 4 columns (= 4 features)
     4 more columns will be added in result table in case centroids have been computed
 
+    Parameters:
+
+    :initstr:
+
+            Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: KMeans(n_clusters=3)).
+
+    :cols:
+            Names of the input-variables
+
+
     Examples:
     A dataset with 3 columns (1 column for the id and 2 features):
 
