@@ -23,19 +23,19 @@ skpredict filename: "mymodel" select * from t;
     ... [1|C1 [2|C2 [3|C3
     ... ''')
     >>> sql("skpredict filename:SVMmodel select C1,C2 from table;")
-    prediction  |
+    id  |  prediction  |  prediction_probability_per_class
     -------------
-    0           |
-    0           |
-    2           |
-    0           |
-    0           |
-    2           |
-    2           |
-    0           |
-    0           |
-    0           |
-    2           |
+    0   |  0           |  [ 0.4101318   0.20131647  0.38855173]
+    1   |  0           |  [ 0.41863251  0.20180877  0.37955871]
+    2   |  2           |  [ 0.27520722  0.19621797  0.52857481]
+    3   |  0           |  [ 0.4149133   0.20182841  0.3832583 ]
+    4   |  0           |  [ 0.4101318   0.20131647  0.38855173]
+    5   |  2           |  [ 0.90338454  0.01203995  0.08457551]
+    6   |  2           |  [ 0.90338454  0.01203995  0.08457551]
+    7   |  0           |  [ 0.27481114  0.19661277  0.52857609]
+    8   |  0           |  [ 0.27504844  0.19632018  0.52863138]
+    9   |  0           |  [ 0.27491203  0.19661313  0.52847484]
+    10  |  2           |  [ 0.77210661  0.12397848  0.10391491]
 
 """
 
@@ -90,10 +90,20 @@ class skpredict(vtbase.VT):
         # Load model
         fdecomp = zlib.decompress(f.read()) # Decompression
         model = cp.loads(fdecomp) # Deserialization
-        yield [('prediction',)]
-        for i in c:
-            # print np.reshape(i,(1,-1)),type(i)
-            yield [int(model.predict(np.reshape(i,(1,-1)))[0])]
+        if hasattr(model,'predict_proba'):
+            yield [('id'), ('prediction',),('prediction_probability_per_class'),]
+            # yield [('id'), ('prediction',),]
+            for i,row in enumerate(c):
+                # print np.reshape(i,(1,-1)),type(i)
+                prob = model.predict_proba(np.reshape(list(row), (1, -1)))[0]
+                yield (i, int(model.predict(np.reshape(list(row), (1, -1)))[0]), str(prob))
+
+        else:
+            # print 'no prob',
+            yield [('id'), ('prediction',),]
+            for i,row in enumerate(c):
+                # print 'sample format:', list(row)
+                yield (i, int(model.predict(np.reshape(list(row),(1,-1)))[0]))
 
 
 

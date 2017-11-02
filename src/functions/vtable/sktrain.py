@@ -6,6 +6,9 @@
     Classification problems). The algorithm implements the validation step via cross-validation and extra parameters
     for the training can be provided as well. The model is also stored in disk for future use. (see skpredict operator)
 
+    Returns: a table schema with the model's classification (predicted labels). In case user inserts the initstr parameter
+    "probability=True", the table consists of two more columns: the probability of each prediction and one list with the
+    probabilities for each sample to belong to each class (useful for evaluation metrics, ie: ROC curves).
 
     Parameters:
 
@@ -187,7 +190,8 @@ class sktrain(vtbase.VT):
             # print 'MADIS/GROUPS?: ',groups
             preds = cross_val_predict(model, X, y, cv=cv, groups=groups)
                 # pred_probs = cross_val_predict(model, X, y, cv=cv_func,method='predict_proba')
-            pred_probs = cross_val_predict(model, X, y, cv=cv, groups=groups, method='predict_proba')
+            if model.probability:
+                pred_probs = cross_val_predict(model, X, y, cv=cv, groups=groups, method='predict_proba')
 
             # print 'MADIS/preds',preds
             # print 'MADIS/probs',pred_probs
@@ -200,12 +204,17 @@ class sktrain(vtbase.VT):
             # print 'MADIS/CLASSNAMES',model.classes_
             # yield tuple(['id','predicted_label'] + ['center'+str(i) for i in xrange(1,len(self.sample[0])+1)])
             # yield [('id',), ('predicted_label',), ('prediction_probability',),([tuple('probability_'+str(i)+',') for i in range(len(model.classes_))])]
-            yield [('id',), ('predicted_label',), ('prediction_probability',),('probs_per_class',)]
-
-            for i in range(len(X)):
-                pred = preds[i]
-                yield (i, int(pred), pred_probs[i][pred], str([pred_probs[i][j] for j in range(len(model.classes_))]))
-                # yield (i, int(pred), pred_probs[i][pred], [pred_probs[i][j] for j in range(len(model.classes_))])
+            if model.probability:
+                yield [('id',), ('predicted_label',), ('prediction_probability',),('probs_per_class',)]
+                for i in range(len(X)):
+                    pred = preds[i]
+                    yield (i, int(pred), pred_probs[i][pred], str([pred_probs[i][j] for j in range(len(model.classes_))]))
+                    # yield (i, int(pred), pred_probs[i][pred], [pred_probs[i][j] for j in range(len(model.classes_))])
+            else:
+                yield [('id',), ('predicted_label',),]
+                for i in range(len(X)):
+                    pred = preds[i]
+                    yield (i, int(pred))
 
 
 def Source():
