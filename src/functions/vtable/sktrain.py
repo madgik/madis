@@ -190,7 +190,8 @@ class sktrain(vtbase.VT):
             # print 'MADIS/GROUPS?: ',groups
             preds = cross_val_predict(model, X, y, cv=cv, groups=groups)
                 # pred_probs = cross_val_predict(model, X, y, cv=cv_func,method='predict_proba')
-            if model.probability:
+            # if model.probability:
+            if hasattr(model, 'probability') and model.probability:
                 pred_probs = cross_val_predict(model, X, y, cv=cv, groups=groups, method='predict_proba')
 
             # print 'MADIS/preds',preds
@@ -204,7 +205,8 @@ class sktrain(vtbase.VT):
             # print 'MADIS/CLASSNAMES',model.classes_
             # yield tuple(['id','predicted_label'] + ['center'+str(i) for i in xrange(1,len(self.sample[0])+1)])
             # yield [('id',), ('predicted_label',), ('prediction_probability',),([tuple('probability_'+str(i)+',') for i in range(len(model.classes_))])]
-            if model.probability:
+            if hasattr(model,'probability') and model.probability:
+            # if model.probability:
                 yield [('id',), ('predicted_label',), ('prediction_probability',),('probs_per_class',)]
                 for i in range(len(X)):
                     pred = preds[i]
