@@ -1,6 +1,13 @@
 """
 .. function: sktrain(args,query:None)
 
+    :NOTE:
+
+        The operator requires the following packages: 'numpy', 'scipy', 'sklearn'
+        numpy & scipy: https://www.scipy.org/scipylib/download.html
+        sklearn: http://scikit-learn.org/stable/install.html
+
+
     Fits data from specific database relations into cross-validated predictive models. A supervised algorithm initialized
     by initstr is trained on the selected data and returns its predictions for each sample (either for Regression or
     Classification problems). The algorithm implements the validation step via cross-validation and extra parameters

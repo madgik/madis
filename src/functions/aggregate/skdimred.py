@@ -1,17 +1,11 @@
 import setpath
 import functions
 import math
-import numpy as np
 import time as t
 # import re
 import json
 
-from sklearn.decomposition import *
-from sklearn.preprocessing import StandardScaler
-# from sklearn.cluster import * # for FeatureAgglomeration.
-from sklearn.manifold import *
-from collections import deque
-
+# from collections import deque
 
 
 
@@ -19,6 +13,13 @@ class skdimred:
 
     """
     .. function:: skdimred(initstr,cols)
+
+        :NOTE:
+
+            The operator requires the following packages: 'numpy', 'scipy', 'sklearn'
+            numpy & scipy: https://www.scipy.org/scipylib/download.html
+            sklearn: http://scikit-learn.org/stable/install.html
+
 
         Implements dimensionality reduction on table t (based on algorithms from Machine Learning package scikit-learn.org).
         Standarization is also performed to the features by removing the mean and scaling to unit variance
@@ -58,9 +59,12 @@ class skdimred:
 
 
     """
+
     registered = True  # Value to define db operator
 
     def __init__(self):
+
+        import numpy as np
 
         # self.init = True
         self.sample = []
@@ -68,25 +72,23 @@ class skdimred:
         self.values=[]
         self.initcounter = 0
         self.start=t.time()
-        # self.initkm = KMeans(init='k-means++', n_clusters=2, n_init=10)
 
 
     def initargs(self, args):
+        from sklearn.decomposition import *
+        # from sklearn.manifold import *
+
+
         if not args:
             raise functions.OperatorError("Polynomial Interpolation:", "No data")
         elif len(args)<4:
             raise functions.OperatorError("Wrong number of arguments (missing values)")
-
+        else:
+            self.initalg = eval(args[0])
 
     def step(self, *args):
         # if self.init == True:
         self.initargs(args)
-
-        #Initialization of the model:
-        if self.initcounter==0:
-            # self.str=args[0]
-            self.initalg = eval(args[0])
-            self.initcounter+=1
 
         #Creating the dataset:
         temprow=[]
@@ -103,6 +105,8 @@ class skdimred:
 
 
     def final(self):
+
+        from sklearn.preprocessing import StandardScaler
         data = self.sample
         scaler = StandardScaler()
         data_scaled = scaler.fit_transform(data)

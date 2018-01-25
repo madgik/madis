@@ -1,6 +1,8 @@
 """
 .. function: skpredict(args,query:None)
 
+
+
 skpredict filename: "mymodel" select * from t;
 
     Loads a predictive model trained by sktrain operator from file (stored from sktrain operator) and classifies the new
