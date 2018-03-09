@@ -125,16 +125,23 @@ class sktrain(vtbase.VT):
         initstr = dictargs['initstr']
         #-- IMPORT MODULES ---
         import itertools
-        from sklearn.cluster import *
-        from sklearn.linear_model import *
-        from sklearn.neighbors import *
-        from sklearn.svm import *
-        from sklearn.naive_bayes import *
-        from sklearn.tree import *
-        from sklearn.ensemble import *
-        # from sklearn.cross_validation import *
+
+######################################################3
+        #from sklearn.cluster import *
+        #from sklearn.linear_model import *
+        #from sklearn.neighbors import *
+        #from sklearn.svm import *
+        #from sklearn.naive_bayes import *
+        #from sklearn.tree import *
+        #from sklearn.ensemble import *
+        #from sklearn.model_selection import *
+########################################################
+### to specify imports        
+
+
+# from sklearn.cross_validation import *
         print 'MADIS/sklearn version', sklearn.__version__
-        from sklearn.model_selection import *
+        
         # from sklearn.cluster import AgglomerativeClustering
         import cPickle as cp
         import numpy as np

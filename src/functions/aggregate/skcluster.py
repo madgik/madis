@@ -64,8 +64,7 @@ class skcluster:
         4 | 1 |
 
     """
-    import numpy as np
-
+    
     registered = True  # Value to define db operator
 
     def __init__(self):
@@ -75,12 +74,14 @@ class skcluster:
         self.values=[]
         self.start=t.time()
         self.sampleID = 0
+        import numpy as np
+
 
 
 
     def initargs(self, args):
         from sklearn.neighbors import kneighbors_graph
-        from sklearn.cluster import *
+        # from sklearn.cluster import * // specify import
         # self.initkm = KMeans(init='k-means++', n_clusters=2, n_init=10)
 
         if not args:

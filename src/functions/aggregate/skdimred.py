@@ -75,7 +75,7 @@ class skdimred:
 
 
     def initargs(self, args):
-        from sklearn.decomposition import *
+        #from sklearn.decomposition import * //to specify import
         # from sklearn.manifold import *
 
 
