@@ -77,7 +77,7 @@
     ------------------------------
 
 """
-import sklearn
+
 
 registered = True
 __author__ = 'root'
@@ -94,6 +94,7 @@ import lib.inoutparsing
 
 class sktrain(vtbase.VT):
     def VTiter(self, *parsedArgs,**envars):
+        import sklearn
 
         largs, dictargs = self.full_parse(parsedArgs)
 

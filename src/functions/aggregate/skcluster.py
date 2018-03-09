@@ -1,7 +1,7 @@
 import setpath
 import functions
 import math
-import numpy as np
+
 import time as t
 # import re
 import json
@@ -64,7 +64,7 @@ class skcluster:
         4 | 1 |
 
     """
-
+    import numpy as np
 
     registered = True  # Value to define db operator
 
