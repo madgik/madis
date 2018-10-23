@@ -252,6 +252,29 @@ def strictminus1(tabiter, colcount, hasheader = False):
 def cleanBOM(t):
     return t.encode('ascii', errors = 'ignore').strip()
 
+def getFilenameMatchingRegex(filename):
+	# This method asumes the given fileName to be a regex.
+    # So it returns the first-file's name from the given dir (current or different), matching to the regex-argument 'filename'.
+	import os
+	import re	
+	import fnmatch
+	
+	initialRexexGiven = filename
+	dir = '.'   # Current dir.
+	p = re.compile('(.*\/)(.*)')
+	match = p.match(filename)
+	if match:	# If a different directory is given in the regex, split it from the filename.
+		dir = match.group(1)
+		filename = match.group(2)
+
+	for file in os.listdir(dir):
+   		if fnmatch.fnmatch(file, filename):
+			if dir == '.':
+        			return file
+			else:
+				return dir + file
+	raise Exception('No file was found matching to the given regex: \'' + initialRexexGiven + '\'')
+
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
         self.encoding='utf_8'
@@ -287,6 +310,11 @@ class FileCursor:
             dialects = {'line':line(), 'tsv':tsv(), 'csv':defaultcsv()}
             if self.dialect in dialects:
                 rest['dialect'] = dialects[self.dialect]
+
+        if 'useregexfilename' in rest:
+            if rest['useregexfilename'] == "True":
+                filename = getFilenameMatchingRegex(filename)
+            del rest['useregexfilename']
 
         self.nonames=first
         for el in rest:
