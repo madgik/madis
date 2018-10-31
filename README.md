@@ -25,12 +25,12 @@ You can easily develop and test a new indexing structure with madIS, as it uses 
 
 # Documentation
 
-You'll find madIS [documentation here] (http://madgik.github.io/madis).
+You'll find madIS [documentation here](http://madgik.github.io/madis).
 
 ##Installation
 
-[Installation instructions] (http://madgik.github.io/madis/install.html)
+[Installation instructions](http://madgik.github.io/madis/install.html)
 
 # Screenshot
 
-![ScreenShot] (madis-screen.png)
+![ScreenShot](madis-screen.png)
