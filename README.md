@@ -20,14 +20,14 @@ madIS can already use the file system or network sources as tables. In addition,
 
 In addition madIS offers an easy to work with, workflow engine that automates data transformation steps.
 
-##Database research
+## Database research
 You can easily develop and test a new indexing structure with madIS, as it uses Python for its extensions and already has plenty of code to start from.
 
 # Documentation
 
 You'll find madIS [documentation here](http://madgik.github.io/madis).
 
-##Installation
+## Installation
 
 [Installation instructions](http://madgik.github.io/madis/install.html)
 
