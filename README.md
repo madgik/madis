@@ -1,6 +1,6 @@
 # About
 
-[madIS] (http://madgik.github.io/madis) is an extensible relational database system built on top of the [SQLite] (http://www.sqlite.org/) database with extensions implemented in Python (via [APSW] (https://github.com/rogerbinns/apsw) SQLite wrapper).
+[madIS](http://madgik.github.io/madis) is an extensible relational database system built on top of the [SQLite](http://www.sqlite.org/) database with extensions implemented in Python (via [APSW](https://github.com/rogerbinns/apsw) SQLite wrapper).
 
 In usage, madIS, feels like **Hive** (**Hadoop**'s SQL with User Defined Functions language), without the overhead but also without the distributed processing capabilities. Nevertheless madIS can easily handle tens of millions of rows on a single desktop/laptop computer.
 
