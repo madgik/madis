@@ -83,6 +83,10 @@ Formatting options for CSV file types:
     When toj is defined, columns 0-Num are returned as normal, and all columns >Num are returned as a JSON list or JSON
     dict, depending on if the *header* is enabled.
 
+:useregexfilename: *t/f*
+
+    When true, the provided filename is treated as a regex. This means that madiS will open the first file it finds to match that regex.
+
 Examples::
   
     >>> sql("select * from (file file:testing/colpref.csv dialect:csv) limit 3;")
@@ -104,6 +108,12 @@ Examples::
     agr    | a0037 | 2659050.0  | agr
     agr    | a0086 | 634130.0   | agr
     >>> sql("select * from (file 'testing/colpref.tsv' delimiter:| ) limit 3;")
+    C1  | C2    | C3        | C4
+    -----------------------------
+    agr |       | 6617580.0 | agr
+    agr | a0037 | 2659050.0 | agr
+    agr | a0086 | 634130.0  | agr
+    >>> sql("select * from (file useregexfilename:True 'testing/col*.tsv' delimiter:| ) limit 3;")
     C1  | C2    | C3        | C4
     -----------------------------
     agr |       | 6617580.0 | agr
