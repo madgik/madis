@@ -1,23 +1,21 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Useful notes &mdash; madIS 1.9 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>Useful notes &#8212; madIS 1.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
         VERSION:     '1.9',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,12 +23,13 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
-    <link rel="top" title="madIS 1.9 documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Examples" href="examples.html" />
     <link rel="prev" title="Manual" href="manual.html" /> 
   </head>
   <body>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -45,14 +44,14 @@
         <li class="right" >
           <a href="manual.html" title="Manual"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">madIS 1.9 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="useful-notes">
 <h1>Useful notes<a class="headerlink" href="#useful-notes" title="Permalink to this headline">¶</a></h1>
@@ -60,19 +59,19 @@
 shell interaction and introduce some basic characteristics of the dynamic virtual tables.</p>
 <div class="section" id="understanding-function-examples">
 <span id="unotesexamples"></span><h2>Understanding function examples<a class="headerlink" href="#understanding-function-examples" title="Permalink to this headline">¶</a></h2>
-<p>While reading each function&#8217;s description, you will notice examples like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select ifthenelse(1&gt;0,&#39;yes&#39;,&#39;no&#39;) as answer&quot;</span><span class="p">)</span>
+<p>While reading each function’s description, you will notice examples like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select ifthenelse(1&gt;0,&#39;yes&#39;,&#39;no&#39;) as answer&quot;</span><span class="p">)</span>
 <span class="go">answer</span>
 <span class="go">------</span>
 <span class="go">yes</span>
 </pre></div>
 </div>
-<p>Because examples also serve as tests for madIS&#8217;s functions, they are coded and displayed as actual Python code. The string inside Python function &#8220;sql()&#8221; is
+<p>Because examples also serve as tests for madIS’s functions, they are coded and displayed as actual Python code. The string inside Python function “sql()” is
 an SQL query, having its results displayed in the lines following it. Query results in examples also include the column names for clarity.
 However in the interactive shell column names are not shown. In the interactive shell, the same as above example, would look like the following:</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; select ifthenelse(1&gt;0,&#39;yes&#39;,&#39;no&#39;) as answer;
-yes
-Query executed in 0 min. 0 sec 33 msec
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">select</span> <span class="n">ifthenelse</span><span class="p">(</span><span class="mi">1</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">answer</span><span class="p">;</span>
+<span class="n">yes</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="ow">in</span> <span class="mi">0</span> <span class="nb">min</span><span class="o">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">33</span> <span class="n">msec</span>
 </pre></div>
 </div>
 </div>
@@ -80,57 +79,57 @@ Query executed in 0 min. 0 sec 33 msec
 <span id="unotesparameters"></span><h2>Understanding function parameters<a class="headerlink" href="#understanding-function-parameters" title="Permalink to this headline">¶</a></h2>
 <p><strong>Named parameters</strong></p>
 <p>All types of functions (row, aggregate and virtual table) can take simple or named parameters.
-For simple parameters, ordering is important and should follow function&#8217;s definition. Named
+For simple parameters, ordering is important and should follow function’s definition. Named
 parameters can be placed anywhere in the parameters lists, with few exceptions that are clearly stated.
 Named parameters are strings (so they must be placed inside quotes) using the format <em>paramname:paramvalue</em>.</p>
-<p>For example <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a> function is declared as:</p>
-<div class="highlight-python"><div class="highlight"><pre>file(location[, formatting options])
+<p>For example <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><code class="xref py py-mod docutils literal"><span class="pre">file</span></code></a> function is declared as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">file</span><span class="p">(</span><span class="n">location</span><span class="p">[,</span> <span class="n">formatting</span> <span class="n">options</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>where <em>location</em> is a simple parameter containing the file name or network resource to read from,
 and <em>formatting options</em> is a list of named parameters (eg. parameter <em>dialect</em> which accepts one of values <em>tsv</em> or <em>csv</em>).
 So using this function to import a csv file would look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>select * from file(&#39;myfile&#39;,&#39;dialect:csv&#39;);
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="nn">file</span><span class="p">(</span><span class="s1">&#39;myfile&#39;</span><span class="p">,</span><span class="s1">&#39;dialect:csv&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>By using inverted syntax (see <a class="reference internal" href="manual.html#inversion"><em>SQL extensions</em></a>), the query would look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre>select * from (file &#39;myfile&#39; dialect:csv);
+<p>By using inverted syntax (see <a class="reference internal" href="manual.html#inversion"><span class="std std-ref">SQL extensions</span></a>), the query would look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">file</span> <span class="s1">&#39;myfile&#39;</span> <span class="n">dialect</span><span class="p">:</span><span class="n">csv</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Notice that non named parameters must be quoted. However named parameters quoting is optional. Also parameters are separated with spaces instead of commas.
-If a space character appears in a named parameter&#8217;s value field, quoting should be used.
+If a space character appears in a named parameter’s value field, quoting should be used.
 So importing a file that uses spaces as value delimiters, would look like following (using inverted syntax):</p>
-<div class="highlight-python"><div class="highlight"><pre>select * from (file &#39;myfile&#39; &#39;delimiter: &#39;);
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">file</span> <span class="s1">&#39;myfile&#39;</span> <span class="s1">&#39;delimiter: &#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>An example of a function definition which contains named parameters is <a class="reference internal" href="vtable.html#module-functions.vtable.output" title="functions.vtable.output"><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre>output(query:None, file[, formatting options])
+<p>An example of a function definition which contains named parameters is <a class="reference internal" href="vtable.html#module-functions.vtable.output" title="functions.vtable.output"><code class="xref py py-mod docutils literal"><span class="pre">output</span></code></a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output</span><span class="p">(</span><span class="n">query</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="n">file</span><span class="p">[,</span> <span class="n">formatting</span> <span class="n">options</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>The definition above states, that the function output receives the named parameter <em>query</em> which has no default value (the value following the &#8221;:&#8221; character
-of a named parameter in a functions&#8217; definition, represents the default value).</p>
+<p>The definition above states, that the function output receives the named parameter <em>query</em> which has no default value (the value following the “:” character
+of a named parameter in a functions’ definition, represents the default value).</p>
 <p id="unoteqparameter"><strong>The query parameter</strong></p>
 <p>Named parameter <em>query</em> shown in the definition above, defines which SQL query the function <em>output</em> will execute
-and then write the query&#8217;s results in the given <em>file</em>.
-When using, in inverted syntax, a function that takes a <em>query</em> parameter  (see <a class="reference internal" href="manual.html#inversion"><em>SQL extensions</em></a>) the <em>query</em> keyword should be omitted.
-Instead the actual query should be placed at the end of the statement. For example to output, in inverted syntax, some query&#8217;s result, the following could be used:</p>
-<div class="highlight-python"><div class="highlight"><pre>output &#39;outfile&#39; dialect:tsv select * from table1;
+and then write the query’s results in the given <em>file</em>.
+When using, in inverted syntax, a function that takes a <em>query</em> parameter  (see <a class="reference internal" href="manual.html#inversion"><span class="std std-ref">SQL extensions</span></a>) the <em>query</em> keyword should be omitted.
+Instead the actual query should be placed at the end of the statement. For example to output, in inverted syntax, some query’s result, the following could be used:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="s1">&#39;outfile&#39;</span> <span class="n">dialect</span><span class="p">:</span><span class="n">tsv</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="nn">table1</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>In non inverted syntax, this is equivalent to:</p>
-<div class="highlight-python"><div class="highlight"><pre>select  * from output(&#39;query:select * from table1&#39;,&#39;outfile&#39;,&#39;dialect:tsv&#39;);
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">select</span>  <span class="o">*</span> <span class="kn">from</span> <span class="nn">output</span><span class="p">(</span><span class="s1">&#39;query:select * from table1&#39;</span><span class="p">,</span><span class="s1">&#39;outfile&#39;</span><span class="p">,</span><span class="s1">&#39;dialect:tsv&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Inverting queries that include the <em>query</em> parameter, permits &#8220;pipelining&#8221; of many virtual table functions, while using an easy to read syntax.
+<p>Inverting queries that include the <em>query</em> parameter, permits “pipelining” of many virtual table functions, while using an easy to read syntax.
 So to re-order a file and add line numbers you can do:</p>
-<div class="highlight-python"><div class="highlight"><pre>output &#39;outfile.csv&#39; rowidvt select * from (file &#39;infile.csv&#39;) order by C2;
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="s1">&#39;outfile.csv&#39;</span> <span class="n">rowidvt</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">file</span> <span class="s1">&#39;infile.csv&#39;</span><span class="p">)</span> <span class="n">order</span> <span class="n">by</span> <span class="n">C2</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>Let&#8217;s look at the details of this query. <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a> function reads <em>infile.csv</em> and returns the data as a table.
+<p>Let’s look at the details of this query. <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><code class="xref py py-mod docutils literal"><span class="pre">file</span></code></a> function reads <em>infile.csv</em> and returns the data as a table.
 Returned data are then ordered by column C2.
-The result of the query, <em>select * from (file &#8216;infile.csv&#8217;) order by C2</em> is the <em>query</em> parameter for <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt></a> function.
+The result of the query, <em>select * from (file ‘infile.csv’) order by C2</em> is the <em>query</em> parameter for <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><code class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></code></a> function.
 This function adds a <em>rowid</em> column to the query result that indicates the order of the row in the result (and not in the initial table).
-The result of <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt></a> function is forwarded into <a class="reference internal" href="vtable.html#module-functions.vtable.output" title="functions.vtable.output"><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt></a> which writes the result in the <em>outfile.csv</em> file.</p>
+The result of <a class="reference internal" href="vtable.html#module-functions.vtable.rowidvt" title="functions.vtable.rowidvt"><code class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></code></a> function is forwarded into <a class="reference internal" href="vtable.html#module-functions.vtable.output" title="functions.vtable.output"><code class="xref py py-mod docutils literal"><span class="pre">output</span></code></a> which writes the result in the <em>outfile.csv</em> file.</p>
 </div>
 <div class="section" id="understanding-function-return-types">
 <span id="unotesreturntypes"></span><h2>Understanding function return types<a class="headerlink" href="#understanding-function-return-types" title="Permalink to this headline">¶</a></h2>
@@ -138,73 +137,73 @@ The result of <a class="reference internal" href="vtable.html#module-functions.v
 The return type of the row and aggregate madIS functions refers to the storage class typically returned by the function.
 Virtual table functions return a table having a static (or dynamic) schema with column names and <a class="reference external" href="http://www.sqlite.org/datatype3.html#affinity">types affinity</a>.
 To clarify the difference of the returned types of row/aggregate functions and virtual table functions consider the following example:</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; select * from (select kwnum(&#39;lol&#39;) as a) where a==&#39;1&#39;;
-Query executed in 0 min. 0 sec 17 msec
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">select</span> <span class="n">kwnum</span><span class="p">(</span><span class="s1">&#39;lol&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span><span class="p">)</span> <span class="n">where</span> <span class="n">a</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">;</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="ow">in</span> <span class="mi">0</span> <span class="nb">min</span><span class="o">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">17</span> <span class="n">msec</span>
 </pre></div>
 </div>
-<p>Here <a class="reference internal" href="row.html#functions.row.text.kwnum" title="functions.row.text.kwnum"><tt class="xref py py-func docutils literal"><span class="pre">kwnum()</span></tt></a> function returns the number of keywords of the &#8216;lol&#8217; string which is an integer.
-Although the first returned column (named <em>a</em>) is of integer type, the literal text &#8216;1&#8217; in the <em>where</em> part is not converted to an integer,
+<p>Here <a class="reference internal" href="row.html#functions.row.text.kwnum" title="functions.row.text.kwnum"><code class="xref py py-func docutils literal"><span class="pre">kwnum()</span></code></a> function returns the number of keywords of the ‘lol’ string which is an integer.
+Although the first returned column (named <em>a</em>) is of integer type, the literal text ‘1’ in the <em>where</em> part is not converted to an integer,
 so the condition fails. In the following example, by using the built in SQLite function <em>cast</em>, an integer type affinity
-is suggested so the text literal &#8216;1&#8217; is automatically converted to an integer and the condition is evaluated to true.</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; select * from (select cast(kwnum(&#39;lol&#39;) as int) as a) where a==&#39;1&#39;;
-1
-Query executed in 0 min. 0 sec 21 msec
+is suggested so the text literal ‘1’ is automatically converted to an integer and the condition is evaluated to true.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">select</span> <span class="n">cast</span><span class="p">(</span><span class="n">kwnum</span><span class="p">(</span><span class="s1">&#39;lol&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">int</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span><span class="p">)</span> <span class="n">where</span> <span class="n">a</span><span class="o">==</span><span class="s1">&#39;1&#39;</span><span class="p">;</span>
+<span class="mi">1</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="ow">in</span> <span class="mi">0</span> <span class="nb">min</span><span class="o">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">21</span> <span class="n">msec</span>
 </pre></div>
 </div>
-<p>In conclusion, the returned values from row and aggregate functions, even <a class="reference internal" href="manual.html#tutmultiset"><em>multisets</em></a> do not also imply data affinity.</p>
+<p>In conclusion, the returned values from row and aggregate functions, even <a class="reference internal" href="manual.html#tutmultiset"><span class="std std-ref">multisets</span></a> do not also imply data affinity.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The same result could be reached using the virtual table functions, eg. <tt class="xref py py-mod docutils literal"><span class="pre">typing</span></tt> or <a class="reference internal" href="vtable.html#module-functions.vtable.setschema" title="functions.vtable.setschema"><tt class="xref py py-mod docutils literal"><span class="pre">setschema</span></tt></a>.</p>
+<p class="last">The same result could be reached using the virtual table functions, eg. <code class="xref py py-mod docutils literal"><span class="pre">typing</span></code> or <a class="reference internal" href="vtable.html#module-functions.vtable.setschema" title="functions.vtable.setschema"><code class="xref py py-mod docutils literal"><span class="pre">setschema</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="shell-interaction">
 <span id="unotesshell"></span><h2>Shell interaction<a class="headerlink" href="#shell-interaction" title="Permalink to this headline">¶</a></h2>
-<p>In madIS&#8217;s interactive shell mode some helpful shell commands and functions helping with complex query composition are supported.
+<p>In madIS’s interactive shell mode some helpful shell commands and functions helping with complex query composition are supported.
 These can be listed in the terminal with the <em>.help</em> command.</p>
 <p><strong>Names function</strong></p>
-<p>Function <tt class="xref py py-mod docutils literal"><span class="pre">names</span></tt> is a virtual table function that operates over a query (See <a class="reference internal" href="#unotesparameters"><em>Understanding function parameters</em></a>)
+<p>Function <code class="xref py py-mod docutils literal"><span class="pre">names</span></code> is a virtual table function that operates over a query (See <a class="reference internal" href="#unotesparameters"><span class="std std-ref">Understanding function parameters</span></a>)
 and returns the column names of the query result.</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; names select * from file(&#39;test.csv&#39;,&#39;header:t&#39;) ;
-City|Region|Country|Population
-Query executed in 0 min. 0 sec 24 msec
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">names</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="nn">file</span><span class="p">(</span><span class="s1">&#39;test.csv&#39;</span><span class="p">,</span><span class="s1">&#39;header:t&#39;</span><span class="p">)</span> <span class="p">;</span>
+<span class="n">City</span><span class="o">|</span><span class="n">Region</span><span class="o">|</span><span class="n">Country</span><span class="o">|</span><span class="n">Population</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="ow">in</span> <span class="mi">0</span> <span class="nb">min</span><span class="o">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">24</span> <span class="n">msec</span>
 </pre></div>
 </div>
-<p>Function <a class="reference internal" href="vtable.html#module-functions.vtable.coltypes" title="functions.vtable.coltypes"><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt></a>, has similar functionality, additionally presenting the column&#8217;s
+<p>Function <a class="reference internal" href="vtable.html#module-functions.vtable.coltypes" title="functions.vtable.coltypes"><code class="xref py py-mod docutils literal"><span class="pre">coltypes</span></code></a>, has similar functionality, additionally presenting the column’s
 <a class="reference external" href="http://www.sqlite.org/datatype3.html#affinity">type affinity</a>  when this information is contained in its input.</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; coltypes select * from file(&#39;/home/meili/Desktop/test.csv&#39;,&#39;header:t&#39;) ;
-City|text
-Region|text
-Country|text
-Population|text
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">coltypes</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="nn">file</span><span class="p">(</span><span class="s1">&#39;/home/meili/Desktop/test.csv&#39;</span><span class="p">,</span><span class="s1">&#39;header:t&#39;</span><span class="p">)</span> <span class="p">;</span>
+<span class="n">City</span><span class="o">|</span><span class="n">text</span>
+<span class="n">Region</span><span class="o">|</span><span class="n">text</span>
+<span class="n">Country</span><span class="o">|</span><span class="n">text</span>
+<span class="n">Population</span><span class="o">|</span><span class="n">text</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="empty-schema-exception">
 <span id="unotesemptyschema"></span><h2>Empty schema exception<a class="headerlink" href="#empty-schema-exception" title="Permalink to this headline">¶</a></h2>
 <p>A price to pay for using virtual tables having dynamic schema creation, is that if no data are provided, for example an empty file
-to the <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt></a> function or
-a query that returns no rows to virtual tables that accept input <em>queries</em> (eg. <a class="reference internal" href="vtable.html#module-functions.vtable.cache" title="functions.vtable.cache"><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt></a> function), is an exception as a result:</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; select * from (cache select 5 as a where a!=5);
-Madis SQLError: operator cache: Cannot initialise dynamic schema virtual table without data
+to the <a class="reference internal" href="vtable.html#module-functions.vtable.file" title="functions.vtable.file"><code class="xref py py-mod docutils literal"><span class="pre">file</span></code></a> function or
+a query that returns no rows to virtual tables that accept input <em>queries</em> (eg. <a class="reference internal" href="vtable.html#module-functions.vtable.cache" title="functions.vtable.cache"><code class="xref py py-mod docutils literal"><span class="pre">cache</span></code></a> function), is an exception as a result:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">cache</span> <span class="n">select</span> <span class="mi">5</span> <span class="k">as</span> <span class="n">a</span> <span class="n">where</span> <span class="n">a</span><span class="o">!=</span><span class="mi">5</span><span class="p">);</span>
+<span class="n">Madis</span> <span class="n">SQLError</span><span class="p">:</span> <span class="n">operator</span> <span class="n">cache</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">initialise</span> <span class="n">dynamic</span> <span class="n">schema</span> <span class="n">virtual</span> <span class="n">table</span> <span class="n">without</span> <span class="n">data</span>
 </pre></div>
 </div>
-<p>To avoid this issue, especially in automatic flow execution where a flow crash is undesirable, the <a class="reference internal" href="vtable.html#module-functions.vtable.setschema" title="functions.vtable.setschema"><tt class="xref py py-mod docutils literal"><span class="pre">setschema</span></tt></a> function can be used.
+<p>To avoid this issue, especially in automatic flow execution where a flow crash is undesirable, the <a class="reference internal" href="vtable.html#module-functions.vtable.setschema" title="functions.vtable.setschema"><code class="xref py py-mod docutils literal"><span class="pre">setschema</span></code></a> function can be used.
 <em>Setschema</em> is virtual table function that enforces a given schema. In the case of non empty resultsets, it can be used to project,
 rename and typecast inner query columns, while in case of an empty resultset, it works as a static schema definition.</p>
-<div class="highlight-python"><div class="highlight"><pre>mterm&gt; select * from (setschema &#39;a&#39; cache select 5 as a where a!=5);
-Query executed in 0 min. 0 sec 62 msec
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mterm</span><span class="o">&gt;</span> <span class="n">select</span> <span class="o">*</span> <span class="kn">from</span> <span class="p">(</span><span class="n">setschema</span> <span class="s1">&#39;a&#39;</span> <span class="n">cache</span> <span class="n">select</span> <span class="mi">5</span> <span class="k">as</span> <span class="n">a</span> <span class="n">where</span> <span class="n">a</span><span class="o">!=</span><span class="mi">5</span><span class="p">);</span>
+<span class="n">Query</span> <span class="n">executed</span> <span class="ow">in</span> <span class="mi">0</span> <span class="nb">min</span><span class="o">.</span> <span class="mi">0</span> <span class="n">sec</span> <span class="mi">62</span> <span class="n">msec</span>
 </pre></div>
 </div>
 <p>In the example above, <em>cache</em> function has a possibility of producing an empty schema exception. Applying the <em>setschema</em> function with the desirable schema
 (column a with NONE type) this problem is avoided.</p>
-<p>Other possible causes of empty schema exceptions are also <a class="reference internal" href="manual.html#tutmultiset"><em>multiset</em></a> functions which are actually implemented
-through the <a class="reference internal" href="vtable.html#module-functions.vtable.expand" title="functions.vtable.expand"><tt class="xref py py-mod docutils literal"><span class="pre">expand</span></tt></a> virtual table function.</p>
+<p>Other possible causes of empty schema exceptions are also <a class="reference internal" href="manual.html#tutmultiset"><span class="std std-ref">multiset</span></a> functions which are actually implemented
+through the <a class="reference internal" href="vtable.html#module-functions.vtable.expand" title="functions.vtable.expand"><code class="xref py py-mod docutils literal"><span class="pre">expand</span></code></a> virtual table function.</p>
 </div>
 <div class="section" id="efficiency-in-streaming-virtual-tables">
 <span id="unotesefficiencyvt"></span><h2>Efficiency in streaming virtual tables<a class="headerlink" href="#efficiency-in-streaming-virtual-tables" title="Permalink to this headline">¶</a></h2>
 <p>Virtual table functions that work as streams do not need to materialise the whole input/output data streams before returning them, they can produce them on demand.
 So executing, for example a <em>join</em>, between streaming virtual tables for a huge volume of data is not a good idea, as the data will have to be re-produced
-over and over again. Using <a class="reference internal" href="manual.html#tutcache"><em>cache</em></a> virtual table function on one of the <em>streaming</em> queries will significantly increase performance.</p>
+over and over again. Using <a class="reference internal" href="manual.html#tutcache"><span class="std std-ref">cache</span></a> virtual table function on one of the <em>streaming</em> queries will significantly increase performance.</p>
 </div>
 </div>
 
@@ -212,7 +211,7 @@ over and over again. Using <a class="reference internal" href="manual.html#tutca
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/madislog.png" alt="Logo"/>
@@ -236,29 +235,28 @@ over and over again. Using <a class="reference internal" href="manual.html#tutca
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
                         title="next chapter">Examples</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/usefulnotes.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/usefulnotes.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -273,12 +271,12 @@ over and over again. Using <a class="reference internal" href="manual.html#tutca
         <li class="right" >
           <a href="manual.html" title="Manual"
              >previous</a> |</li>
-        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">madIS 1.9 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
