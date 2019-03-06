@@ -98,7 +98,7 @@ def urlrequest(*args):
 
     """
     try:
-        req = urllib2.Request(''.join((x.encode('utf-8') for x in args if x != None)), None, domainExtraHeaders)
+        req = urllib2.Request(''.join((x for x in args if x != None)), None, domainExtraHeaders)
         hreq = urllib2.urlopen(req)
 
         if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
@@ -106,7 +106,7 @@ def urlrequest(*args):
 
         return unicode(hreq.read(), 'utf-8', errors = 'replace')
 
-    except (urllib2.HTTPError, urllib2.URLError),e:
+    except urllib2.HTTPError,e:
         if args[0] == None:
             return None
         else:

@@ -83,10 +83,6 @@ Formatting options for CSV file types:
     When toj is defined, columns 0-Num are returned as normal, and all columns >Num are returned as a JSON list or JSON
     dict, depending on if the *header* is enabled.
 
-:useregexfilename: *t/f*
-
-    When true, the provided filename is treated as a regex. This means that madiS will open the first file it finds to match that regex.
-
 Examples::
   
     >>> sql("select * from (file file:testing/colpref.csv dialect:csv) limit 3;")
@@ -108,12 +104,6 @@ Examples::
     agr    | a0037 | 2659050.0  | agr
     agr    | a0086 | 634130.0   | agr
     >>> sql("select * from (file 'testing/colpref.tsv' delimiter:| ) limit 3;")
-    C1  | C2    | C3        | C4
-    -----------------------------
-    agr |       | 6617580.0 | agr
-    agr | a0037 | 2659050.0 | agr
-    agr | a0086 | 634130.0  | agr
-    >>> sql("select * from (file useregexfilename:True 'testing/col*.tsv' delimiter:| ) limit 3;")
     C1  | C2    | C3        | C4
     -----------------------------
     agr |       | 6617580.0 | agr
@@ -262,29 +252,6 @@ def strictminus1(tabiter, colcount, hasheader = False):
 def cleanBOM(t):
     return t.encode('ascii', errors = 'ignore').strip()
 
-def getFilenameMatchingRegex(filename):
-	# This method asumes the given fileName to be a regex.
-    # So it returns the first-file's name from the given dir (current or different), matching to the regex-argument 'filename'.
-	import os
-	import re	
-	import fnmatch
-	
-	initialRexexGiven = filename
-	dir = '.'   # Current dir.
-	p = re.compile('(.*\/)(.*)')
-	match = p.match(filename)
-	if match:	# If a different directory is given in the regex, split it from the filename.
-		dir = match.group(1)
-		filename = match.group(2)
-
-	for file in os.listdir(dir):
-   		if fnmatch.fnmatch(file, filename):
-			if dir == '.':
-        			return file
-			else:
-				return dir + file
-	raise Exception('No file was found matching to the given regex: \'' + initialRexexGiven + '\'')
-
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
         self.encoding='utf_8'
@@ -320,11 +287,6 @@ class FileCursor:
             dialects = {'line':line(), 'tsv':tsv(), 'csv':defaultcsv()}
             if self.dialect in dialects:
                 rest['dialect'] = dialects[self.dialect]
-
-        if 'useregexfilename' in rest:
-            if rest['useregexfilename'] == "True":
-                filename = getFilenameMatchingRegex(filename)
-            del rest['useregexfilename']
 
         self.nonames=first
         for el in rest:

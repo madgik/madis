@@ -1,0 +1,2155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Vtable functions list &mdash; madIS 1.9 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.9',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jsMath/easy/load.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="madIS 1.9 documentation" href="index.html" />
+    <link rel="next" title="People" href="people.html" />
+    <link rel="prev" title="Aggregate functions list" href="aggregate.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="people.html" title="People"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="aggregate.html" title="Aggregate functions list"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-functions.vtable.__init__">
+<span id="id1"></span><span id="vtable-functions-list"></span><h1>Vtable functions list<a class="headerlink" href="#module-functions.vtable.__init__" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-functions.vtable.cache">
+<span id="cache-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">cache</span></tt> function<a class="headerlink" href="#module-functions.vtable.cache" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.cache.cache">
+<tt class="descname">cache</tt><big>(</big><em>query:None</em><big>)</big> &rarr; [the same schema as input query]<a class="headerlink" href="#functions.vtable.cache.cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Caches and indexes in memory the input query. Its output has exactly the same schema as
+the input query.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (cache select * from table1) order by a desc,b asc&quot;</span><span class="p">)</span>
+<span class="go">a  | b</span>
+<span class="go">------</span>
+<span class="go">10 | 1</span>
+<span class="go">7  | 8</span>
+<span class="go">5  | 6</span>
+<span class="go">3  | 4</span>
+<span class="go">1  | 2</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (cache select * from table1) where a=b&quot;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table2</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">5   1</span>
+<span class="gp">... </span><span class="s">5   2</span>
+<span class="gp">... </span><span class="s">5   3</span>
+<span class="gp">... </span><span class="s">2   3</span>
+<span class="gp">... </span><span class="s">2   2</span>
+<span class="gp">... </span><span class="s">2   1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (cache select * from table2) where b&gt;=2 order by a desc,b desc&quot;</span><span class="p">)</span>
+<span class="go">a | b</span>
+<span class="go">-----</span>
+<span class="go">5 | 3</span>
+<span class="go">5 | 2</span>
+<span class="go">2 | 3</span>
+<span class="go">2 | 2</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (cache select * from table2) where 3&gt;=a and 3&lt;=b&quot;</span><span class="p">)</span>
+<span class="go">a | b</span>
+<span class="go">-----</span>
+<span class="go">2 | 3</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="manual.html#tutcache"><em>On the fly multidimensional indexing (the cache virtual table)</em></a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.clipboard">
+<span id="clipboard-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">clipboard</span></tt> function<a class="headerlink" href="#module-functions.vtable.clipboard" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.clipboard.clipboard">
+<tt class="descname">clipboard</tt><big>(</big><big>)</big><a class="headerlink" href="#functions.vtable.clipboard.clipboard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the contents of the system&#8217;s clipboard. If the clipboard&#8217;s contents are guessed to be a table, then it automatically splits the contents in its output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">h:</th><td class="field-body">if the &#8216;h&#8217; option is provided to <em>clipboard()</em> function, the first row of the clipboard&#8217;s data is regarded as the schema of the data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">Column names start from C1... , all column types are text</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from clipboard()&quot;</span><span class="p">)</span>
+<span class="go">C1   | C2                    | C3          | C4</span>
+<span class="go">------------------------------------------------------</span>
+<span class="go">1    | Zimbabwe              | 304.30      | 2009 est.</span>
+<span class="go">2    | Japan                 | 192.10      | 2009 est.</span>
+<span class="go">3    | Saint Kitts and Nevis | 185.00      | 2009 est.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.clipout">
+<span id="clipout-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">clipout</span></tt> function<a class="headerlink" href="#module-functions.vtable.clipout" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.clipout.clipout">
+<tt class="descname">clipout</tt><big>(</big><span class="optional">[</span><em>h:0</em>, <span class="optional">]</span><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.clipout.clipout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Writes to clipboard the output of <em>query</em>. The clipboard contents will be tab delimited.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">header option:</th><td class="field-body"><p class="first">if an &#8216;h&#8217; or h:1 option is found then it also exports the schema of the query.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>return_value</em> int</dt>
+<dd><p class="first last">Boolean value 1 indicating success. On failure an exception is thrown.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;clipout select 5,6&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.coltypes">
+<span id="coltypes-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">coltypes</span></tt> function<a class="headerlink" href="#module-functions.vtable.coltypes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.coltypes.coltypes">
+<tt class="descname">coltypes</tt><big>(</big><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.coltypes.coltypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the input query results column names and types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>column</em> text</dt>
+<dd><p class="first last">Column name of input query <em>schema</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>type</em> text</dt>
+<dd><p class="first last">Type of column</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;coltypes select 5 as vt&quot;</span><span class="p">)</span>
+<span class="go">column | type</span>
+<span class="go">-------------</span>
+<span class="go">vt     | None</span>
+</pre></div>
+</div>
+<p>Applying coltypes in the result of virtual table func:<cite>typing</cite> function in the same query</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;coltypes typing &#39;vt:int&#39; select 5 as vt&quot;</span><span class="p">)</span>
+<span class="go">column | type</span>
+<span class="go">-------------</span>
+<span class="go">vt     | int</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.coutput">
+<span id="coutput-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">coutput</span></tt> function<a class="headerlink" href="#module-functions.vtable.coutput" title="Permalink to this headline">¶</a></h2>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;coutput &#39;../../tests/output&#39; split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1)&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;unionallrcfiles file:../../tests/output&quot;</span><span class="p">)</span>
+<span class="go">name  | age | rank</span>
+<span class="go">------------------</span>
+<span class="go">Mark  | 7   | 3</span>
+<span class="go">Lila  | 74  | 1</span>
+<span class="go">James | 10  | 2</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;coutput &#39;../../tests/emptyoutput&#39; split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1 limit 0)&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;unionallrcfiles file:../../tests/emptyoutput&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;coutput &#39;../../tests/outputsp8&#39; split:8  mode:rcfile select hashmodarchdep(rank,8),* from (select a as name , b as age, c as rank from table1)&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;unionallrcfiles file:../../tests/outputsp8&quot;</span><span class="p">)</span>
+<span class="go">name  | age | rank</span>
+<span class="go">------------------</span>
+<span class="go">James | 10  | 2</span>
+<span class="go">Mark  | 7   | 3</span>
+<span class="go">Lila  | 74  | 1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.dirfiles">
+<span id="dirfiles-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">dirfiles</span></tt> function<a class="headerlink" href="#module-functions.vtable.dirfiles" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.dirfiles.dirfiles">
+<tt class="descname">dirfiles</tt><big>(</big><span class="optional">[</span><em>rec:1</em>, <span class="optional">]</span><em>directory_name</em><big>)</big> &rarr; path_filename, filename<a class="headerlink" href="#functions.vtable.dirfiles.dirfiles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the files name in a given directory. With the option &#8216;rec:1&#8217; it returns
+the files under the provided directory and all its subdirectories.</p>
+<p>This function is very usefull when used with the <em>execprogram</em> function to execute
+an external command for every filename.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><em>Dirfiles</em> does not follow links.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Column C1 is the full filename (path/filename)
+Column C2 is filename</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select c2 from dirfiles(&#39;.&#39;) where c2 like &#39;f%.py&#39;&quot;</span><span class="p">)</span>    
+<span class="go">c2</span>
+<span class="go">-------</span>
+<span class="go">file.py</span>
+<span class="go">flow.py</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select c2 from dirfiles(&#39;rec:1&#39;,&#39;.&#39;) where c2 like &#39;c%.py&#39;&quot;</span><span class="p">)</span>    
+<span class="go">c2</span>
+<span class="go">------------</span>
+<span class="go">coltypes.py</span>
+<span class="go">clipout.py</span>
+<span class="go">cache.py</span>
+<span class="go">continue.py</span>
+<span class="go">clipboard.py</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.examplevt">
+<span id="examplevt-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">examplevt</span></tt> function<a class="headerlink" href="#module-functions.vtable.examplevt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.examplevt.examplevt">
+<tt class="descname">examplevt</tt><big>(</big><em>arguments</em><big>)</big><a class="headerlink" href="#functions.vtable.examplevt.examplevt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A minimal example of a virtual table. Returns all the arguments passed to it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Column names start from C1... , all column types are text</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from examplevt(1, &#39;2&#39;, &#39;var3&#39;)&quot;</span><span class="p">)</span>    
+<span class="go">varname          | value</span>
+<span class="go">-------------------------------------------------------------</span>
+<span class="go">parsedargs       | (u&#39;1&#39;, u&#39;2&#39;, u&#39;var3&#39;)</span>
+<span class="go">envar:tablename  | vt_773987998</span>
+<span class="go">envar:modulename | examplevt</span>
+<span class="gp">...</span>
+<span class="go">envar:dbname     | temp</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (examplevt &#39;var1&#39; &#39;var2&#39; v1:test select 5)&quot;</span><span class="p">)</span>    
+<span class="go">varname          | value</span>
+<span class="go">--------------------------------------------------------------------</span>
+<span class="go">parsedargs       | (u&#39;query:select 5&#39;, u&#39;var1&#39;, u&#39;var2&#39;, u&#39;v1:test&#39;)</span>
+<span class="go">envar:tablename  | vt_1975870853</span>
+<span class="go">envar:modulename | examplevt</span>
+<span class="gp">...</span>
+<span class="go">envar:dbname     | temp</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.exec">
+<span id="exec-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">exec</span></tt> function<a class="headerlink" href="#module-functions.vtable.exec" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.exec.exec">
+<tt class="descname">exec</tt><big>(</big><em>query:None</em><span class="optional">[</span>, <em>path:None</em>, <em>variables</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.exec.exec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Executes the input query. Gets the first column of the returned result and executes its rows content supposing it is an sql statement.</p>
+<p><em>Path</em> parameter sets the current working directory while executing the statements.</p>
+<p><em>Variables</em> are named parameters that set variables in execution environment. For example <em>c:v</em> named parameter
+sets the variable <em>c</em> in the new environment, initialized with current variable&#8217;s <em>v</em> value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>return_value</em> int</dt>
+<dd><p class="first last">Boolean value 1 indicating success of the SQL statements flow execution. On failure an exception is thrown.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<p>This query executes the statements in quotes and returns successfully</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;exec select &#39;select 5&#39;&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<p>Typical usage.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;file &#39;testing/testtable.sql&#39;&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">----------------------------------------</span>
+<span class="go">create table table1 (a,b,c);</span>
+<span class="go">insert into table1 values(&#39;James&#39;,10,2);</span>
+<span class="go">insert into table1 values(&#39;Mark&#39;,7,3);</span>
+<span class="go">insert into table1 values(&#39;Lila&#39;,74,1);</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;exec file &#39;testing/testtable.sql&#39;&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+</pre></div>
+</div>
+<p>Nesting flows. Usage of <em>path</em> and variables parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;file &#39;testing/topflow.sql&#39;&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">-----------------------------------------------------------------------------</span>
+<span class="go">var &#39;v&#39; 5;</span>
+<span class="go">var &#39;tablename&#39; &#39;internaltable&#39;;</span>
+<span class="go">var &#39;lastdate&#39; from select &#39;2008-01-01&#39;;</span>
+<span class="go">create table topflowvars as select * from getvars() where variable!=&#39;execdb&#39;;</span>
+<span class="go">exec &#39;tablename&#39; &#39;c:v&#39;  file &#39;internalflow.sql&#39;;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;file &#39;testing/internalflow.sql&#39;&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">------------------------------------------------------------------------------</span>
+<span class="go">create table %{tablename} as select * from getvars() where variable!=&#39;execdb&#39;;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from variables() where variable!=&#39;execdb&#39;&quot;</span><span class="p">)</span>
+<span class="go">variable | value</span>
+<span class="go">----------------</span>
+<span class="go">flowname |</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;exec &#39;path:testing&#39; file &#39;testing/topflow.sql&#39;&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from topflowvars&quot;</span><span class="p">)</span>
+<span class="go">variable  | value</span>
+<span class="go">-------------------------</span>
+<span class="go">flowname  | notset</span>
+<span class="go">lastdate  | 2008-01-01</span>
+<span class="go">tablename | internaltable</span>
+<span class="go">v         | 5</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from internaltable&quot;</span><span class="p">)</span>
+<span class="go">variable  | value</span>
+<span class="go">-------------------------</span>
+<span class="go">flowname  | notset</span>
+<span class="go">c         | 5</span>
+<span class="go">tablename | internaltable</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from variables() where variable!=&#39;execdb&#39;&quot;</span><span class="p">)</span>
+<span class="go">variable | value</span>
+<span class="go">----------------</span>
+<span class="go">flowname |</span>
+</pre></div>
+</div>
+<p>Test files:</p>
+<ul class="simple">
+<li><a class="reference download internal" href="_downloads/testtable.sql"><tt class="xref download docutils literal"><span class="pre">testtable.sql</span></tt></a></li>
+<li><a class="reference download internal" href="_downloads/topflow.sql"><tt class="xref download docutils literal"><span class="pre">topflow.sql</span></tt></a></li>
+<li><a class="reference download internal" href="_downloads/internalflow.sql"><tt class="xref download docutils literal"><span class="pre">internalflow.sql</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="module-functions.vtable.expand">
+<span id="expand-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">expand</span></tt> function<a class="headerlink" href="#module-functions.vtable.expand" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.expand.expand">
+<tt class="descname">expand</tt><big>(</big><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.expand.expand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Executes the input query and returns the result expanding any multiset values returned. The returned result is produced iteratively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema expanded with multiset functions column naming. When <em>as</em> renaming function is used at a multiset function,
+if the multiset function returns only one column it is named according to the <em>as</em> value,
+else a positive integer (1,2...n) is appended to the column name indicating column index in the multiset function result.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select ontop(1,c,a,b) from table1&quot;</span><span class="p">)</span>
+<span class="go">top1 | top2</span>
+<span class="go">-----------</span>
+<span class="go">Mark | 7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select ontop(1,c,b,c) as prefs from table1&quot;</span><span class="p">)</span>
+<span class="go">prefs1 | prefs2</span>
+<span class="go">---------------</span>
+<span class="go">7      | 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select ontop(1,c,a) as nameontop from table1&quot;</span><span class="p">)</span>
+<span class="go">nameontop</span>
+<span class="go">---------</span>
+<span class="go">Mark</span>
+
+<span class="go">The explicit invocation of expand function won&#39;t affect the output since it is already automatically invoked because of the multiset function ontop.</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;expand expand select ontop(2,b,a) from table1&quot;</span><span class="p">)</span>
+<span class="go">top1</span>
+<span class="go">-----</span>
+<span class="go">Lila</span>
+<span class="go">James</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.file">
+<span id="file-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">file</span></tt> function<a class="headerlink" href="#module-functions.vtable.file" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.file.file">
+<tt class="descname">file</tt><big>(</big><em>location</em><span class="optional">[</span>, <em>formatting options</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.file.file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Opens and returns a file or url as a table. The file&#8217;s format is defined through
+named options. <em>location</em> is defined through a URL, or a regular filename, can be given also as
+the named parameter <em>url</em> or <em>file</em>. If no named parameters are given the returned table has one column
+with each line of resource as a row or it assumes the dialect from the file ending (Files ending in .tsv, .csv, .json are
+assumed to be in the corresponding dialect).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Columns are automatically named as <em>C1, C2...</em> or if header is set, columns are named by the resource first line value, and have the type <em>text</em></td>
+</tr>
+</tbody>
+</table>
+<p>Formatting options:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">fast:</th><td class="field-body"><p class="first">Default is 0 (false). Fast option speeds up the parsing of lines into values, exchanging accuracy for speed. It uses the delimiter option to split lines.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">strict:</th><td class="field-body"><ul class="first simple">
+<li>strict:1  (default), if a failure occurs, the current transaction will be cancelled and an error will be returned.</li>
+<li>strict:0  , returns all data that succesfully parses.</li>
+<li>strict:-1 , returns all input lines in which the parser finds a problem. In essence this works as a negative parser.</li>
+</ul>
+<p>If no strict option is defined in fast:1 mode, then no strictness checking is applied at all, and an &#8220;Unknown error&#8221; will be returned if a problem occurs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">encoding:</th><td class="field-body"><p class="first">A standar encoding name. (<a class="reference external" href="http://docs.python.org/library/codecs.html#standard-encodings">List of encodings</a>)</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">compression:</th><td class="field-body"><p class="first"><em>t/f</em></p>
+<p>Default is <em>f</em> (False)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">compressiontype:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first"><em>zip/gzip</em></p>
+<p class="last">Default is <em>zip</em></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Formatting options for CSV file types:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">dialect:</th><td class="field-body"><p class="first"><em>tsv/csv/json</em></p>
+<p>Formats field as tab/comma separated values with minimal quoting. <em>JSON</em> dialect uses a line oriented <em>JSON</em> based format.</p>
+<p>File extensions that are recognised as a dialect (.tsv, .csv, .json) take precedence over a specified dialect parameter.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">header:</th><td class="field-body"><p class="first"><em>t/f</em></p>
+<p>Set the column names of the returned table</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">delimiter:</th><td class="field-body"><p class="first">A string used to separate fields. It defaults to &#8216;,&#8217;</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">doublequote:</th><td class="field-body"><p class="first"><em>t/f</em></p>
+<p>Controls how instances of quotechar appearing inside a field should be themselves be quoted. When True, the character is doubled. When False, the escapechar is used as a prefix to the quotechar. It defaults to True.
+On output, if doublequote is False and no escapechar is set, Error is raised if a quotechar is found in a field</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">escapechar:</th><td class="field-body"><p class="first">A one-character string used by the writer to escape the delimiter if quoting is set to QUOTE_NONE and the quotechar if doublequote is False. On reading, the escapechar removes any special meaning from the following character. It defaults to None, which disables escaping</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">lineterminator:</th><td class="field-body"><p class="first">The string used to terminate lines produced by the writer. It defaults to &#8216;\r\n&#8217;</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">quotechar:</th><td class="field-body"><p class="first">A one-character string used to quote fields containing special characters, such as the delimiter or quotechar, or which contain new-line characters. It defaults to &#8216;&#8221;&#8217;.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">quoting:</th><td class="field-body"><p class="first">Controls when quotes should be generated by the writer and recognised by the reader. It can take on any of the QUOTE_* constants and defaults to QUOTE_MINIMAL.
+Possible values are QUOTE_ALL, QUOTE_NONE, QUOTE_MINIMAL, QUOTE_NONNUMERIC</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">skipinitialspace:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first"><em>t/f</em></p>
+<p>When True, whitespace immediately following the delimiter is ignored. The default is False</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">toj:</th><td class="field-body"><p class="first"><em>Num</em></p>
+<p class="last">When toj is defined, columns 0-Num are returned as normal, and all columns &gt;Num are returned as a JSON list or JSON
+dict, depending on if the <em>header</em> is enabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file file:testing/colpref.csv dialect:csv) limit 3;&quot;</span><span class="p">)</span>
+<span class="go">C1     | C2    | C3         | C4</span>
+<span class="go">--------------------------------------</span>
+<span class="go">userid | colid | preference | usertype</span>
+<span class="go">agr    |       | 6617580.0  | agr</span>
+<span class="go">agr    | a0037 | 2659050.0  | agr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3&quot;</span><span class="p">)</span>
+<span class="go">userid | colid | preference | usertype</span>
+<span class="go">--------------------------------------</span>
+<span class="go">agr    |       | 6617580.0  | agr</span>
+<span class="go">agr    | a0037 | 2659050.0  | agr</span>
+<span class="go">agr    | a0086 | 634130.0   | agr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file file:testing/colpref.zip header:t dialect:csv compression:t) limit 3;&quot;</span><span class="p">)</span>
+<span class="go">userid | colid | preference | usertype</span>
+<span class="go">--------------------------------------</span>
+<span class="go">agr    |       | 6617580.0  | agr</span>
+<span class="go">agr    | a0037 | 2659050.0  | agr</span>
+<span class="go">agr    | a0086 | 634130.0   | agr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file &#39;testing/colpref.tsv&#39; delimiter:| ) limit 3;&quot;</span><span class="p">)</span>
+<span class="go">C1  | C2    | C3        | C4</span>
+<span class="go">-----------------------------</span>
+<span class="go">agr |       | 6617580.0 | agr</span>
+<span class="go">agr | a0037 | 2659050.0 | agr</span>
+<span class="go">agr | a0086 | 634130.0  | agr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file &#39;testing/colpref.tsv.gz&#39; delimiter:| compression:t compressiontype:gzip) limit 3;&quot;</span><span class="p">)</span>
+<span class="go">C1  | C2    | C3        | C4</span>
+<span class="go">-----------------------------</span>
+<span class="go">agr |       | 6617580.0 | agr</span>
+<span class="go">agr | a0037 | 2659050.0 | agr</span>
+<span class="go">agr | a0086 | 634130.0  | agr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from file(&#39;http://sites.google.com/site/stats202/data/test_data.csv?attredirects=0&#39;) limit 10;&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">-----------------</span>
+<span class="go">Age,Number,Start</span>
+<span class="go">middle,5,10</span>
+<span class="go">young,2,17</span>
+<span class="go">old,10,6</span>
+<span class="go">young,2,17</span>
+<span class="go">old,4,15</span>
+<span class="go">middle,5,15</span>
+<span class="go">young,3,13</span>
+<span class="go">old,5,8</span>
+<span class="go">young,7,9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from file(&#39;file:testing/GeoIPCountryCSV.zip&#39;,&#39;compression:t&#39;,&#39;dialect:csv&#39;) limit 4&quot;</span><span class="p">)</span>
+<span class="go">C1          | C2           | C3       | C4       | C5 | C6</span>
+<span class="go">----------------------------------------------------------------------</span>
+<span class="go">2.6.190.56  | 2.6.190.63   | 33996344 | 33996351 | GB | United Kingdom</span>
+<span class="go">3.0.0.0     | 4.17.135.31  | 50331648 | 68257567 | US | United States</span>
+<span class="go">4.17.135.32 | 4.17.135.63  | 68257568 | 68257599 | CA | Canada</span>
+<span class="go">4.17.135.64 | 4.17.142.255 | 68257600 | 68259583 | US | United States</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.flow">
+<span id="flow-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">flow</span></tt> function<a class="headerlink" href="#module-functions.vtable.flow" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.flow.flow">
+<tt class="descname">flow</tt><big>(</big><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.flow.flow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Translates the input query results into sql statements if possible.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>query</em> text</dt>
+<dd><p class="first last">A complete sql query statement with the semicolon at the end</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Input query results must be sql statements separated with semicolons in the first place. Using in the input query the <a class="reference internal" href="#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> operator any file with sql statements can be divided in sql query statements. Multiline comments are considered as statements.</p>
+</div>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (flow file &#39;testing/testflow.sql&#39;) limit 1&quot;</span><span class="p">)</span> 
+<span class="go">query</span>
+<span class="go">-----------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="go">/*====== countries: table of Country ISO codes , country names ===========*/</span>
+<span class="go">CREATE TABLE countries (</span>
+<span class="go">    country2 PRIMARY KEY UNIQUE,</span>
+<span class="go">    country_name</span>
+<span class="go">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (flow file &#39;testing/colpref.csv&#39; limit 5) &quot;</span><span class="p">)</span>  
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">OperatorError</span>: <span class="n">Madis SQLError:</span>
+<span class="go">Operator FLOW: Incomplete statement found : userid colid pr ... 41 416900.0 agr</span>
+</pre></div>
+</div>
+<p>Test files:</p>
+<ul class="simple">
+<li><a class="reference download internal" href="_downloads/testflow.sql"><tt class="xref download docutils literal"><span class="pre">testflow.sql</span></tt></a></li>
+<li><a class="reference download internal" href="_downloads/colpref.csv"><tt class="xref download docutils literal"><span class="pre">colpref.csv</span></tt></a></li>
+</ul>
+</div>
+<div class="section" id="module-functions.vtable.hidden">
+<span id="hidden-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">hidden</span></tt> function<a class="headerlink" href="#module-functions.vtable.hidden" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.hidden.hidden">
+<tt class="descname">hidden</tt><big>(</big><em>query</em><big>)</big> &rarr; query results<a class="headerlink" href="#functions.vtable.hidden.hidden" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Executes the query, without returning any of its rows.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;hidden select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a | b | c</span>
+<span class="go">---------</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;hidden select * from table1 order by c&quot;</span><span class="p">)</span>
+<span class="go">a | b | c</span>
+<span class="go">---------</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.jsonpipe">
+<span id="jsonpipe-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">jsonpipe</span></tt> function<a class="headerlink" href="#module-functions.vtable.jsonpipe" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.jsonpipe.jsonpipe">
+<tt class="descname">jsonpipe</tt><big>(</big><em>query:None</em><span class="optional">[</span>, <em>lines:t</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.jsonpipe.jsonpipe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Executes <em>query</em> as a shell command and returns the standard output lines as rows of one column table.
+Setting <em>lines</em> parameter to <em>f</em> the command output will be returned in one table row.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>output</em> text</dt>
+<dd><p class="first last">Output of shell command execution</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre>.. doctest::
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;pipe &#39;ls ./testing/*.csv&#39; &quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">---------------------</span>
+<span class="go">./testing/colpref.csv</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;pipe wc ./testing/colpref.csv&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">---------------------------------</span>
+<span class="go"> 19  20 463 ./testing/colpref.csv</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.mysql">
+<span id="mysql-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">mysql</span></tt> function<a class="headerlink" href="#module-functions.vtable.mysql" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.mysql.mysql">
+<tt class="descname">mysql</tt><big>(</big><em>host</em>, <em>port</em>, <em>user</em>, <em>passwd</em>, <em>db</em>, <em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.mysql.mysql" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Connects to an MySQL DB and returns the results of query.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (mysql h:127.0.0.1 port:3306 u:root p:rootpw db:mysql select 5 as num, &#39;test&#39; as text);&quot;</span><span class="p">)</span>
+<span class="go">num | text</span>
+<span class="go">-----------</span>
+<span class="go">5   | test</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.oaiget">
+<span id="oaiget-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">oaiget</span></tt> function<a class="headerlink" href="#module-functions.vtable.oaiget" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.oaiget.oaiget">
+<tt class="descname">oaiget</tt><big>(</big><em>url</em>, <em>verb</em>, <em>metadataPrefix</em>, <em>...</em><big>)</big><a class="headerlink" href="#functions.vtable.oaiget.oaiget" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Fetches data from an OAIPMH service, using resumption tokens to fetch large datasets.</p>
+<ul class="simple">
+<li>If no <em>verb</em> is provided then <em>verb</em> is assumed to be &#8216;ListRecords&#8217;.</li>
+<li>If no <em>metadataPrefix</em> is provided then <em>verb</em> is assumed to be &#8216;ListMetadataFormats&#8217;, which will list
+all metadata formats.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Column C1 as text</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from oaiget(&#39;verb:ListRecords&#39;, &#39;metadataPrefix:ctxo&#39;)&quot;</span><span class="p">)</span>    
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">OperatorError</span>: <span class="n">Madis SQLError:</span>
+<span class="go">Operator OAIGET: An OAIPMH URL should be provided</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (oaiget verb:ListRecords metadataPrefix:ctxo &#39;http://oaiurl&#39; )&quot;</span><span class="p">)</span>    
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">OperatorError</span>: <span class="n">Madis SQLError:</span>
+<span class="go">Operator OAIGET: &lt;urlopen error [Errno -2] Name or service not known&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.oracle">
+<span id="oracle-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">oracle</span></tt> function<a class="headerlink" href="#module-functions.vtable.oracle" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.oracle.oracle">
+<tt class="descname">oracle</tt><big>(</big><em>jdbc_connection_string</em>, <em>user</em>, <em>passwd</em>, <em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.oracle.oracle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Connects to an Oracle DB and returns the results of query.</p>
+<p>The requirements for this to work are:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Install JPype Python package:</p>
+<blockquote>
+<div><p>Homepage: <a class="reference external" href="http://jpype.sourceforge.net/">http://jpype.sourceforge.net/</a></p>
+<p>In Debian based systems such as Ubuntu, install python-jpype using:</p>
+<blockquote>
+<div><p>sudo apt-get install python-jpype</p>
+</div></blockquote>
+</div></blockquote>
+</li>
+<li><p class="first">Add the Oracle JDBC JAR (ojdbc5.jar) in directory madis/lib/jdbc/.</p>
+</li>
+<li><p class="first">Have a JVM installed, and the JAVA_HOME environment variable set correctly.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (oracle jdbc:oracle:thin:@//127.0.0.1:6667/xe u:system p:password select 5 as num, &#39;test&#39; as text);&quot;</span><span class="p">)</span>
+<span class="go">num | text</span>
+<span class="go">-----------</span>
+<span class="go">5   | test</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.ordered">
+<span id="ordered-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">ordered</span></tt> function<a class="headerlink" href="#module-functions.vtable.ordered" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.ordered.ordered">
+<tt class="descname">ordered</tt><big>(</big><em>query</em><big>)</big> &rarr; query results<a class="headerlink" href="#functions.vtable.ordered.ordered" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Ordered virtual table returns its data as they are. The main difference with unindexed, is that
+it signals to the SQLite engine that the results are ordered in whatever order
+SQLite prefers, so a possible group by on the results will happen incrementally.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+
+<span class="go">The following query is calculated incrementally</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select a, count(*) from (ordered select * from table1) group by a&quot;</span><span class="p">)</span>
+<span class="go">a     | count(*)</span>
+<span class="go">----------------</span>
+<span class="go">James | 1</span>
+<span class="go">Mark  | 1</span>
+<span class="go">Lila  | 1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (ordered select * from table1) order by c&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+
+<span class="go">Notice that the order by does not work as it should because igroup has</span>
+<span class="go">fooled the SQLite engine into believing that the order of the results are</span>
+<span class="go">in the correct order (they aren&#39;t).</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.output">
+<span id="output-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">output</span></tt> function<a class="headerlink" href="#module-functions.vtable.output" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt>
+<tt class="descname">output formatting_options 'filename' query</tt></dt>
+<dd></dd></dl>
+
+<p>Writes in <em>filename</em> the output of <em>query</em> formatted according to <em>formatting</em> options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>return_value</em> int</dt>
+<dd><p class="first last">Boolean value 1 indicating success. On failure an exception is thrown.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Formatting options:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">mode:</th><td class="field-body"><ul class="first">
+<li><p class="first">plain     <em>Default</em>. The columns are concatened and written together.</p>
+</li>
+<li><p class="first">tsv       Writes data in a tab separated format. <em>TSV</em> mode is autoselected when the filename ends in &#8221;.tsv&#8221;.</p>
+</li>
+<li><p class="first">csv       Writes data in a comma separated format. <em>CSV</em> mode is autoselected when the filename ends in &#8221;.csv&#8221;.</p>
+</li>
+<li><p class="first">json      Writes data in a line separated JSON format. Header is always added. <em>JSON</em> mode is autoselected when the filename ends in &#8221;.JSON&#8221;.</p>
+</li>
+<li><p class="first">db        Writes data in a SQLite DB. <em>DB</em> mode is autoselected when the filename ends in &#8221;.db&#8221;.</p>
+<blockquote>
+<div><ul class="simple">
+<li>If pagesize:xxxxx option is given, set new DBs page size to parameter given, if not inherit page size from parent DB.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">gtable    In gtable mode table is formatted as a google Data Table for visualisation.</p>
+</li>
+<li><p class="first">gjson     In gjson mode table is formatted in a json format accepted by google visualisation widgets.</p>
+</li>
+</ul>
+<p>If <em>mode</em> is not <em>csv</em> any given csv formatting options are ignored.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">append:</th><td class="field-body"><p class="first">t/f If true the output is append in the file, ignored in compression mode.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">compression:</th><td class="field-body"><p class="first">t/f If true the output will be compressed. Default compressor type is <em>gz</em>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">compressiontype:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">gz/zip Selects between the two compression types.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">split:</th><td class="field-body"><p class="first last">(number) It splits the input to many <em>db</em> or <em>json</em> files. Splitting only works when writting to a <em>db</em> or <em>JSON</em>. Splitting is done by using the first column of
+the input and it outputs all columns except the first one. If the <em>split</em> argument is greater than <em>1</em> then the output will
+always be splitted to the defined number of files. If the split argument is 1 or lower, then the output will only contain the parts of which
+a key were found on the first column of the input data.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Detailed description of additional output formating options can be found in <a class="reference internal" href="#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> function description.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;output file:../../tests/table1.csv delimiter:# header:t select a as name , b as age, c as rank from table1&quot;</span><span class="p">)</span>
+<span class="go">return_value</span>
+<span class="go">------------</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;file file:../../tests/table1.csv delimiter:# header:t&quot;</span><span class="p">)</span>
+<span class="go">name  | age | rank</span>
+<span class="go">------------------</span>
+<span class="go">James | 10  | 2</span>
+<span class="go">Mark  | 7   | 3</span>
+<span class="go">Lila  | 74  | 1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.pipe">
+<span id="pipe-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">pipe</span></tt> function<a class="headerlink" href="#module-functions.vtable.pipe" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.pipe.pipe">
+<tt class="descname">pipe</tt><big>(</big><em>query:None</em><span class="optional">[</span>, <em>lines:t</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.pipe.pipe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Executes <em>query</em> as a shell command and returns the standard output lines as rows of one column table.
+Setting <em>lines</em> parameter to <em>f</em> the command output will be returned in one table row.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>output</em> text</dt>
+<dd><p class="first last">Output of shell command execution</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre>.. doctest::
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;pipe &#39;ls ./testing/*.csv&#39; &quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">---------------------</span>
+<span class="go">./testing/colpref.csv</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;pipe wc ./testing/colpref.csv&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">---------------------------------</span>
+<span class="go"> 19  20 463 ./testing/colpref.csv</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.postgres">
+<span id="postgres-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">postgres</span></tt> function<a class="headerlink" href="#module-functions.vtable.postgres" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.postgres.postgres">
+<tt class="descname">postgres</tt><big>(</big><em>host</em>, <em>port</em>, <em>user</em>, <em>passwd</em>, <em>db</em>, <em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.postgres.postgres" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Connects to an PostgreSQL DB and returns the results of query.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (postgres h:127.0.0.1 port:5432 u:root p:rootpw db:testdb select 5 as num, &#39;test&#39; as text);&quot;</span><span class="p">)</span>
+<span class="go">num | text</span>
+<span class="go">-----------</span>
+<span class="go">5   | test</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.queryplan">
+<span id="queryplan-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">queryplan</span></tt> function<a class="headerlink" href="#module-functions.vtable.queryplan" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.queryplan.queryplan">
+<tt class="descname">queryplan</tt><big>(</big><em>query</em><big>)</big> &rarr; Query plan<a class="headerlink" href="#functions.vtable.queryplan.queryplan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the query plan of the input query.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;queryplan select 5&quot;</span><span class="p">)</span>
+<span class="go">operation     | paramone | paramtwo | databasename | triggerorview</span>
+<span class="go">------------------------------------------------------------------</span>
+<span class="go">SQLITE_SELECT | None     | None     | None         | None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.range">
+<span id="range-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">range</span></tt> function<a class="headerlink" href="#module-functions.vtable.range" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.range.range">
+<tt class="descname">range</tt><big>(</big><span class="optional">[</span><em>from:0</em><span class="optional">[</span>, <em>to:10</em><span class="optional">[</span>, <em>step:1</em><span class="optional">]</span><span class="optional">]</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.range.range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a range of integer numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>value</em> int</dt>
+<dd><p class="first last">Number in range.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The parameters can be given both named or unnamed. In unnamed mode parameter order is from,to,step.</p>
+</div>
+<p>Named parameters:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">from:</th><td class="field-body">Number to begin from. Default is 0</td>
+</tr>
+<tr class="field-even field"><th class="field-name">to:</th><td class="field-body">Number to reach. Default is 10. The <em>to</em> number is not returned</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">step:</th><td class="field-body">Step to augment the returned numbers. Default is 1</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range()&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">0</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="go">6</span>
+<span class="go">7</span>
+<span class="go">8</span>
+<span class="go">9</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(&#39;from:1&#39;,&#39;to:11&#39;)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="go">6</span>
+<span class="go">7</span>
+<span class="go">8</span>
+<span class="go">9</span>
+<span class="go">10</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(&#39;from:2&#39;,&#39;to:15&#39;,&#39;step:3&#39;)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">2</span>
+<span class="go">5</span>
+<span class="go">8</span>
+<span class="go">11</span>
+<span class="go">14</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(1,10,2)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">3</span>
+<span class="go">5</span>
+<span class="go">7</span>
+<span class="go">9</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(5)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.rc2db">
+<span id="rc2db-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">rc2db</span></tt> function<a class="headerlink" href="#module-functions.vtable.rc2db" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-functions.vtable.rowidvt">
+<span id="rowidvt-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">rowidvt</span></tt> function<a class="headerlink" href="#module-functions.vtable.rowidvt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.rowidvt.rowidvt">
+<tt class="descname">rowidvt</tt><big>(</big><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.rowidvt.rowidvt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the query input result adding rowid number of the result row.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first">Same as input query schema with addition of rowid column.</p>
+<ul class="last">
+<li><dl class="first docutils">
+<dt><em>rowid</em> int</dt>
+<dd><p class="first last">Input <em>query</em> result rowid.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;rowidvt select * from table1&quot;</span><span class="p">)</span>
+<span class="go">rowid | a     | b  | c</span>
+<span class="go">----------------------</span>
+<span class="go">1     | James | 10 | 2</span>
+<span class="go">2     | Mark  | 7  | 3</span>
+<span class="go">3     | Lila  | 74 | 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;rowidvt select * from table1 order by c&quot;</span><span class="p">)</span>
+<span class="go">rowid | a     | b  | c</span>
+<span class="go">----------------------</span>
+<span class="go">1     | Lila  | 74 | 1</span>
+<span class="go">2     | James | 10 | 2</span>
+<span class="go">3     | Mark  | 7  | 3</span>
+
+<span class="go">Note the difference with rowid table column.</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select rowid,* from table1 order by c&quot;</span><span class="p">)</span>
+<span class="go">rowid | a     | b  | c</span>
+<span class="go">----------------------</span>
+<span class="go">3     | Lila  | 74 | 1</span>
+<span class="go">1     | James | 10 | 2</span>
+<span class="go">2     | Mark  | 7  | 3</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.sample">
+<span id="sample-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sample</span></tt> function<a class="headerlink" href="#module-functions.vtable.sample" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.sample.sample">
+<tt class="descname">sample</tt><big>(</big><em>sample_size  query</em><big>)</big> &rarr; samples rows from input<a class="headerlink" href="#functions.vtable.sample.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a random sample_size set of rows.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema.</td>
+</tr>
+</tbody>
+</table>
+<p>Options:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">size:</th><td class="field-body">Sample size</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;sample &#39;10&#39; select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;sample size:1 select * from table1&quot;</span><span class="p">)</span> 
+<span class="go">a     | b  | c</span>
+<span class="gp">...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;sample size:0 select * from table1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.sdc2db">
+<span id="sdc2db-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sdc2db</span></tt> function<a class="headerlink" href="#module-functions.vtable.sdc2db" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-functions.vtable.setschema">
+<span id="setschema-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">setschema</span></tt> function<a class="headerlink" href="#module-functions.vtable.setschema" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.setschema.setschema">
+<tt class="descname">setschema</tt><big>(</big><em>query:None</em>, <em>schemadefinition</em><big>)</big><a class="headerlink" href="#functions.vtable.setschema.setschema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the input <em>query</em> with changed schema according to <em>schemadefinition</em> parameter.
+Parameter <em>schemadefinition</em> is text identical to schema definition between parenthesis of a CREATE TABLE SQL statement.</p>
+<p>Can perform renaming, typecasting and projection on some columns of the input <em>query</em> result.</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This function can be used to avoid DynamicSchemaWithEmptyResultError caused by dynamic schema virtual tables on empty query input result.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">As defined at <em>schemadefinition</em> parameter.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;setschema &#39;col1 int,col2 text&#39; select 5,6&quot;</span><span class="p">)</span>
+<span class="go">col1 | col2</span>
+<span class="go">-----------</span>
+<span class="go">5    | 6</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select strsplitv(q) from (select 5 as q) where q!=5&quot;</span><span class="p">)</span>    
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">DynamicSchemaWithEmptyResultError</span>: <span class="n">Madis SQLError:</span>
+<span class="go">Operator EXPAND: Cannot initialise dynamic schema virtual table without data</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;setschema &#39;a,b&#39; select strsplitv(q) from (select 5 as q) where q!=5&quot;</span><span class="p">)</span>
+<span class="go">a | b</span>
+<span class="go">-----</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3&quot;</span><span class="p">)</span>
+<span class="go">userid | colid | preference | usertype</span>
+<span class="go">--------------------------------------</span>
+<span class="go">agr    |       | 6617580.0  | agr</span>
+<span class="go">agr    | a0037 | 2659050.0  | agr</span>
+<span class="go">agr    | a0086 | 634130.0   | agr</span>
+</pre></div>
+</div>
+<p>The query below has constraints preference column to be less than an int value , but preference is text ( outcomes from <a class="reference internal" href="#functions.vtable.file.file" title="functions.vtable.file.file"><tt class="xref py py-func docutils literal"><span class="pre">file()</span></tt></a> are <em>text</em>), so an empty result is produced</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3) where cast(preference as int) &lt;634130&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With setschema functions preference column is casted as float.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (setschema &#39;type,colid , pref float, userid&#39; select * from (file file:testing/colpref.csv dialect:csv header:t) limit 3) where pref&lt;634131&quot;</span><span class="p">)</span>
+<span class="go">type | colid | pref     | userid</span>
+<span class="go">--------------------------------</span>
+<span class="go">agr  | a0086 | 634130.0 | agr</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.slidingwindow">
+<span id="slidingwindow-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">slidingwindow</span></tt> function<a class="headerlink" href="#module-functions.vtable.slidingwindow" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.slidingwindow.slidingwindow">
+<tt class="descname">slidingwindow</tt><big>(</big><em>window</em><big>)</big> &rarr; query results<a class="headerlink" href="#functions.vtable.slidingwindow.slidingwindow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the query input results annotated with the window id as an extra column.
+The window parameter defines the size of the window.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10</span>
+<span class="gp">... </span><span class="s">Mark    7</span>
+<span class="gp">... </span><span class="s">Lila    74</span>
+<span class="gp">... </span><span class="s">Jane    44</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;slidingwindow window:2 select * from table1&quot;</span><span class="p">)</span>
+<span class="go">wid | a     | b</span>
+<span class="go">----------------</span>
+<span class="go">0   | James | 10</span>
+<span class="go">1   | James | 10</span>
+<span class="go">1   | Mark  | 7</span>
+<span class="go">2   | Mark  | 7</span>
+<span class="go">2   | Lila  | 74</span>
+<span class="go">3   | Lila  | 74</span>
+<span class="go">3   | Jane  | 44</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;slidingwindow window:3 select * from table1&quot;</span><span class="p">)</span>
+<span class="go">wid | a     | b</span>
+<span class="go">----------------</span>
+<span class="go">0   | James | 10</span>
+<span class="go">1   | James | 10</span>
+<span class="go">1   | Mark  | 7</span>
+<span class="go">2   | James | 10</span>
+<span class="go">2   | Mark  | 7</span>
+<span class="go">2   | Lila  | 74</span>
+<span class="go">3   | Mark  | 7</span>
+<span class="go">3   | Lila  | 74</span>
+<span class="go">3   | Jane  | 44</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.sqlite">
+<span id="sqlite-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">sqlite</span></tt> function<a class="headerlink" href="#module-functions.vtable.sqlite" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.sqlite.sqlite">
+<tt class="descname">sqlite</tt><big>(</big><em>dbfilename</em>, <em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.sqlite.sqlite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Connects to an SQLite DB and returns the results of query.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (sqlite &#39;testdb.db&#39; select 5 as num, &#39;test&#39; as text);&quot;</span><span class="p">)</span>
+<span class="go">num | text</span>
+<span class="go">-----------</span>
+<span class="go">5   | test</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.stdinput">
+<span id="stdinput-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">stdinput</span></tt> function<a class="headerlink" href="#module-functions.vtable.stdinput" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.stdinput.stdinput">
+<tt class="descname">stdinput</tt><big>(</big><big>)</big> &rarr; standard input stream<a class="headerlink" href="#functions.vtable.stdinput.stdinput" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the standard input stream</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">One column automatically named C1.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Examples::</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from stdinput()&quot;</span><span class="p">)</span>
+<span class="go">c1</span>
+<span class="go">-------------</span>
+<span class="go">stdinputline1</span>
+<span class="go">stdinputline2</span>
+<span class="go">stdinputline3</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-functions.vtable.timeslidingwindow">
+<span id="timeslidingwindow-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">timeslidingwindow</span></tt> function<a class="headerlink" href="#module-functions.vtable.timeslidingwindow" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.timeslidingwindow.timeslidingwindow">
+<tt class="descname">timeslidingwindow</tt><big>(</big><em>timewindow</em>, <em>timecolumn</em><big>)</big> &rarr; query results<a class="headerlink" href="#functions.vtable.timeslidingwindow.timeslidingwindow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the query input results annotated with the window id as an extra column.
+The following arguments can be passed as parameters:</p>
+<p>timewindow: It can be a numeric value that specifies the time length of
+the window (in seconds).</p>
+<p>timecolumn: It is the index of the temporal column (starting from 0) For
+the moment, we assume that the data is ordered by the temporal column that</p>
+<blockquote>
+<div><p>the user gives as input in ascending order.</p>
+<blockquote>
+<div><p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+<p>... &#8220;12.05.2010 00:00:00&#8221;
+... &#8220;12.05.2010 00:01:00&#8221;
+... &#8220;12.05.2010 00:02:00&#8221;
+... &#8220;12.05.2010 00:03:00&#8221;
+... &#8220;12.05.2010 00:04:00&#8221;
+... &#8216;&#8217;&#8216;)
+&gt;&gt;&gt; sql(&#8220;timeslidingwindow timewindow:180 timecolumn:0 select * from table1&#8221;)
+wid | a
+&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;-
+0   | 12.05.2010 00:00:00
+0   | 12.05.2010 00:01:00
+0   | 12.05.2010 00:02:00
+0   | 12.05.2010 00:03:00
+1   | 12.05.2010 00:01:00
+1   | 12.05.2010 00:02:00
+1   | 12.05.2010 00:03:00
+1   | 12.05.2010 00:04:00
+&gt;&gt;&gt; table1(&#8216;&#8217;&#8217;
+... &#8220;12.05.2010 00:00:00&#8221;
+... &#8220;12.05.2010 00:01:00&#8221;
+... &#8220;12.05.2010 00:01:00&#8221;
+... &#8220;12.05.2010 00:02:00&#8221;
+... &#8220;12.05.2010 00:03:00&#8221;
+... &#8220;12.05.2010 00:04:00&#8221;
+... &#8220;12.05.2010 00:05:00&#8221;
+... &#8216;&#8217;&#8216;)</p>
+<p>... &#8216;&#8217;&#8216;)
+&gt;&gt;&gt; sql(&#8220;timeslidingwindow timewindow:120 timecolumn:0 select * from table1&#8221;)
+wid | a
+&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;-
+0   | 12.05.2010 00:00:00
+0   | 12.05.2010 00:01:00
+0   | 12.05.2010 00:01:00
+0   | 12.05.2010 00:02:00
+1   | 12.05.2010 00:01:00
+1   | 12.05.2010 00:01:00
+1   | 12.05.2010 00:02:00
+1   | 12.05.2010 00:03:00
+2   | 12.05.2010 00:02:00
+2   | 12.05.2010 00:03:00
+2   | 12.05.2010 00:04:00
+3   | 12.05.2010 00:03:00
+3   | 12.05.2010 00:04:00
+3   | 12.05.2010 00:05:00</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table2</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&quot;12/05/2010 00:00:00&quot;</span>
+<span class="gp">... </span><span class="s">&quot;12/05/2010 00:01:00&quot;</span>
+<span class="gp">... </span><span class="s">&quot;12/05/2010 00:02:00&quot;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>... &#8216;&#8217;&#8216;)
+&gt;&gt;&gt; sql(&#8220;timeslidingwindow timewindow:180 timecolumn:0  select * from table2&#8221;)
+wid | a
+&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;-
+0   | 12/05/2010 00:00:00
+0   | 12/05/2010 00:01:00
+0   | 12/05/2010 00:02:00</p>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="module-functions.vtable.toeav">
+<span id="toeav-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">toeav</span></tt> function<a class="headerlink" href="#module-functions.vtable.toeav" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.toeav.toeav">
+<tt class="descname">toeav</tt><big>(</big><em>query</em><big>)</big> &rarr; Entity Attribute Value table<a class="headerlink" href="#functions.vtable.toeav.toeav" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Transforms the query input results to an Entity Attribute Value model table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">ID, Attribute, Value</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;toeav select * from table1&quot;</span><span class="p">)</span>
+<span class="go">rid   | colname | val</span>
+<span class="go">---------------------</span>
+<span class="go">James | b       | 10</span>
+<span class="go">James | c       | 2</span>
+<span class="go">Mark  | b       | 7</span>
+<span class="go">Mark  | c       | 3</span>
+<span class="go">Lila  | b       | 74</span>
+<span class="go">Lila  | c       | 1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.unindexed">
+<span id="unindexed-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">unindexed</span></tt> function<a class="headerlink" href="#module-functions.vtable.unindexed" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.unindexed.unindexed">
+<tt class="descname">unindexed</tt><big>(</big><em>query</em><big>)</big> &rarr; query results<a class="headerlink" href="#functions.vtable.unindexed.unindexed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the query input results without any change. UNINDEXED can be used as a
+barrier for SQLite&#8217;s optimizer, for debugging etc.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Same as input query schema.</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">James   10      2</span>
+<span class="gp">... </span><span class="s">Mark    7       3</span>
+<span class="gp">... </span><span class="s">Lila    74      1</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;unindexed select * from table1&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+<span class="go">Lila  | 74 | 1</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;unindexed select * from table1 order by c&quot;</span><span class="p">)</span>
+<span class="go">a     | b  | c</span>
+<span class="go">--------------</span>
+<span class="go">Lila  | 74 | 1</span>
+<span class="go">James | 10 | 2</span>
+<span class="go">Mark  | 7  | 3</span>
+
+<span class="go">Note the difference with rowid table column.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.unionalldb">
+<span id="unionalldb-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">unionalldb</span></tt> function<a class="headerlink" href="#module-functions.vtable.unionalldb" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.unionalldb.unionalldb">
+<tt class="descname">unionalldb</tt><big>(</big><em>db_filename</em><big>)</big><a class="headerlink" href="#functions.vtable.unionalldb.unionalldb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>This function returns the contents of a table that has been split using OUTPUT split functionality.</p>
+<p>Its input are DBs with names such as:</p>
+<blockquote>
+<div>dbname.0.db
+dbname.1.db
+...</div></blockquote>
+<p>It is assumed that inside each of above DBs, a table named as <em>dbname</em> will exist. All of these
+tables should have the same schema</p>
+<p>If a <em>start</em> or <em>end</em> argument is present then <em>unionalldb</em> will start scanning from the <em>start</em> numbered part
+and end scanning at <em>end</em> numbered db part (without including the <em>end</em> numbered part).</p>
+<p>Usage examples:</p>
+<blockquote>
+<div><p>select * from (unionalldb &#8216;dbname&#8217;);</p>
+<p>select * from (unionalldb start:1 end:4 &#8216;dbname&#8217;);</p>
+</div></blockquote>
+</div>
+<div class="section" id="module-functions.vtable.unionallrcfiles">
+<span id="unionallrcfiles-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">unionallrcfiles</span></tt> function<a class="headerlink" href="#module-functions.vtable.unionallrcfiles" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-functions.vtable.unionallsdc">
+<span id="unionallsdc-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">unionallsdc</span></tt> function<a class="headerlink" href="#module-functions.vtable.unionallsdc" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-functions.vtable.variables">
+<span id="variables-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">variables</span></tt> function<a class="headerlink" href="#module-functions.vtable.variables" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.variables.variables">
+<tt class="descname">variables</tt><big>(</big><big>)</big><a class="headerlink" href="#functions.vtable.variables.variables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns the defined variables with their values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first last">
+<li><dl class="first docutils">
+<dt><em>variable</em> text</dt>
+<dd><p class="first last">Variable name.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><em>value</em> text</dt>
+<dd><p class="first last">Variable value</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;var &#39;env&#39; &#39;testing&#39; &quot;</span><span class="p">)</span>
+<span class="go">var(&#39;env&#39;,&#39;testing&#39;)</span>
+<span class="go">--------------------</span>
+<span class="go">testing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;variables&quot;</span><span class="p">)</span>
+<span class="go">variable | value</span>
+<span class="go">-------------------</span>
+<span class="go">flowname |</span>
+<span class="go">execdb   | :memory:</span>
+<span class="go">env      | testing</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.webtable">
+<span id="webtable-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">webtable</span></tt> function<a class="headerlink" href="#module-functions.vtable.webtable" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.webtable.webtable">
+<tt class="descname">webtable</tt><big>(</big><em>url</em><span class="optional">[</span>, <em>tableNumber</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#functions.vtable.webtable.webtable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the first or the <em>tableNumber</em> HTML table from the <em>url</em>.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">Column names same as HTML table column headers. If there are no headers columns are named as C1,C2....Cn</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from webtable(&#39;http://en.wikipedia.org/wiki/List_of_countries_by_public_debt&#39;,2) order by 2 desc limit 3&quot;</span><span class="p">)</span>
+<span class="go">Country | Public debt as % of GDP(CIA)[1] | Date1     | Gross government debt as % of GDP(IMF)[2] | Date2     | Region</span>
+<span class="go">-----------------------------------------------------------------------------------------------------------------------------</span>
+<span class="go">Belize  | 90.8                            | 2012 est. | 81.003                                    | 2012 est. | North America</span>
+<span class="go">Sudan   | 89.3                            | 2012 est. | 112.15                                    | 2012 est. | Africa</span>
+<span class="go">France  | 89.1                            | 2012 est. | 89.97                                     | 2012 est. | Europe</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.whilevt">
+<span id="whilevt-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">whilevt</span></tt> function<a class="headerlink" href="#module-functions.vtable.whilevt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.whilevt.whilevt">
+<tt class="descname">whilevt</tt><big>(</big><span class="optional">[</span><em>from:0</em>, <span class="optional">[</span><em>to:10</em>, <em>step:1</em>, <span class="optional">]</span><span class="optional">]</span><em>query</em><big>)</big><a class="headerlink" href="#functions.vtable.whilevt.whilevt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a range of integer numbers while a query&#8217;s result is true.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first">
+<li><dl class="first docutils">
+<dt><em>value</em> int</dt>
+<dd><p class="first last">Number in range.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">from:</th><td class="field-body"><p class="first">Number to begin from. Default is 0</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">to:</th><td class="field-body"><p class="first">Number to reach. Default is 10. The <em>to</em> number is not returned</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">step:</th><td class="field-body"><p class="first last">Step to augment the returned numbers. Default is 1</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range()&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">0</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="go">6</span>
+<span class="go">7</span>
+<span class="go">8</span>
+<span class="go">9</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(&#39;from:1&#39;,&#39;to:11&#39;)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="go">6</span>
+<span class="go">7</span>
+<span class="go">8</span>
+<span class="go">9</span>
+<span class="go">10</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(&#39;from:2&#39;,&#39;to:15&#39;,&#39;step:3&#39;)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">2</span>
+<span class="go">5</span>
+<span class="go">8</span>
+<span class="go">11</span>
+<span class="go">14</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(1,10,2)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">3</span>
+<span class="go">5</span>
+<span class="go">7</span>
+<span class="go">9</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from range(5)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">--</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-functions.vtable.xmlparse">
+<span id="xmlparse-function"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">xmlparse</span></tt> function<a class="headerlink" href="#module-functions.vtable.xmlparse" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.vtable.xmlparse.xmlparse">
+<tt class="descname">xmlparse</tt><big>(</big><span class="optional">[</span><em>root:None</em>, <em>strict:1</em>, <em>namespace:False</em>, <em>xmlprototype</em>, <span class="optional">]</span><em>query:None</em><big>)</big><a class="headerlink" href="#functions.vtable.xmlparse.xmlparse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Parses an input xml stream. It starts parsing when it finds a root tag. A provided XML prototype fragment is used to create an schema, mapping from xml to a relational table.
+If multiple values are found for the same tag in the input stream, then all values are returned separated with a tab (use tab-set operators to process them).</p>
+<p>If no XML prototype is provided, then a jdict of the data is returned. If no <em>root</em> tag is provided, then the output is a raw feed of {path:data} pairs without any row aggregation.
+Rootless mode is usefull when trying to find what <em>root</em> tag to use.</p>
+<p>Is a <em>root</em> tag is provided then each returned row, contains a jdict of all the paths found below the specified <em>root</em> tag.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">XML prototype:</th><td class="field-body"><p class="first">XML prototype may be:</p>
+<ul class="simple">
+<li>a fragment of XML which will be matched with the input data.</li>
+<li>a jpack.</li>
+<li>a jdict.</li>
+</ul>
+<p>If a the characters <strong>&#8220;*&#8221;</strong> or <strong>&#8220;$&#8221;</strong> are provided as a value of any of these prototypes, then a full XML subtree of a path will be returned in the resulting data.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">&#8216;namespace&#8217; or &#8216;ns&#8217; option:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first">Include namespace information in the returned jdicts.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">&#8216;fast&#8217; option (default 0):</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first">Read input data in bulk. For some XML input files (having lots of small line lengths), it can speed up XML processing by up to 30%. The downside of this option, is that when an error
+occurs no last line information is returned, so use this option only when you are sure that the XML input is well formed.</p>
+<ul class="simple">
+<li>fast:0  (default), parses the input stream in a conservative line by line way</li>
+<li>fast:1  ,is the same as fast:0, but it doesn&#8217;t return <em>Last line</em> information in the case of an error</li>
+<li>fast:2  ,in this mode XMLPARSER doesn&#8217;t convert HTML entities and doesn&#8217;t skip &#8220;&lt;?xml version=...&#8221; lines</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">&#8216;strict&#8217; option:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li>strict:2  ,if a failure occurs, the current transaction will be cancelled. Additionally if a tag isn&#8217;t found in the xml prototype it will be regarded as failure.</li>
+<li>strict:1  (default), if a failure occurs, the current transaction will be cancelled. Undeclared tags aren&#8217;t regarded as failure.</li>
+<li>strict:0  , returns all data that succesfully parses. The difference with strict 1, is that strict 0 tries to restart the xml-parsing after the failures and doesn&#8217;t fail the transaction.</li>
+<li>strict:-1 , returns all input lines in which the xml parser finds a problem. In essence this works as a negative xml parser.</li>
+</ul>
+<p>For strict modes 0 and -1, the fast:0 mode is enforced.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returned table schema:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><p class="first last">Column names are named according to the schema of the provided xml prototype.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Examples:</dt>
+<dd><div class="first highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table1</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;b&gt;row1val1b&lt;/b&gt;&lt;b&gt;row1val1c&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;b&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;row2val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;row2val&lt;/d&gt;&lt;/c&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse select * from table1)&quot;</span><span class="p">)</span> 
+<span class="go">C1</span>
+<span class="go">-------------------</span>
+<span class="go">{&quot;a/b&quot;:&quot;row1val1&quot;}</span>
+<span class="go">{&quot;a/b&quot;:&quot;row1val1b&quot;}</span>
+<span class="go">{&quot;a/b&quot;:&quot;row1val1c&quot;}</span>
+<span class="go">{&quot;a/b&quot;:&quot;row2val1&quot;}</span>
+<span class="go">{&quot;a/c/d&quot;:&quot;row2val&quot;}</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select jgroupunion(jdictkeys(c1)) from (xmlparse select * from table1)&quot;</span><span class="p">)</span> 
+<span class="go">jgroupunion(jdictkeys(c1))</span>
+<span class="go">--------------------------</span>
+<span class="go">[&quot;a/b&quot;,&quot;a/c/d&quot;]</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse &#39;[&quot;a/b&quot;,&quot;a/c/d&quot;]&#39; select * from table1)&#39;&#39;&#39;</span><span class="p">)</span> 
+<span class="go">b                            | c_d</span>
+<span class="go">--------------------------------------</span>
+<span class="go">row1val1        row1val1b        row1val1c |</span>
+<span class="go">row2val1                     | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse &#39;&lt;a&gt;&lt;b&gt;val1&lt;/b&gt;&lt;b&gt;val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;val2&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&#39; select * from table1)&quot;</span><span class="p">)</span> 
+<span class="go">b        | b1                  | c_d</span>
+<span class="go">----------------------------------------</span>
+<span class="go">row1val1 | row1val1b        row1val1c |</span>
+<span class="go">row2val1 |                     | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse root:a &#39;&lt;t&gt;&lt;a&gt;&lt;b&gt;val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;val2&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&lt;/t&gt;&#39; select * from table1)&quot;</span><span class="p">)</span> 
+<span class="go">b                            | c_d</span>
+<span class="go">--------------------------------------</span>
+<span class="go">row1val1        row1val1b        row1val1c |</span>
+<span class="go">row2val1                     | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table2</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a b=&quot;attrval1&quot;&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;b&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;row2val1&lt;/b&gt;&lt;c&gt;asdf&lt;d&gt;row2val&lt;/d&gt;&lt;/c&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse &#39;&lt;a b=</span><span class="se">\&quot;</span><span class="s">v</span><span class="se">\&quot;</span><span class="s">&gt;&lt;b&gt;v&lt;/b&gt;&lt;c&gt;&lt;d&gt;v&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&#39; select * from table2)&quot;</span><span class="p">)</span>
+<span class="go">b        | b1       | c_d</span>
+<span class="go">-----------------------------</span>
+<span class="go">attrval1 | row1val1 |</span>
+<span class="go">         | row2val1 | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse  &#39;[&quot;a/@/b&quot;,&quot;a/b&quot;,&quot;a/c/d&quot;]&#39; select * from table2)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="go">b        | b1       | c_d</span>
+<span class="go">-----------------------------</span>
+<span class="go">attrval1 | row1val1 |</span>
+<span class="go">         | row2val1 | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse  &#39;{&quot;a/b&quot;:[1,2] ,&quot;a/c/d&quot;:1}&#39; select * from table2)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="go">b        | b1 | c_d</span>
+<span class="go">-----------------------</span>
+<span class="go">row1val1 |    |</span>
+<span class="go">row2val1 |    | row2val</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse  &#39;{&quot;a/b&quot;:[1,2] ,&quot;a/c&quot;:[1,&quot;*&quot;]}&#39; select * from table2)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="go">b        | b1 | c    | c_$</span>
+<span class="go">-----------------------------------------</span>
+<span class="go">row1val1 |    |      |</span>
+<span class="go">row2val1 |    | asdf | asdf&lt;d&gt;row2val&lt;/d&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse  &#39;[&quot;a/b&quot;, &quot;a/c&quot;, &quot;a/c/*&quot;]&#39; select * from table2)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="go">b        | c    | c_$</span>
+<span class="go">------------------------------------</span>
+<span class="go">row1val1 |      |</span>
+<span class="go">row2val1 | asdf | asdf&lt;d&gt;row2val&lt;/d&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse  root:a &#39;{&quot;a/b&quot;:&quot;&quot;, &quot;a&quot;:&quot;*&quot;}&#39; select * from table2)&#39;&#39;&#39;</span><span class="p">)</span> 
+<span class="go">b        | $</span>
+<span class="go">------------------------------------------------------</span>
+<span class="go">row1val1 | &lt;b&gt;row1val1&lt;/b&gt;</span>
+<span class="go">row2val1 |</span>
+<span class="go">&lt;b&gt;</span>
+<span class="go">row2val1&lt;/b&gt;&lt;c&gt;asdf&lt;d&gt;row2val&lt;/d&gt;&lt;/c&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse &#39;&lt;a&gt;&lt;b&gt;v&lt;/b&gt;&lt;c&gt;*&lt;/c&gt;&lt;/a&gt;&#39; select * from table2)&quot;</span><span class="p">)</span>
+<span class="go">b        | c_$</span>
+<span class="go">-----------------------------</span>
+<span class="go">row1val1 |</span>
+<span class="go">row2val1 | asdf&lt;d&gt;row2val&lt;/d&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse root:a select * from table2)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">-------------------------------------------------</span>
+<span class="go">{&quot;a/@/b&quot;:&quot;attrval1&quot;,&quot;a/b&quot;:&quot;row1val1&quot;}</span>
+<span class="go">{&quot;a/b&quot;:&quot;row2val1&quot;,&quot;a/c/d&quot;:&quot;row2val&quot;,&quot;a/c&quot;:&quot;asdf&quot;}</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table2</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a b=&quot;attrval1&quot;&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/b&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;row2val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;row2val&lt;/d&gt;&lt;/c&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse strict:0 &#39;&lt;a b=</span><span class="se">\&quot;</span><span class="s">v</span><span class="se">\&quot;</span><span class="s">&gt;&lt;b&gt;v&lt;/b&gt;&lt;c&gt;&lt;d&gt;v&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&#39; select * from table2)&quot;</span><span class="p">)</span>
+<span class="go">b        | b1       | c_d</span>
+<span class="go">-------------------------</span>
+<span class="go">attrval1 | row1val1 |</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table3</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;b np=&quot;np&quot;&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;row2val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;row2val&lt;/d&gt;&lt;/c&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse strict:2 &#39;&lt;a&gt;&lt;b&gt;val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;val2&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&#39; select * from table3)&quot;</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">OperatorError</span>: <span class="n">Madis SQLError:</span>
+<span class="go">Operator XMLPARSE: Undeclared path in XML-prototype was found in the input data. The path is:</span>
+<span class="go">/b/@/np</span>
+<span class="go">The data to insert into path was:</span>
+<span class="go">np</span>
+<span class="go">Last input line was:</span>
+<span class="go">&lt;b np=&quot;np&quot;&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table4</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val2&lt;/b&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b np=&quot;np&quot;&gt;row1val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val3/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row1val4&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&quot;select * from (xmlparse strict:-1 &#39;&lt;a&gt;&lt;b&gt;val1&lt;/b&gt;&lt;c&gt;&lt;d&gt;val2&lt;/d&gt;&lt;/c&gt;&lt;/a&gt;&#39; select * from table4)&quot;</span><span class="p">)</span>
+<span class="go">C1</span>
+<span class="go">----------------------</span>
+<span class="go">&lt;a&gt;&lt;b&gt;row1val2&lt;/b&lt;/a&gt;</span>
+<span class="go">&lt;a&gt;&lt;b&gt;row1val3/b&gt;&lt;/a&gt;</span>
+</pre></div>
+</div>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">table5</span><span class="p">(</span><span class="s">&#39;&#39;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;&lt;a&gt;&lt;b&gt;row1val1&lt;/b&gt;&lt;/a&gt;&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row2val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row3val1&lt;/b&gt;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;a&gt;&lt;b&gt;row4val1&lt;/b&gt;&lt;c&gt;row4val2&lt;/c&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&lt;/a&gt;&#39;</span>
+<span class="gp">... </span><span class="s">&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sql</span><span class="p">(</span><span class="s">&#39;&#39;&#39;select * from (xmlparse &#39;[&quot;a/b&quot;, &quot;a/c&quot;]&#39; select * from table5)&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="go">b        | c</span>
+<span class="go">-------------------</span>
+<span class="go">row1val1 |</span>
+<span class="go">row2val1 |</span>
+<span class="go">row3val1 |</span>
+<span class="go">row4val1 | row4val2</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/madislog.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Vtable functions list</a><ul>
+<li><a class="reference internal" href="#module-functions.vtable.cache"><tt class="docutils literal"><span class="pre">cache</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.clipboard"><tt class="docutils literal"><span class="pre">clipboard</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.clipout"><tt class="docutils literal"><span class="pre">clipout</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.coltypes"><tt class="docutils literal"><span class="pre">coltypes</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.coutput"><tt class="docutils literal"><span class="pre">coutput</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.dirfiles"><tt class="docutils literal"><span class="pre">dirfiles</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.examplevt"><tt class="docutils literal"><span class="pre">examplevt</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.exec"><tt class="docutils literal"><span class="pre">exec</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.expand"><tt class="docutils literal"><span class="pre">expand</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.file"><tt class="docutils literal"><span class="pre">file</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.flow"><tt class="docutils literal"><span class="pre">flow</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.hidden"><tt class="docutils literal"><span class="pre">hidden</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.jsonpipe"><tt class="docutils literal"><span class="pre">jsonpipe</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.mysql"><tt class="docutils literal"><span class="pre">mysql</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.oaiget"><tt class="docutils literal"><span class="pre">oaiget</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.oracle"><tt class="docutils literal"><span class="pre">oracle</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.ordered"><tt class="docutils literal"><span class="pre">ordered</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.output"><tt class="docutils literal"><span class="pre">output</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.pipe"><tt class="docutils literal"><span class="pre">pipe</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.postgres"><tt class="docutils literal"><span class="pre">postgres</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.queryplan"><tt class="docutils literal"><span class="pre">queryplan</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.range"><tt class="docutils literal"><span class="pre">range</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.rc2db"><tt class="docutils literal"><span class="pre">rc2db</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.rowidvt"><tt class="docutils literal"><span class="pre">rowidvt</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.sample"><tt class="docutils literal"><span class="pre">sample</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.sdc2db"><tt class="docutils literal"><span class="pre">sdc2db</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.setschema"><tt class="docutils literal"><span class="pre">setschema</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.slidingwindow"><tt class="docutils literal"><span class="pre">slidingwindow</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.sqlite"><tt class="docutils literal"><span class="pre">sqlite</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.stdinput"><tt class="docutils literal"><span class="pre">stdinput</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.timeslidingwindow"><tt class="docutils literal"><span class="pre">timeslidingwindow</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.toeav"><tt class="docutils literal"><span class="pre">toeav</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.unindexed"><tt class="docutils literal"><span class="pre">unindexed</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.unionalldb"><tt class="docutils literal"><span class="pre">unionalldb</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.unionallrcfiles"><tt class="docutils literal"><span class="pre">unionallrcfiles</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.unionallsdc"><tt class="docutils literal"><span class="pre">unionallsdc</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.variables"><tt class="docutils literal"><span class="pre">variables</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.webtable"><tt class="docutils literal"><span class="pre">webtable</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.whilevt"><tt class="docutils literal"><span class="pre">whilevt</span></tt> function</a></li>
+<li><a class="reference internal" href="#module-functions.vtable.xmlparse"><tt class="docutils literal"><span class="pre">xmlparse</span></tt> function</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="aggregate.html"
+                        title="previous chapter">Aggregate functions list</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="people.html"
+                        title="next chapter">People</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/vtable.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="people.html" title="People"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="aggregate.html" title="Aggregate functions list"
+             >previous</a> |</li>
+        <li><a href="index.html">madIS 1.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2009-2010, L. Stamatogiannakis, M. Triantafyllidi, M. Vayanou, M. Kyriakidi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

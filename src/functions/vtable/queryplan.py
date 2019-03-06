@@ -34,9 +34,10 @@ class QueryPlan(vtbase.VT):
                 a=list(c.execute("select "+str(i)))
 
         _, dictargs = self.full_parse(parsedArgs)
-
+        
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1]," needs query argument ")
+
         query=dictargs['query']
 
         connection = envars['db']
@@ -47,15 +48,18 @@ class QueryPlan(vtbase.VT):
         cursor = connection.cursor()
 
         cursor.setexectrace(lambda x,y,z:apsw.SQLITE_DENY)
-        connection.setauthorizer(authorizer)
 
+        connection.setauthorizer(authorizer)
 
         cursor.execute(query)
 
         connection.setauthorizer(None)
+
         yield [('operation', 'text'), ('paramone', 'text'), ('paramtwo', 'text'), ('databasename', 'text'), ('triggerorview', 'text')]
+
         for r in plan:
             yield r
+    
     def destroy(self):
         pass
 
