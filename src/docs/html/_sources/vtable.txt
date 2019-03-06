@@ -159,56 +159,6 @@ Applying coltypes in the result of virtual table func:`typing` function in the s
     '10'   | text | '10'   | int
 
 
-:mod:`coutput` function
------------------------
-
-.. module:: functions.vtable.coutput
-
-
-Examples:
-
-    >>> table1('''
-    ... James   10	2
-    ... Mark    7	3
-    ... Lila    74	1
-    ... ''')
-    >>> sql("select * from table1")
-    a     | b  | c
-    --------------
-    James | 10 | 2
-    Mark  | 7  | 3
-    Lila  | 74 | 1
-
-    >>> sql("coutput '../../tests/output' split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1)")
-    return_value
-    ------------
-    1
-    >>> sql("unionallrcfiles file:../../tests/output")
-    name  | age | rank
-    ------------------
-    Mark  | 7   | 3
-    Lila  | 74  | 1
-    James | 10  | 2
-
-    >>> sql("coutput '../../tests/emptyoutput' split:2  mode:rcfile select hashmodarchdep(rank,2),* from (select a as name , b as age, c as rank from table1 limit 0)")
-    return_value
-    ------------
-    1
-    >>> sql("unionallrcfiles file:../../tests/emptyoutput")
-
-
-    >>> sql("coutput '../../tests/outputsp8' split:8  mode:rcfile select hashmodarchdep(rank,8),* from (select a as name , b as age, c as rank from table1)")
-    return_value
-    ------------
-    1
-    >>> sql("unionallrcfiles file:../../tests/outputsp8")
-    name  | age | rank
-    ------------------
-    James | 10  | 2
-    Mark  | 7   | 3
-    Lila  | 74  | 1
-
-
 :mod:`dirfiles` function
 ------------------------
 
@@ -576,6 +526,10 @@ Formatting options for CSV file types:
     When toj is defined, columns 0-Num are returned as normal, and all columns >Num are returned as a JSON list or JSON
     dict, depending on if the *header* is enabled.
 
+:useregexfilename: *t/f*
+
+    When true, the provided filename is treated as a regex. This means that madiS will open the first file it finds to match that regex.
+
 Examples::
   
     >>> sql("select * from (file file:testing/colpref.csv dialect:csv) limit 3;")
@@ -597,6 +551,12 @@ Examples::
     agr    | a0037 | 2659050.0  | agr
     agr    | a0086 | 634130.0   | agr
     >>> sql("select * from (file 'testing/colpref.tsv' delimiter:| ) limit 3;")
+    C1  | C2    | C3        | C4
+    -----------------------------
+    agr |       | 6617580.0 | agr
+    agr | a0037 | 2659050.0 | agr
+    agr | a0086 | 634130.0  | agr
+    >>> sql("select * from (file useregexfilename:True 'testing/col*.tsv' delimiter:| ) limit 3;")
     C1  | C2    | C3        | C4
     -----------------------------
     agr |       | 6617580.0 | agr
@@ -675,6 +635,52 @@ Test files:
 
 
 
+
+
+:mod:`fromeav` function
+-----------------------
+
+.. module:: functions.vtable.fromeav
+
+
+.. function:: fromeav(query) -> Relational table
+Transforms the query input results to a relational table from an Entity-Attribute-Value (EAV) model.
+Examples::
+    >>> table1('''
+    ... 1    name    James
+    ... 1    city    Chicago
+    ... 1    job    Programmer
+    ... 1    age    35
+    ... 2    name    Mark
+    ... 2    city    London
+    ... 2    job    Pilot
+    ... 2    age    43
+    ... 5    name    Lila
+    ... 5    city    'New York'
+    ... 5    job    Teacher
+    ... 5    age    29
+    ... ''')
+    >>> sql("fromeav select * from table1 where a = 1")
+    rid | row_id | name  | city    | job        | age
+    -------------------------------------------------
+    0   | 1      | James | Chicago | Programmer | 35
+    >>> sql("fromeav select * from table1 where a in (1,5)")
+    rid | row_id | name  | city     | job        | age
+    --------------------------------------------------
+    0   | 1      | James | Chicago  | Programmer | 35
+    1   | 5      | Lila  | New York | Teacher    | 29
+    >>> sql("fromeav select * from table1")
+    rid | row_id | name  | city     | job        | age
+    --------------------------------------------------
+    0   | 1      | James | Chicago  | Programmer | 35
+    1   | 2      | Mark  | London   | Pilot      | 43
+    2   | 5      | Lila  | New York | Teacher    | 29
+    >>> sql("fromeav select * from table1 where b in ('city', 'job')")
+    rid | row_id | city     | job
+    ------------------------------------
+    0   | 1      | Chicago  | Programmer
+    1   | 2      | London   | Pilot
+    2   | 5      | New York | Teacher
 
 
 :mod:`hidden` function
@@ -1120,13 +1126,6 @@ Examples::
 
 
 
-:mod:`rc2db` function
----------------------
-
-.. module:: functions.vtable.rc2db
-
-
-
 :mod:`rowidvt` function
 -----------------------
 
@@ -1216,13 +1215,6 @@ Examples::
 
 
 
-:mod:`sdc2db` function
-----------------------
-
-.. module:: functions.vtable.sdc2db
-
-
-
 :mod:`setschema` function
 -------------------------
 
@@ -1283,6 +1275,139 @@ With setschema functions preference column is casted as float.
     type | colid | pref     | userid
     --------------------------------
     agr  | a0086 | 634130.0 | agr
+
+
+
+:mod:`skpredict` function
+-------------------------
+
+.. module:: functions.vtable.skpredict
+
+
+.. function: skpredict(args,query:None)
+
+
+
+skpredict filename: "mymodel" select * from t;
+
+    Loads a predictive model trained by sktrain operator from file (stored from sktrain operator) and classifies the new
+    data provided selected from the query. It returns a table with the new predictions
+
+
+    >>> table('''
+    ... 0.0   4.4   0
+    ... 2.1   2.2   2
+    ... -2.1   4.4   0
+    ... 2.1   2.2   0
+    ... 0.0   4.4   2
+    ... -4.2   4.4   2
+    ... -4.2   4.4   1
+    ... -2.1   -0.0   0
+    ... 2.1   -0.0   0
+    ... -2.1   -2.2   0
+    ... -4.2   -0.0   2
+    ... --- [0|Column names ---
+    ... [1|C1 [2|C2 [3|C3
+    ... ''')
+    >>> sql("skpredict filename:SVMmodel select C1,C2 from table;")
+    id  |  prediction  |  prediction_probability_per_class
+    -------------
+    0   |  0           |  [ 0.4101318   0.20131647  0.38855173]
+    1   |  0           |  [ 0.41863251  0.20180877  0.37955871]
+    2   |  2           |  [ 0.27520722  0.19621797  0.52857481]
+    3   |  0           |  [ 0.4149133   0.20182841  0.3832583 ]
+    4   |  0           |  [ 0.4101318   0.20131647  0.38855173]
+    5   |  2           |  [ 0.90338454  0.01203995  0.08457551]
+    6   |  2           |  [ 0.90338454  0.01203995  0.08457551]
+    7   |  0           |  [ 0.27481114  0.19661277  0.52857609]
+    8   |  0           |  [ 0.27504844  0.19632018  0.52863138]
+    9   |  0           |  [ 0.27491203  0.19661313  0.52847484]
+    10  |  2           |  [ 0.77210661  0.12397848  0.10391491]
+
+
+
+:mod:`sktrain` function
+-----------------------
+
+.. module:: functions.vtable.sktrain
+
+
+.. function: sktrain(args,query:None)
+
+    :NOTE:
+
+        The operator requires the following packages: 'numpy', 'scipy', 'sklearn'
+        numpy & scipy: https://www.scipy.org/scipylib/download.html
+        sklearn: http://scikit-learn.org/stable/install.html
+
+
+    Fits data from specific database relations into cross-validated predictive models. A supervised algorithm initialized
+    by initstr is trained on the selected data and returns its predictions for each sample (either for Regression or
+    Classification problems). The algorithm implements the validation step via cross-validation and extra parameters
+    for the training can be provided as well. The model is also stored in disk for future use. (see skpredict operator)
+
+    Returns: a table schema with the model's classification (predicted labels). In case user inserts the initstr parameter
+    "probability=True", the table consists of two more columns: the probability of each prediction and one list with the
+    probabilities for each sample to belong to each class (useful for evaluation metrics, ie: ROC curves).
+
+    Parameters:
+
+    :initstr(with optional parameters):
+
+        Initialization string (from scikit-learn api, ie: DecisionTreeClassifier(max_depth=3)
+
+    :classname:
+
+        The Column name for the response variable we want to classify/predict
+
+    :cv:
+
+        k for k-fold cross validation
+
+
+    Examples:
+
+    >>> table('''
+    ... 0.0   4.4   0
+    ... 2.1   2.2   2
+    ... -2.1   4.4   0
+    ... 2.1   2.2   0
+    ... 0.0   4.4   2
+    ... -4.2   4.4   2
+    ... -4.2   4.4   1
+    ... -2.1   -0.0   0
+    ... 2.1   -0.0   0
+    ... -2.1   -2.2   0
+    ... -4.2   -0.0   2
+    ... --- [0|Column names ---
+    ... [1|C1 [2|C2 [3|C3
+    ... ''')
+
+    >>> sql("sktrain filename:SVMmodel initstr:SVC(kernel='linear') classname:C3 cv:10 select * from table;")
+    sktrain filename:SVMmodel initstr:SVC(kernel='linear') cv:10 select * from table;  //10-fold cross-validation
+
+    id |  predicted_label |  prediction_probability  |  probs_per_class
+    ------------------------------------------------------------------------------------------------------------------
+    0  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    1  | 0                |  0.0                     |  [0.0, 0.0, 0.0]
+    2  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    3  | 0                |  0.410210360487          |  [0.41021036048685278, 0.14907264577206564, 0.44071699374108164]
+    4  | 0                |  0.548051122534          |  [0.54805112253403776, 0.14785556444024275, 0.30409331302571929]
+    5  | 1                |  0.193336225736          |  [0.38875643772373958, 0.19333622573639794, 0.4179073365398624]
+    6  | 2                |  0.0                     |  [0.0, 0.0, 0.0]
+    7  | 0                |  0.416031694023          |  [0.41603169402299173, 0.18204494673933225, 0.40192335923767586]
+    8  | 0                |  0.448463699747          |  [0.44846369974736427, 0.1393806568854721, 0.41215564336716359]
+    9  | 2                |  0.216144116096          |  [0.61342034424348868, 0.17043553966069536, 0.21614411609581588]
+    10 | 0                |  0.52171544466           |  [0.52171544465978703, 0.20100090883455271, 0.27728364650566051]
+
+
+    NOTE about cross-validation on classification/regression tasks:
+    For integer/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold() is used.
+    Otherwise (like regression tasks), KFold() is used.
+    Stratified cross-validation: Each set contains approximately the same percentage of samples of each target class as the complete set. Thus,
+    it is ensured that relative class frequencies is approximately preserved in each train and validation fold.    
+    
+    ------------------------------
 
 
 

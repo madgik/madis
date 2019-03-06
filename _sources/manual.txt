@@ -213,14 +213,14 @@ Using the standard *limit* SQL directive, the output is limited to only 2 rows.
 
 An example showing the streaming nature of virtual tables is::
 
-   mterm> select output from pipe('query:date'); 
+   mterm> select C1 from pipe('query:date'); 
    Fri Feb 1 12:34:55 EET 2000 
    "" 
-   mterm> select strsplit(output,'delimiter: ') from pipe('query:date'); 
+   mterm> select strsplit(C1,'delimiter: ') from pipe('query:date'); 
    Mon|Feb||1|12:34:56|EET|2000 
 
 The first of the above examples executes system's "date" command through the use of the :mod:`~functions.vtable.pipe` virtual table.
-Notice that the :mod:`~functions.vtable.pipe` virtual table has a default returned schema, having one column named *output.*
+Notice that the :mod:`~functions.vtable.pipe` virtual table has a default returned schema, having one column named *C1.*
 
 The second of the above examples does the same as the previous one, however it also splits :mod:`~functions.vtable.pipe`'s output,
 using space as a delimiter, into multiple columns through :func:`~functions.row.formating.strsplit` row function.
@@ -233,7 +233,7 @@ The second peculiarity is the that the row function :func:`~functions.row.format
 This is a :ref:`multiset <tutmultiset>` function, able to return as many columns and rows as it wishes.
 To see the column names and column types of second query above, we can execute::
 
-   mterm> coltypes select strsplit(output,'delimiter: ') from pipe('query:date'); 
+   mterm> coltypes select strsplit(C1,'delimiter: ') from pipe('query:date'); 
    C1|text 
    C2|text 
    C3|text 
@@ -303,7 +303,7 @@ Whenever madIS' SQL preprocessor "sees" above syntax it turns it into::
 
 So lets use the inverted syntax, to reissue the query above::
 
-   mterm> output 'd.txt' pipe date;
+   mterm> output 'd.txt' select * from pipe('query:date');
    1
 
 In practice a wide range of functionalities has been possible with inversions.

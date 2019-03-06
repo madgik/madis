@@ -1006,6 +1006,122 @@ Aggregate functions list
     -
     
 
+:mod:`skcluster` functions
+--------------------------
+
+.. module:: functions.aggregate.skcluster
+
+**skcluster function**
+    .. function:: skcluster(str,rowid cols)
+
+        :NOTE:
+
+            The present operator requires the following packages: 'numpy', 'scipy', 'sklearn'
+            numpy & scipy: https://www.scipy.org/scipylib/download.html
+            sklearn: http://scikit-learn.org/stable/install.html
+
+        Implements the clustering algorithm initialized by str and returns the sample id, the coordinates in space and its
+        cluster label. Cols refer to features except for the first one which includes each dato id.
+        In case the algorithm computes centroids in clusters, #features more columns are returned: The coordinates of
+        cluster centroids in which the dato belongs to. For instance, if dataset consists of 4 columns (= 4 features)
+        4 more columns will be added in result table in case centroids have been computed
+
+        Parameters:
+
+        :initstr:
+
+                Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: KMeans(n_clusters=3)).
+
+        :cols:
+                Names of the input-variables
+
+
+        Examples:
+        A dataset with 3 columns (1 column for the id and 2 features):
+
+        >>> table1('''
+        ... 0.52   0.40
+        ... 0.63   0.33
+        ... 0.77   0.15
+        ... 0.81   0.74
+        ... ''')
+
+        >>> sql("select skcluster('AffinityPropagation()',c1,c2) from table1")
+        ---------------------------
+        id | label | center1 | center2
+        --------------
+        1 | 0 | 0.63 | 0.33
+        2 | 0 | 0.63 | 0.33
+        3 | 0 | 0.63 | 0.33
+        4 | 1 | 0.81 | 0.74
+
+        In case algorithm doesn't compute centroids, only the 'id' and 'label' columns appeared in result
+
+        >>> sql("select skcluster('SpectralClustering(n_clusters=2)',c1,c2) from table1")
+        ---------------------------
+        id | label
+        --------------
+        1 | 0 |
+        2 | 0 |
+        3 | 0 |
+        4 | 1 |
+
+    
+
+:mod:`skdimred` functions
+-------------------------
+
+.. module:: functions.aggregate.skdimred
+
+**skdimred function**
+    .. function:: skdimred(initstr,cols)
+
+        :NOTE:
+
+            The operator requires the following packages: 'numpy', 'scipy', 'sklearn'
+            numpy & scipy: https://www.scipy.org/scipylib/download.html
+            sklearn: http://scikit-learn.org/stable/install.html
+
+
+        Implements dimensionality reduction on table t (based on algorithms from Machine Learning package scikit-learn.org).
+        Standarization is also performed to the features by removing the mean and scaling to unit variance
+        Returns: the transformed data in the new space.
+
+        Parameters:
+
+        :initstr:
+
+                Initialization string of the algorithm with optional parameters (from scikit-learn api, ie: PCA(n_components=3)).
+                Three methods are supported: PCA, SVD and TSNE)
+
+        :cols:
+                Names of the input-variables
+
+        Examples:
+        Sample from the iris dataset with 4 columns (SepalLength, SepalWidth, PetalLength, PetalWidth):
+
+        >>> table1('''
+        ... 5.1	3.5	1.4	0.2
+        ... 4.9	3	1.4	0.2
+        ... 4.7	3.2	1.3	0.2
+        ... 4.6	3.1	1.5	0.2
+        ... 5	3.6	1.4	0.2
+    ... --- [0|Column names ---
+    ... [1|SL [2|SW [3|PL [4]PW
+        ... ''')
+
+        >>> sql("select skdimred('PCA(n_components=2)',SL,SW,PL,PW) from table1;")
+        eig1            |  eig2
+        ------------------------------
+        -1.52434877924  |  -0.436029188708
+        0.669710216202  |  0.234613817817
+        0.378259496001  |  1.74252845419
+        1.9247054679    |  -1.10077422234
+        -1.44832640086  |  -0.440338860953
+
+
+    
+
 :mod:`statistics` functions
 ---------------------------
 
