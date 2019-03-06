@@ -137,7 +137,7 @@ class LTable(object): ####Init means setschema and execstatus
         """
         self.CloseCursors()
         del self.tblist[self.envars['tablename']]
-        if self.tableObj.__class__.__dict__.has_key('destroy'):
+        if 'destroy' in self.tableObj.__class__.__dict__:
             self.tableObj.destroy()
 
 # Represents a cursor

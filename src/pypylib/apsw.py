@@ -32,6 +32,10 @@ SQLITE_OPEN_READWRITE = 2
 SQLITE_OPEN_CREATE = 4
 SQLITE_DENY = 1
 
+
+
+
+
 ###########################################
 # BEGIN Wrapped SQLite C API and constants
 ###########################################
@@ -292,6 +296,40 @@ SQLITE_UTF8 = 1
 SQLITE_DENY     = 1
 SQLITE_IGNORE   = 2
 
+mapping_authorizer_function = {}
+mapping_authorizer_function[1] = "SQLITE_CREATE_INDEX"
+mapping_authorizer_function[2] = "SQLITE_CREATE_TABLE"
+mapping_authorizer_function[3] = "SQLITE_CREATE_TEMP_INDEX"
+mapping_authorizer_function[4] = "SQLITE_CREATE_TEMP_TABLE"
+mapping_authorizer_function[5] = "SQLITE_CREATE_TEMP_TRIGGER"
+mapping_authorizer_function[6] = "SQLITE_CREATE_TEMP_VIEW"
+mapping_authorizer_function[7] = "SQLITE_CREATE_TRIGGER"
+mapping_authorizer_function[8] = "SQLITE_CREATE_VIEW"
+mapping_authorizer_function[9] = "SQLITE_DELETE"
+mapping_authorizer_function[10] = "SQLITE_DROP_INDEX"
+mapping_authorizer_function[11] = "SQLITE_DROP_TABLE"
+mapping_authorizer_function[12] = "SQLITE_DROP_TEMP_INDEX"
+mapping_authorizer_function[13] = "SQLITE_DROP_TEMP_TABLE"
+mapping_authorizer_function[14] = "SQLITE_DROP_TEMP_TRIGGER"
+mapping_authorizer_function[15] = "SQLITE_DROP_TEMP_VIEW"
+mapping_authorizer_function[16] = "SQLITE_DROP_TRIGGER"
+mapping_authorizer_function[17] = "SQLITE_DROP_VIEW"
+mapping_authorizer_function[18] = "SQLITE_INSERT"
+mapping_authorizer_function[19] = "SQLITE_PRAGMA"
+mapping_authorizer_function[20] = "SQLITE_READ"
+mapping_authorizer_function[21] = "SQLITE_SELECT"
+mapping_authorizer_function[22] = "SQLITE_TRANSACTION"
+mapping_authorizer_function[23] = "SQLITE_UPDATE"
+mapping_authorizer_function[24] = "SQLITE_ATTACH"
+mapping_authorizer_function[25] = "SQLITE_DETACH"
+mapping_authorizer_function[26] = "SQLITE_ALTER_TABLE"
+mapping_authorizer_function[27] = "SQLITE_REINDEX"
+mapping_authorizer_function[28] = "SQLITE_ANALYZE"
+mapping_authorizer_function[29] = "SQLITE_CREATE_VTABLE"
+mapping_authorizer_function[30] = "SQLITE_DROP_VTABLE"
+mapping_authorizer_function[31] = "SQLITE_FUNCTION"
+
+
 SQLITE_CREATE_INDEX             = 1
 SQLITE_CREATE_TABLE             = 2
 SQLITE_CREATE_TEMP_INDEX        = 3
@@ -450,6 +488,7 @@ class Connection(object):
         self.statement_cache = StatementCache(self, cached_statements)
         self.cursors = []
         self.__func_cache = {}
+        self.authorizer = 0
         self.Error = Error
         self.Warning = Warning
         self.InterfaceError = InterfaceError
@@ -747,24 +786,44 @@ class Connection(object):
     @_check_thread_wrap
     @_check_closed_wrap
     def setauthorizer(self, callback):
-        try:
-            authorizer = self.__func_cache[callback]
-        except KeyError:
-            @ffi.callback("int(void*, int, const char*, const char*, "
-                           "const char*, const char*)")
-            def authorizer(userdata, action, arg1, arg2, dbname, source):
-                try:
-                    ret = callback(action, arg1, arg2, dbname, source)
-                    assert isinstance(ret, int)
-                    # try to detect cases in which cffi would swallow
-                    # OverflowError when casting the return value
-                    assert int(ffi.cast('int', ret)) == ret
-                    return ret
-                except Exception:
-                    return SQLITE_DENY
-            self.__func_cache[callback] = authorizer
+        if callback != None:
+            self.authorizer = callback
+            try:
+                authorizer = self.__func_cache[callback]
+            except KeyError:
+                @ffi.callback("int(void*, int, const char*, const char*, "
+                               "const char*, const char*)")
+                def authorizer(userdata, action, arg1, arg2, dbname, source):
+                    try:
+                        arg1 = unicode(ffi.string(arg1))
+                    except:
+                        arg1 = None
+                    try:
+                        arg2 = unicode(ffi.string(arg2))
+                    except:
+                        arg2 = None
+                    try:
+                        dbname = unicode(ffi.string(dbname))
+                    except:
+                        dbname = None
+                    try:
+                        source = unicode(ffi.string(source))
+                    except:
+                        source = None
 
-        ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
+                    try:
+                        ret = callback(action, arg1, arg2, dbname, source)
+                        assert isinstance(ret, int)
+                        # try to detect cases in which cffi would swallow
+                        # OverflowError when casting the return value
+                        assert int(ffi.cast('int', ret)) == ret
+                        return ret
+                    except Exception:
+                        return SQLITE_DENY
+                self.__func_cache[callback] = authorizer
+            ret = sqlite.sqlite3_set_authorizer(self._db, authorizer, ffi.NULL)
+        if callback == None:
+            ret = sqlite.sqlite3_set_authorizer(self._db, ffi.NULL, ffi.NULL)
         if ret != SQLITE_OK:
             raise self._get_exception(ret)
 
@@ -969,7 +1028,7 @@ class Connection(object):
 
             def xCreate(db, paux, argc, argv, ppvtab, pzErr): #int (*xCreate)(sqlite3*, void *pAux, int argc, const char *const*argv, sqlite3_vtab **ppVTab, char**);
                 try:
-                    schema, table = datasource.Create(self,ffi.string(argv[0]), ffi.string(argv[1]), ffi.string(argv[2]), *tuple([ffi.string(argv[i]) for i in xrange(3,argc)]))
+                    schema, table = datasource.Create(self, ffi.string(argv[0]), ffi.string(argv[1]), ffi.string(argv[2]), *tuple([ffi.string(argv[i]) for i in xrange(3,argc)]))
                 except Exception as e:
                     error_msg = str(e)
                     if "Error:" not in error_msg:
@@ -981,7 +1040,6 @@ class Connection(object):
                 ppvtab[0] = newvtab
                 self._vttables[newvtab] = table
                 vret = sqlite.sqlite3_declare_vtab(db, schema.encode('utf-8'))
-
                 if ret != SQLITE_OK:
                     pzErr[0] = sqlite.sqlite3_mprintf(str(self._get_exception(vret)))
                     return SQLITE_ERROR
