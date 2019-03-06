@@ -58,6 +58,11 @@ The requirements for using madIS are:
 
 5.  Use "cat data | python mexec.py -f script.sql [-d/-w dbfile.db]" to run a madis sql script on data from standard input as a stream. The output is also streamed in the standard output. The mexec script may optionally read (-d) or write (-w) to a database file or run completely in memory.
 
-6.  Use madis as a python library and run SQL queries with UDFs importing "madis.py"
+6.  Use madis as a python library and run SQL queries with UDFs importing "madis.py"::
+
+        import madis
+        
+        
+        
 
 
