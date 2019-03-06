@@ -50,11 +50,18 @@ The requirements for using madIS are:
 
         sudo easy_install readline
 
-3.  Download the madIS archive (.zip) from:
+3.  Download the madIS from:
 
-    http://code.google.com/p/madis/downloads/list
+    https://github.com/madgik/madis
 
-4.  Uncompress above zip file
+4.  Use madis terminal by entering into the new "madis/" path and executing "python mterm.py [dbfile.db]"
+When a database file is not given madis opens a database in memory.
 
-5.  Use madis by entering into the new "madis/" path and executing "python mterm.py"
+5. Use "cat data | python mexec.py -f script.sql [-d/-w dbfile.db]" to run a madis sql script on data from standard input as a stream.
+The output is also streamed in the standard output. 
+The mexec script may optionally read (-d) or write (-w) to a database file or run completely in memory.
+
+6. Use madis as a python library and run SQL queries with UDFs importing "madis.py"::
+    import madis
+
 
