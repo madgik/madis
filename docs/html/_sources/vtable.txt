@@ -1691,20 +1691,6 @@ Usage examples:
 
 
 
-:mod:`unionallrcfiles` function
--------------------------------
-
-.. module:: functions.vtable.unionallrcfiles
-
-
-
-:mod:`unionallsdc` function
----------------------------
-
-.. module:: functions.vtable.unionallsdc
-
-
-
 :mod:`variables` function
 -------------------------
 
