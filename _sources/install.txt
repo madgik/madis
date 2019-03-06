@@ -62,7 +62,8 @@ The requirements for using madIS are:
 
         import madis
         
+    `madis` package is used in the same way as sqlite3 package does. 
+    The only difference is that the executed queries may contain madIS UDFs and may be expressed in madIS extended SQL syntax.    
         
         
-
-
+        
