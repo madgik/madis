@@ -24,7 +24,7 @@ import os
 import time
 import re
 import sys
-from types import NoneType
+NoneType = type(None)
 
 _jdbc_connect = None
 

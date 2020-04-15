@@ -2,7 +2,7 @@
 Basis code for Virtual table. The schema is extracted from firstrow.
 """
 
-import setpath
+from . import setpath
 import functions
 import apsw
 from lib import argsparse ,schemaUtils
@@ -24,7 +24,7 @@ def echocall(func):
             Extra=""
             if 'tablename' in obj.__dict__:
                 Extra=obj.tablename
-            print "Table %s:Before Calling %s.%s(%s)" %(Extra+str(obj),obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in kw.items()]))
+            print("Table %s:Before Calling %s.%s(%s)" %(Extra+str(obj),obj.__class__.__name__,func.__name__,','.join([repr(l) for l in args[1:]]+["%s=%s" %(k,repr(v)) for k,v in list(kw.items())])))
         return func(*args, **kw)
     return wrapper
 
@@ -58,8 +58,8 @@ class VTGenerator(object):
         openedIter = iterFunc()
         
         try:
-            schema = openedIter.next()
-        except (StopIteration,apsw.ExecutionCompleteError),e:
+            schema = next(openedIter)
+        except (StopIteration,apsw.ExecutionCompleteError) as e:
             try:
                 if hasattr(openedIter,'close'):
                     openedIter.close()
@@ -70,11 +70,11 @@ class VTGenerator(object):
         except apsw.AbortError:
             openedIter.close()
             openedIter = iterFunc()
-            schema = openedIter.next()
+            schema = next(openedIter)
 
         self.tableObjs[tablename]=(schemaUtils.CreateStatement(schema,tablename),LTable(self.tableObjs, envars, TableVT, iterFunc, openedIter))
         if functions.settings['tracing']:
-            print 'VT_Schema: %s' %(self.tableObjs[tablename][0])
+            print('VT_Schema: %s' %(self.tableObjs[tablename][0]))
         return self.tableObjs[tablename]
     @echocall
     def Connect(self, db, modulename, dbname, tablename,*args):
@@ -107,7 +107,7 @@ class LTable(object): ####Init means setschema and execstatus
         tmpIter = None
         if self.openedIter == None:
             tmpIter = self.iterFunc()
-            tmpIter.next()
+            next(tmpIter)
         else:
             tmpIter = self.openedIter
             self.openedIter = None
@@ -127,7 +127,7 @@ class LTable(object): ####Init means setschema and execstatus
         This method is called when a reference to a virtual table is no longer used
         """
         self.CloseCursors()
-        if self.tableObj.__class__.__dict__.has_key('disconnect'):
+        if 'disconnect' in self.tableObj.__class__.__dict__:
             self.tableObj.disconnect()
 
     @echocall
@@ -149,7 +149,7 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
         self.envars = envars
         self.firsttime = True
         self.openIter=openIter
-        self.iterNext = self.openIter.next
+        self.iterNext = self.openIter.__next__
         self.iterFunc=iterFunc
         self.row = []
         self.eof = False
@@ -171,7 +171,7 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
             if hasattr(self.openIter,'close'):
                 self.openIter.close()
             self.openIter=self.iterFunc()
-            self.iterNext = self.openIter.next
+            self.iterNext = self.openIter.__next__
             self.iterNext()
 
         self.firsttime=False

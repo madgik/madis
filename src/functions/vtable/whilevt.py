@@ -73,9 +73,9 @@ Examples::
 
 """
 
-import setpath
+from . import setpath
 import functions
-import vtbase
+from . import vtbase
 registered = True
 external_query = True
 
@@ -148,7 +148,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

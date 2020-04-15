@@ -29,7 +29,7 @@ IF function returns normally 1 value is returned, else exeption is raised EXCEPT
 
 """
 
-import setpath
+from . import setpath
 from lib import argsparse
 import functions
 import logging
@@ -70,7 +70,7 @@ class doall(object):
                     self.func(cexec, schema, *self.args, **self.kargs)
 
             ret = True
-        except Exception,e:
+        except Exception as e:
             if functions.settings['logging']:
                 lg = logging.LoggerAdapter(logging.getLogger(__name__), {"flowname": functions.variables.flowname})
                 lg.exception(e)
@@ -79,8 +79,8 @@ class doall(object):
             else:
                 if functions.settings['tracing']:
                     import traceback
-                    print "---Deep Execution traceback--"
-                    print traceback.print_exc()
+                    print("---Deep Execution traceback--")
+                    print(traceback.print_exc())
                 raise functions.MadisError(e)
         finally:            
             try:
@@ -120,7 +120,7 @@ def maincode(args,boolargs,nonstringargs,needsescape,notsplit,db,func,retalways,
     autostring='automatic_vtable'
     try:
         largs, kargs = argsparse.parse(args,boolargs,nonstringargs,needsescape,notsplit)
-    except Exception,e:
+    except Exception as e:
         raise functions.MadisError(e)
     if 'query' not in kargs:
         raise functions.OperatorError(func.__globals__['__name__'].rsplit('.')[-1],"needs query argument ")

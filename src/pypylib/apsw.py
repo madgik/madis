@@ -8,7 +8,7 @@ from functools import wraps
 import weakref
 from codecs import utf_8_decode
 from threading import _get_ident as thread_get_ident
-from types import NoneType
+NoneType = type(None)
 from threading import _get_ident as _thread_get_ident
 import sys
 import os

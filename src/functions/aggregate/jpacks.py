@@ -1,6 +1,6 @@
 __docformat__ = 'reStructuredText en'
 
-import setpath
+from . import setpath
 import lib.jopts as jopts
 import json
 from collections import OrderedDict
@@ -245,7 +245,7 @@ class jdictgroupunion:
 
     def step(self, *args):
         for d in args:
-            for x, v in json.loads(d, object_pairs_hook=OrderedDict).iteritems():
+            for x, v in json.loads(d, object_pairs_hook=OrderedDict).items():
                 vlen = 1
                 if type(v) in (list, OrderedDict):
                     vlen = len(v)
@@ -294,7 +294,7 @@ class jgroupunionkeys:
             v = json.loads(arg)
             if not set(v).issubset(self.outgroup):
                 self.outgroupset.update(v)
-                self.outgroup.update([(k, None) for k in json.loads(arg, object_pairs_hook=OrderedDict).iterkeys()])
+                self.outgroup.update([(k, None) for k in json.loads(arg, object_pairs_hook=OrderedDict).keys()])
 
     def final(self):
         return jopts.toj(list(self.outgroup))
@@ -344,7 +344,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
 
     testfunction()

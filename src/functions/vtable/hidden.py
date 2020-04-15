@@ -23,8 +23,8 @@ Examples::
     ---------
 
 """
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 
 ### Classic stream iterator
@@ -65,7 +65,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

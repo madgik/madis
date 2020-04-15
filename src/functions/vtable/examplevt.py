@@ -27,7 +27,7 @@ Examples:
     envar:dbname     | temp
 
 """
-import vtbase
+from . import vtbase
 
 registered=True
 external_query = True
@@ -40,13 +40,13 @@ class examplevt(vtbase.VT):
 
         li = 0
         for i in largs:
-            yield [li, unicode(i)]
+            yield [li, str(i)]
             li += 1
 
-        for k, v in dictargs.iteritems():
-            yield [unicode(k), unicode(v)]
+        for k, v in dictargs.items():
+            yield [str(k), str(v)]
 
-        for x,y in envars.iteritems():
+        for x,y in envars.items():
             yield ["envar:"+x, str(y)]
 
 def Source():
@@ -58,7 +58,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

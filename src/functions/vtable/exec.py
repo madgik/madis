@@ -118,8 +118,8 @@ Test files:
 import copy
 import os.path
     
-import setpath          #for importing from project root directory  KEEP IT IN FIRST LINE
-from vtout import SourceNtoOne
+from . import setpath          #for importing from project root directory  KEEP IT IN FIRST LINE
+from .vtout import SourceNtoOne
 import apsw
 import functions
 import logging
@@ -186,7 +186,7 @@ def execflow(diter, schema, connection, *args, **kargs):
             newvars.__dict__[v] = functions.variables.__dict__[v]
         else:
             raise functions.OperatorError(__name__.rsplit('.')[-1], "Variable %s doesn't exist" % (v,))
-    for newv, oldv in kargs.items():
+    for newv, oldv in list(kargs.items()):
         if hasattr(functions.variables,oldv):
             newvars.__dict__[newv]=functions.variables.__dict__[oldv]
         else:
@@ -204,7 +204,7 @@ def execflow(diter, schema, connection, *args, **kargs):
         for t in diter:
             for query in breakquery(t):
                 line += 1
-                if type(query) not in types.StringTypes:
+                if type(query) not in (str,):
                     raise functions.OperatorError(__name__.rsplit('.')[-1], "Content is not sql query")
                 #Skip empty queries or comment lines
                 query = query.strip()
@@ -227,7 +227,7 @@ def execflow(diter, schema, connection, *args, **kargs):
                 try:
                     for i in c.execute(query):
                         pass
-                except Exception,e: #Cathing IGNORE FAIL EXCEPTION
+                except Exception as e: #Cathing IGNORE FAIL EXCEPTION
                     if catchexception:
                         if functions.settings['logging']:
                             lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
@@ -249,7 +249,7 @@ def execflow(diter, schema, connection, *args, **kargs):
                     duration = "%s min. %s sec %s msec" % ((int(tmdiff.days)*24*60+(int(tmdiff.seconds)/60), (int(tmdiff.seconds)%60),(int(tmdiff.microseconds)/1000)))
                     lg.info("FINISHED in %s: %s" % (duration, query))
                 c.close()
-    except Exception, e:
+    except Exception as e:
         if functions.settings['logging']:
             lg = logging.LoggerAdapter(logging.getLogger(__name__),{ "flowname" : functions.variables.flowname  })
             lg.exception(e)
@@ -280,7 +280,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

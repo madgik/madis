@@ -1,6 +1,6 @@
 import re
 
-reduce_spaces=re.compile(ur'\s+', re.UNICODE)
+reduce_spaces=re.compile(r'\s+', re.UNICODE)
 
 def CreateStatement(description,tablename):
     names=[]
@@ -25,7 +25,7 @@ def unify(slist):
             eldict[s]+=1
         else:
             eldict[s]=1
-    for val,fr in eldict.items():
+    for val,fr in list(eldict.items()):
         if fr==1:
             del eldict[val]
     for val in eldict:

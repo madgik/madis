@@ -12,8 +12,8 @@ Examples:
 
 """
 
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import os
 
@@ -44,7 +44,7 @@ class SQLite(vtbase.VT):
         yield cur.getdescriptionsafe()
 
         while True:
-            yield cur.next()
+            yield next(cur)
 
         cur.close()
         
@@ -58,7 +58,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

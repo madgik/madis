@@ -12,8 +12,8 @@ Examples::
 
 """
 
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import apsw
 
@@ -30,7 +30,7 @@ class QueryPlan(vtbase.VT):
 
         def buststatementcache():
             c = connection.cursor()
-            for i in xrange(110):
+            for i in range(110):
                 a=list(c.execute("select "+str(i)))
 
         _, dictargs = self.full_parse(parsedArgs)
@@ -68,7 +68,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

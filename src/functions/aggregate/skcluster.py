@@ -1,4 +1,4 @@
-import setpath
+from . import setpath
 import functions
 import math
 
@@ -116,10 +116,10 @@ class skcluster:
         # data = self.sample
         # print data
         alg = self.initalg.fit(self.sample)
-        print 'Num of features:',len(self.sample[0])
+        print('Num of features:',len(self.sample[0]))
         if hasattr(alg,'cluster_centers_'):
-            print alg.cluster_centers_
-            yield tuple(['id','label'] + ['center'+str(i) for i in xrange(1,len(self.sample[0])+1)])
+            print(alg.cluster_centers_)
+            yield tuple(['id','label'] + ['center'+str(i) for i in range(1,len(self.sample[0])+1)])
             for id in ids:
                 # label=int(alg.labels_[id-1])
                 yield [id] + [int(alg.labels_[id-1])] + list(alg.cluster_centers_[int(alg.labels_[id-1])])

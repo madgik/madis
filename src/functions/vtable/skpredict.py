@@ -50,8 +50,8 @@ __author__ = 'root'
 # from vtout import SourceNtoOne
 # import functions
 # import lib.inoutparsing
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import gc
 import lib.inoutparsing
@@ -63,7 +63,7 @@ class skpredict(vtbase.VT):
         import itertools
         import numpy as np
         # from sklearn import linear_model
-        import cPickle as cp
+        import pickle as cp
         import zlib
 
         largs, dictargs = self.full_parse(parsedArgs)
@@ -118,7 +118,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

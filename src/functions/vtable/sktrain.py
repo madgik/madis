@@ -83,11 +83,11 @@ registered = True
 __author__ = 'root'
 import os.path
 import sys
-from vtout import SourceNtoOne
+from .vtout import SourceNtoOne
 
 
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import gc
 import lib.inoutparsing
@@ -101,7 +101,7 @@ class sktrain(vtbase.VT):
         if 'query' not in dictargs:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"No query argument ")
         query = dictargs['query']
-        print 'MADIS/QUERY', query
+        print('MADIS/QUERY', query)
         cur = envars['db'].cursor()
         c = cur.execute(query, parse=False)
         schema = []
@@ -140,16 +140,16 @@ class sktrain(vtbase.VT):
 
 
 # from sklearn.cross_validation import *
-        print 'MADIS/sklearn version', sklearn.__version__
+        print('MADIS/sklearn version', sklearn.__version__)
         
         # from sklearn.cluster import AgglomerativeClustering
-        import cPickle as cp
+        import pickle as cp
         import numpy as np
         # import unicodedata
         import zlib
         # --------------------
         model = eval(initstr)
-        print 'MADIS/MODEL:',model
+        print('MADIS/MODEL:',model)
         if 'classname' not in dictargs:
             # raise functions.OperatorError(__name__.rsplit('.')[-1],"No classname argument ")
             trainList=[]
@@ -161,7 +161,7 @@ class sktrain(vtbase.VT):
             pstr = cp.dumps(model,2)
             f.write(zlib.compress(pstr,3))
             yield [('id',), ('cluster_label',)]
-            for i in xrange(0, len(train)):
+            for i in range(0, len(train)):
                 yield (i, int(model.labels_[i]))
 
         else:
@@ -245,7 +245,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
 
     testfunction()

@@ -202,11 +202,11 @@ Examples:
     row3val1 |
     row4val1 | row4val2
 """
-import vtbase
+from . import vtbase
 import functions
 import json
-import cStringIO as StringIO
-import StringIO as unicodeStringIO
+import io as StringIO
+import io as unicodeStringIO
 import re
 try:
     from collections import OrderedDict
@@ -248,7 +248,7 @@ def pathwithoutns(path):
 
 def itertext(elem):
     tag = elem.tag
-    if not isinstance(tag, basestring) and tag is not None:
+    if not isinstance(tag, str) and tag is not None:
         return
     if elem.text:
         yield elem.text
@@ -426,10 +426,10 @@ class schemaobj():
     def getrelschema(self):
         relschema=[None]*(len(self.schema)+len(self.getall))
 
-        for x,y in self.schema.itervalues():
+        for x,y in self.schema.values():
             relschema[x]=(y, 'text')
 
-        for x,y in self.getall.itervalues():
+        for x,y in self.getall.values():
             relschema[x]=(y, 'text')
 
         return relschema
@@ -502,7 +502,7 @@ class XMLparse(vtbase.VT):
                         s.addtoschema(path)
                         
             elif type(jxp) is OrderedDict:
-                for k,v in jxp.iteritems():
+                for k,v in jxp.items():
                     path = k.split('/')
                     if path[0] == '':
                         path = path[1:]
@@ -592,7 +592,7 @@ class XMLparse(vtbase.VT):
                 if self.fast == 2:
                     self.header = self.forcedroottag
                 else:
-                    self.header ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in self.htmlentities.iteritems()])
+                    self.header ='<!DOCTYPE forceddoctype ['+''.join(['<!ENTITY '+x.strip(';')+' "'+str(v)+'">' for x,v in self.htmlentities.items()])
                     self.header +=']>\n'+self.forcedroottag
                 self.replacexmlheaders = re.compile(r'\<\?xml.+?(\<[\w\d:])', re.DOTALL| re.UNICODE)
                 self.finddatatag = re.compile(r'(\<[\w\d:])', re.DOTALL| re.UNICODE)
@@ -725,7 +725,7 @@ class XMLparse(vtbase.VT):
 
                             if capture:
                                 if el.attrib != {}:
-                                    for k, v in el.attrib.iteritems():
+                                    for k, v in el.attrib.items():
                                         addtorow(xpath+[attribguard, k.lower()], v)
                         else:
                             if capture:
@@ -752,7 +752,7 @@ class XMLparse(vtbase.VT):
                                 el.clear()
 
                     etreeended = True
-                except etree.ParseError, e:
+                except etree.ParseError as e:
                     rio.restart()
                     resetrow()
                     if self.strict >= 1:
@@ -773,7 +773,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

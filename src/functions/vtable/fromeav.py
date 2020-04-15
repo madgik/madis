@@ -38,8 +38,9 @@ Examples::
     1   | 2      | London   | Pilot
     2   | 5      | New York | Teacher
 """
-import setpath
-import vtbase
+
+from . import setpath
+from . import vtbase
 import functions
 import gc
 
@@ -59,7 +60,7 @@ class fromEAV(vtbase.VT):
         schema = [('rid',), ('row_id',)]
         schema_order = {}
         try:
-            l = prev_l = c.next()
+            l = prev_l = next(c)
         except:
             yield [("c1",)]
             return
@@ -71,7 +72,7 @@ class fromEAV(vtbase.VT):
             record.append(l[2])
             prev_l = l
             try:
-                l = c.next()
+                l = next(c)
             except:
                 break
         yield schema
@@ -81,15 +82,15 @@ class fromEAV(vtbase.VT):
         record[0] = rid
         record[1] = l[0]
         record[2] = l[2]
-        for i in xrange(3, len(schema)):
-            l = c.next()
+        for i in range(3, len(schema)):
+            l = next(c)
             record[schema_order[l[1]]] = l[2]
         yield record
 
         lr = len(schema) - 2
         while True:
-            for i in xrange(lr):
-                l = c.next()
+            for i in range(lr):
+                l = next(c)
                 record[schema_order[l[1]]] = l[2]
             rid += 1
             record[0] = rid
@@ -105,7 +106,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

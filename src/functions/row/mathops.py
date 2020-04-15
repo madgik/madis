@@ -1,4 +1,4 @@
-import setpath
+from . import setpath
 import functions
 import random
 # coding: utf-8
@@ -180,13 +180,13 @@ def farith(*args):
                 operand = operand1 * operand2
             s.append(operand)
         else:
-            if type(i) in (int, float, long):
+            if type(i) in (int, float, int):
                 operand = Fraction(i)
                 s.append(operand)
             else:
                 try:
                     s.append(Fraction(*json.loads(i)))
-                except ValueError, e:
+                except ValueError as e:
                     raise functions.OperatorError('farith',"invalid expression found: '" + i +"'")
 
     return simplify_fraction(s.pop())
@@ -225,7 +225,7 @@ def tonumber(*args):
 
     """
 
-    if type(args[0]) not in (str, unicode):
+    if type(args[0]) not in (str, str):
         return args[0]
 
     try:
@@ -246,7 +246,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

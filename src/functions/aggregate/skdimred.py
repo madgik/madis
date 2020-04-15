@@ -1,4 +1,4 @@
-import setpath
+from . import setpath
 import functions
 import math
 import time as t

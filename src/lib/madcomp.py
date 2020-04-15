@@ -1,19 +1,19 @@
 import sys
-from itertools import repeat, imap
-import cPickle
-import cStringIO
+from itertools import repeat
+import pickle
+import io
 import struct
 import zlib
 import apsw
 from array import array
 import marshal
-from itertools import izip , imap
+
 import itertools
-import cPickle as cPickle
+import pickle as cPickle
 import struct
 import gc
-import StringIO as StringIO
-import cStringIO as cStringIO
+import io as StringIO
+import io as cStringIO
 import marshal
 import zlib
 from array import array
@@ -34,13 +34,13 @@ class Decompression:
             import marshal as msgpack
         serializer = msgpack
         self.blocknumber += 1
-        input = cStringIO.StringIO(inputblock)
+        input = io.StringIO(inputblock)
         if self.blocknumber == 1 :
             # schema block
            
             b = struct.unpack('!B',input.read(1))
             if not b[0]:
-                self.schema = cPickle.load(input)
+                self.schema = pickle.load(input)
             else :
                 raise error('Not a schema block!')
             yield self.schema
@@ -67,7 +67,7 @@ class Decompression:
                         yield rec
                 else:
                     cols = [None]*colnum
-                    for c in xrange(colnum):
+                    for c in range(colnum):
                         s = serializer.loads(decompress(input.read(ind[c*2])))
                         if (len(s)>1 and ind[c*2+1]==0 and ind[colnum*2]>1):
                             cols[c] = s
@@ -76,9 +76,9 @@ class Decompression:
                                 tmp = s[0]
                                 cols[c] = repeat(tmp, ind[colnum*2])
                             elif len(s)<256:
-                                cols[c] = imap(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
+                                cols[c] = map(s.__getitem__, array('B', decompress(input.read(ind[c*2+1]))))
                             else:
-                                cols[c] = imap(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
+                                cols[c] = map(s.__getitem__, array('H', decompress(input.read(ind[c*2+1]))))
 
                     iterators = tuple(map(iter, cols))
                     ilen = len(cols)
@@ -88,13 +88,13 @@ class Decompression:
                         ci = 0
                         try:
                             while ci < ilen:
-                                res[ci] = iterators[ci].next()
+                                res[ci] = next(iterators[ci])
                                 ci += 1
                             yield res
                         except:
                             break
             elif not b[0]:
-                cPickle.load(input)
+                pickle.load(input)
 
 
 
@@ -151,7 +151,7 @@ class Compression:
     def getSize(self,v):
         t = type(v)
 
-        if t == unicode:
+        if t == str:
             return 52 + 4*len(v)
 
         if t in (int, float, None):
@@ -164,7 +164,7 @@ class Compression:
 
         output = StringIO.StringIO()
         output.write(struct.pack('!B', 0))
-        cPickle.dump(self.schema,output,1)
+        pickle.dump(self.schema,output,1)
 
         formatArgs = {}
         formatArgs = (yield)
@@ -212,7 +212,7 @@ class Compression:
 
         output.write(struct.pack('!B', 1))
         output.write(struct.pack('!B', 0))
-        headindex = [0 for _ in xrange((colnum*2)+1)]
+        headindex = [0 for _ in range((colnum*2)+1)]
         type = '!'+'i'*len(headindex)
         output.write(struct.pack(type, *headindex))
         output.write(serializer.dumps(diter))
@@ -237,11 +237,11 @@ class Compression:
         else:
             output.write(struct.pack('!B', 1))
 
-        headindex = [0 for _ in xrange((colnum*2)+1)]
+        headindex = [0 for _ in range((colnum*2)+1)]
         type = '!'+'i'*len(headindex)
         output.write(struct.pack(type, *headindex))
 
-        for i, col in enumerate(([x[c] for x in diter] for c in xrange(colnum))):
+        for i, col in enumerate(([x[c] for x in diter] for c in range(colnum))):
 
             if self.blocknumber==0:
                 s = sorted(set(col))

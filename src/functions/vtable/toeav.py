@@ -24,8 +24,8 @@ Examples::
     Lila  | b       | 74
     Lila  | c       | 1
 """
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import gc
 
@@ -58,9 +58,9 @@ class toEAV(vtbase.VT):
         yield [('rid',), ('colname',), ('val',)]
         lr = len(schema)
         while True:
-            l = c.next()
+            l = next(c)
             rid = l[0]
-            for i in xrange(1, lr):
+            for i in range(1, lr):
                 yield (rid, schema[i], l[i])
 
 def Source():
@@ -72,7 +72,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

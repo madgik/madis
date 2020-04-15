@@ -150,11 +150,11 @@ Examples::
 registered=True
 external_stream=True
 
-from vtiterable import SourceVT
+from .vtiterable import SourceVT
 from lib.dsv import reader                
 import lib.gzip34 as gzip
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import functions
 from lib.iterutils import peekable
 from lib.ziputils import ZipIter
@@ -188,7 +188,7 @@ class tsv(csv.Dialect):
 
 
 class line(csv.Dialect):
-    def __init__(self):
+   def __init__(self):
         self.delimiter='\n'
         self.doublequote=False
         self.quotechar='"'
@@ -204,14 +204,14 @@ def nullify(iterlist):
 
 def directfile(f, encoding='utf_8'):
     for line in f:
-        yield ( unicode(line.rstrip("\r\n"), encoding), )
+        yield ( str(line.rstrip("\r\n"), encoding), )
 
 def directfileutf8(f):
     try:
         for line in f:
-            yield ( utf_8_decode(line.rstrip("\r\n"))[0], )
-    except UnicodeDecodeError, e:
-        raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not %s encoded" %(self.encoding))
+            yield ( line.rstrip("\r\n"), )
+    except UnicodeDecodeError as e:
+        raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+"\nFile is not %s encoded" %(self.encoding))
 
 def strict0(tabiter, colcount):
     while True:
@@ -234,7 +234,7 @@ def convnumbers(r):
 
 def tojdict(tabiter, header, preable):
     for r in tabiter:
-        yield r[:preable] + [json.dumps(dict(zip(header, convnumbers(r[preable:]))), separators=(',',':'), ensure_ascii=False)]
+        yield r[:preable] + [json.dumps(dict(list(zip(header, convnumbers(r[preable:])))), separators=(',',':'), ensure_ascii=False)]
 
 def tojlist(tabiter, preable):
     for r in tabiter:
@@ -246,7 +246,7 @@ def strict1(tabiter, colcount):
         row = tabiter.next()
         linenum += 1
         if len(row) != colcount:
-            raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. Found "+str(len(row))+" of expected "+str(colcount)+" columns\n"+"The line's parsed contents are:\n" + u','.join([mstr(x) for x in row]))
+            raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. Found "+str(len(row))+" of expected "+str(colcount)+" columns\n"+"The line's parsed contents are:\n" + ','.join([mstr(x) for x in row]))
         yield row
 
 def strictminus1(tabiter, colcount, hasheader = False):
@@ -257,7 +257,7 @@ def strictminus1(tabiter, colcount, hasheader = False):
         linenum += 1
         row = tabiter.next()
         if len(row) != colcount:
-            yield (linenum, len(row), colcount, u','.join([unicode(x) for x in row]))
+            yield (linenum, len(row), colcount, ','.join([str(x) for x in row]))
 
 def cleanBOM(t):
     return t.encode('ascii', errors = 'ignore').strip()
@@ -265,25 +265,25 @@ def cleanBOM(t):
 def getFilenameMatchingRegex(filename):
 	# This method asumes the given fileName to be a regex.
     # So it returns the first-file's name from the given dir (current or different), matching to the regex-argument 'filename'.
-	import os
-	import re	
-	import fnmatch
+    import os
+    import re
+    import fnmatch
 	
-	initialRexexGiven = filename
-	dir = '.'   # Current dir.
-	p = re.compile('(.*\/)(.*)')
-	match = p.match(filename)
-	if match:	# If a different directory is given in the regex, split it from the filename.
-		dir = match.group(1)
-		filename = match.group(2)
+    initialRexexGiven = filename
+    dir = '.'   # Current dir.
+    p = re.compile('(.*\/)(.*)')
+    match = p.match(filename)
+    if match:	# If a different directory is given in the regex, split it from the filename.
+        dir = match.group(1)
+        filename = match.group(2)
 
-	for file in os.listdir(dir):
-   		if fnmatch.fnmatch(file, filename):
-			if dir == '.':
-        			return file
-			else:
-				return dir + file
-	raise Exception('No file was found matching to the given regex: \'' + initialRexexGiven + '\'')
+    for file in os.listdir(dir):
+        if fnmatch.fnmatch(file, filename):
+            if dir == '.':
+                return file
+            else:
+                return dir + file
+    raise Exception('No file was found matching to the given regex: \'' + initialRexexGiven + '\'')
 
 class FileCursor:
     def __init__(self,filename,isurl,compressiontype,compression,hasheader,first,namelist,extraurlheaders,**rest):
@@ -348,10 +348,10 @@ class FileCursor:
                     else:
                         self.fileiter = open(filename, "rU", buffering=1000000)
             else:
-                pathname=urlparse.urlparse(filename)[2]
-                req=urllib2.Request(filename,None,extraurlheaders)
-                hreq=urllib2.urlopen(req)
-                if [1 for x,y in hreq.headers.items() if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
+                pathname=urllib.parse.urlparse(filename)[2]
+                req=urllib.request.Request(filename,None,extraurlheaders)
+                hreq=urllib.request.urlopen(req)
+                if [1 for x,y in list(hreq.headers.items()) if x.lower() in ('content-encoding', 'content-type') and y.lower().find('gzip')!=-1]:
                     gzipcompressed=True
                 self.fileiter=hreq
 
@@ -368,7 +368,7 @@ class FileCursor:
                     filename = filename[:-5]
                 self.fileiter = gzip.GzipFile(mode = 'rb', fileobj=self.fileiter)
 
-        except Exception,e:
+        except Exception as e:
             raise functions.OperatorError(__name__.rsplit('.')[-1], e)
 
         _, filenameExt = os.path.splitext(filename)
@@ -387,7 +387,7 @@ class FileCursor:
             schemalinetype = type(schemaline)
 
             if schemalinetype == list:
-                for i in xrange(1, len(schemaline)+1):
+                for i in range(1, len(schemaline)+1):
                     namelist.append(['C'+str(i), 'text'])
                 self.fileiter = itertools.chain([firstline], self.fileiter)
 
@@ -440,7 +440,7 @@ class FileCursor:
             if first and not hasheader:
                 if self.fast:
                     delim = rest['delimiter']
-                    self.iter=peekable((unicode(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter))
+                    self.iter=peekable((str(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter))
                 else:
                     self.iter=peekable(nullify(reader(self.fileiter, encoding=self.encoding,**rest)))
                     if self.strict == None:
@@ -450,7 +450,7 @@ class FileCursor:
             else: ###not first or header
                 if self.fast:
                     delim = rest['delimiter']
-                    self.iter = (unicode(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter)
+                    self.iter = (str(r[:-1] if r[-1] == '\n' else r, 'utf_8').split(delim) for r in self.fileiter)
                 else:
                     self.iter=nullify(reader(self.fileiter, encoding=self.encoding, **rest))
                     if self.strict == None:
@@ -458,25 +458,27 @@ class FileCursor:
                 linelen = len(namelist)
 
                 if hasheader:
-                    sample=self.iter.next()
+                    sample=next(self.iter)
                     linelen = len(sample)
 
             if self.strict == 0:
                 self.iter = strict0(self.iter, linelen)
 
-            if self.strict == 1:
+            elif self.strict == 1:
                 self.iter = strict1(self.iter, linelen)
 
-            if self.strict == -1:
+            elif self.strict == -1:
                 self.iter = strictminus1(self.iter, linelen, hasheader)
                 namelist += [['linenumber', 'int'], ['foundcols', 'int'], ['expectedcols', 'int'],['contents', 'text']]
-
+            else:
+                self.strict == 1
+                self.iter = strict1(self.iter, linelen)
             if first and namelist==[]:
                 if hasheader:
                     for i in sample:
                         namelist.append( [cleanBOM(i), 'text'] )
                 else:
-                    for i in xrange(1, linelen+1):
+                    for i in range(1, linelen+1):
                         namelist.append( ['C'+str(i), 'text'] )
 
         else: #### Default read lines
@@ -499,7 +501,7 @@ class FileCursor:
                 self.iter = tojlist(self.iter, self.toj)
 
         if self.fast:
-            self.next = self.iter.next
+            self.next = self.iter.__next__
 
     def __iter__(self):
         if self.fast:
@@ -507,11 +509,11 @@ class FileCursor:
         else:
             return self
 
-    def next(self):
+    def __next__(self):
         try:
-            return self.iter.next()
-        except UnicodeDecodeError, e:
-            raise functions.OperatorError(__name__.rsplit('.')[-1], unicode(e)+"\nFile is not UTF8 encoded")
+            return next(self.iter)
+        except UnicodeDecodeError as e:
+            raise functions.OperatorError(__name__.rsplit('.')[-1], str(e)+"\nFile is not UTF8 encoded")
 
     def close(self):
         self.fileiter.close()
@@ -572,7 +574,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":

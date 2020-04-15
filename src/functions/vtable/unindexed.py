@@ -32,8 +32,8 @@ Examples::
     Note the difference with rowid table column.
 
 """
-import setpath
-import vtbase
+from . import setpath
+from . import vtbase
 import functions
 import gc
 
@@ -63,7 +63,7 @@ class NopVT(vtbase.VT):
                     pass
 
         while True:
-            yield c.next()
+            yield next(c)
 
 def Source():
     return vtbase.VTGenerator(NopVT)
@@ -74,7 +74,7 @@ if not ('.' in __name__):
     new function you create
     """
     import sys
-    import setpath
+    from . import setpath
     from functions import *
     testfunction()
     if __name__ == "__main__":
