@@ -5,6 +5,7 @@ import sys
 import apsw
 import madis
 import json
+import io
 
 def exitwitherror(txt):
     sys.stderr.write(txt+'\n')
@@ -60,7 +61,7 @@ def main():
         sys.exit(1)
 
     try:
-        f = open(flowname,'r')
+        f = io.open(flowname, mode='r', encoding='utf-8')
     except Exception, e:
         exitwitherror("Error in opening SQL flow: " + str(e))
 
