@@ -200,6 +200,11 @@ class Cursor(object): ##### Needs Cursor Function , Iterator instance, tablename
             self.row = []
             self.eof = True
             self.Close()
+        except Exception as e:
+            if str(e) == 'generator raised StopIteration':
+                self.row = []
+                self.eof = True
+                self.Close()
 
     def NextPyPy(self):
         try:

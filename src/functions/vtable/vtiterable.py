@@ -222,6 +222,10 @@ class Cursor:
         except StopIteration:
             self.row=None
             self.eof=True
+        except Exception as e:
+            if str(e) == 'generator raised StopIteration':
+                self.row = None
+                self.eof = True
 
     @echocall
     def Close(self):

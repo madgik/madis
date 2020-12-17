@@ -154,7 +154,6 @@ def strsplitv(*args): ###splits the first arguments
     """
     if len(args)<1:
         raise functions.OperatorError("strsplitv","strsplit operator: no input")
-
     arg=args[0]
     args=args[1:]
     try:
@@ -189,7 +188,6 @@ def strsplitv(*args): ###splits the first arguments
         first=False
         yield ("C1",)
     f.close()
-
 strsplitv.registered=True
 
 def strjoin(*args):

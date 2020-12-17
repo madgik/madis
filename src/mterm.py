@@ -539,6 +539,8 @@ def printrow(row):
                 sys.stdout.write(Fore.RED+Style.BRIGHT+'|'+Style.RESET_ALL)
         if type(d) in (int, float, int):
             d=str(d)
+        if isinstance(d,bytes):
+            d = d.decode('utf-8')
         elif d is None:
             d=Style.BRIGHT+'null'+Style.RESET_ALL
         try:
@@ -546,6 +548,7 @@ def printrow(row):
         except KeyboardInterrupt:
             raise
         except:
+
             sys.stdout.write(d)
 
         i1+=1

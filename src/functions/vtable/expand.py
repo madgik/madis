@@ -208,15 +208,15 @@ class Expand(vtbase.VT):
         for row in c:
             nrow = list(row)
 #            itercount = 0
-
             for i in range(rowlen):
-                print(type(nrow[i]))
-                if type(nrow[i]) is "<class 'bytes'>" and nrow[i][:lenIH] == iterheader:
-                    striter = str(nrow[i])
-                    oiter = oiters[striter]
-                    next(oiter)
-                    nrow[i] = (striter, oiter)
-#                    itercount += 1
+                if isinstance(nrow[i],bytes):
+                    nrow[i] = nrow[i].decode()
+                    if (nrow[i][:lenIH] == iterheader):
+                        striter = bytes(nrow[i], encoding="ascii")
+                        oiter = oiters[striter]
+                        next(oiter)
+                        nrow[i] = (striter, oiter)
+    #                    itercount += 1
 
             for exp in exprown(nrow):
                 yield exp

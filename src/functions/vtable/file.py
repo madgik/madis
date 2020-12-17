@@ -215,7 +215,7 @@ def directfileutf8(f):
 
 def strict0(tabiter, colcount):
     while True:
-        row = tabiter.next()
+        row = next(tabiter)
         if len(row) == colcount:
             yield row
 
@@ -243,7 +243,7 @@ def tojlist(tabiter, preable):
 def strict1(tabiter, colcount):
     linenum = 0
     while True:
-        row = tabiter.next()
+        row = next(tabiter)
         linenum += 1
         if len(row) != colcount:
             raise functions.OperatorError(__name__.rsplit('.')[-1],"Line " + str(linenum) + " is invalid. Found "+str(len(row))+" of expected "+str(colcount)+" columns\n"+"The line's parsed contents are:\n" + ','.join([mstr(x) for x in row]))
@@ -255,7 +255,7 @@ def strictminus1(tabiter, colcount, hasheader = False):
         linenum += 1
     while True:
         linenum += 1
-        row = tabiter.next()
+        row = next(tabiter)
         if len(row) != colcount:
             yield (linenum, len(row), colcount, ','.join([str(x) for x in row]))
 
