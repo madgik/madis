@@ -2,16 +2,16 @@
 # Licensed under the MIT license
 
 import sqlite3
-import src.functions as functions
+import madis
 import apsw
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, Optional, Tuple
 
 if TYPE_CHECKING:
-    from .core import Connection
+    from .aiomadis import Connection
 
 
 class Cursor:
-    def __init__(self, conn: "Connection", cursor: functions.Cursor) -> None:
+    def __init__(self, conn: "Connection", cursor: madis.functions.Cursor) -> None:
         self.iter_chunk_size = conn._iter_chunk_size
         self._conn = conn
         self._cursor = cursor
@@ -91,7 +91,7 @@ class Cursor:
         return self._cursor.description
 
     @property
-    def connection(self) -> functions.Connection:
+    def connection(self) -> madis.functions.Connection:
         return self._cursor.connection
 
     async def __aenter__(self):

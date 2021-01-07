@@ -5,10 +5,49 @@
 Core implementation of aiosqlite proxies
 """
 
+from sqlite3 import (  # pylint: disable=redefined-builtin
+    DatabaseError,
+    Error,
+    IntegrityError,
+    NotSupportedError,
+    OperationalError,
+    ProgrammingError,
+    Row,
+    Warning,
+    register_adapter,
+    register_converter,
+    sqlite_version,
+    sqlite_version_info,
+)
+
+__author__ = "John Reese"
+
+
+
+__all__ = [
+    "register_adapter",
+    "register_converter",
+    "sqlite_version",
+    "sqlite_version_info",
+    "connect",
+    "Connection",
+    "Cursor",
+    "Row",
+    "Warning",
+    "Error",
+    "DatabaseError",
+    "IntegrityError",
+    "ProgrammingError",
+    "OperationalError",
+    "NotSupportedError",
+]
+
+
+
 import asyncio
 import logging
 import sqlite3
-import src.functions as functions
+import madis
 import sys
 import warnings
 from functools import partial
@@ -27,8 +66,8 @@ from typing import (
 )
 from warnings import warn
 
-from .context import contextmanager
-from .cursor import Cursor
+from context import contextmanager
+from cursor import Cursor
 
 __all__ = ["connect", "Connection", "Cursor"]
 
@@ -45,13 +84,13 @@ def get_loop(future: asyncio.Future) -> asyncio.AbstractEventLoop:
 class Connection(Thread):
     def __init__(
         self,
-        connector: Callable[[], functions.Connection],
+        connector: Callable[[], madis.functions.Connection],
         iter_chunk_size: int,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         super().__init__()
         self._running = True
-        self._connection: Optional[functions.Connection] = None
+        self._connection: Optional[madis.functions.Connection] = None
         self._connector = connector
         self._tx: Queue = Queue()
         self._iter_chunk_size = iter_chunk_size
@@ -63,7 +102,7 @@ class Connection(Thread):
             )
 
     @property
-    def _conn(self) -> functions.Connection:
+    def _conn(self) -> madis.functions.Connection:
         if self._connection is None:
             raise ValueError("no active connection")
 
@@ -335,7 +374,7 @@ class Connection(Thread):
 
     async def backup(
         self,
-        target: Union["Connection", functions.Connection],
+        target: Union["Connection", madis.functions.Connection],
         *,
         pages: int = 0,
         progress: Optional[Callable[[int, int, int], None]] = None,
@@ -378,7 +417,7 @@ def connect(
             DeprecationWarning,
         )
 
-    def connector() -> functions.Connection:
+    def connector() -> madis.functions.Connection:
         if isinstance(database, str):
             loc = database
         elif isinstance(database, bytes):
@@ -386,6 +425,6 @@ def connect(
         else:
             loc = str(database)
 
-        return functions.Connection(loc, **kwargs)
+        return madis.functions.Connection(loc, **kwargs)
 
     return Connection(connector, iter_chunk_size)

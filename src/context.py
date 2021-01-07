@@ -7,7 +7,7 @@ from typing import Any, Callable, Coroutine, Generator, TypeVar
 
 from typing_extensions import AsyncContextManager
 
-from .cursor import Cursor
+from cursor import Cursor
 
 _T = TypeVar("_T")
 

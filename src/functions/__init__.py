@@ -346,9 +346,9 @@ def register(connection=None):
     aggrfiles = findmodules(functionspath, 'aggregate')
     vtabfiles = findmodules(functionspath, 'vtable')
 
-    [__import__("src.functions.row" + "." + module) for module in rowfiles]
-    [__import__("src.functions.aggregate" + "." + module) for module in aggrfiles]
-    [__import__("src.functions.vtable" + "." + module) for module in vtabfiles]
+    [__import__("functions.row" + "." + module) for module in rowfiles]
+    [__import__("functions.aggregate" + "." + module) for module in aggrfiles]
+    [__import__("functions.vtable" + "." + module) for module in vtabfiles]
 
     # Register aggregate functions
     for module in aggrfiles:
