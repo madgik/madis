@@ -7,7 +7,7 @@ import apsw
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, Optional, Tuple
 
 if TYPE_CHECKING:
-    from .aiomadis import Connection
+    from aiomadis import Connection
 
 
 class Cursor:
