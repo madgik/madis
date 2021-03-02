@@ -513,7 +513,7 @@ def schemaprint(cols):
                 charspercolname=max((totalchars-colschars)/(len(cols)+1-i1)-5, mincolchars)
                 colschars+=min(len(i), charspercolname)+len(str(i1))+3
                 if len(i)>charspercolname and len(cols)>1:
-                    i=i[0:charspercolname-1]+'..'
+                    i=i[0:int(charspercolname)-1]+'..'
                 else:
                     i=i+' '
                 sys.stdout.write(Fore.RED+'['+Style.BRIGHT+str(i1)+Style.NORMAL+'|'+Style.RESET_ALL+i)
