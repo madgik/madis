@@ -293,7 +293,7 @@ def normalizetext(*args):
 normalizetext.registered=True
 
 
-query_regular_characters=re.compile(ur"""^[·∆©(́−·¨¬…‐"•΄€„”“‘’´«»’ʹ–\w\s\[!-~\]]*$""", re.UNICODE)
+query_regular_characters=re.compile(ur"""^[·∆©(́−·¨¬…‐"•΄€„”“‘’´«»ʹ–\w\s\[!-~\]]*$""", re.UNICODE)
 
 def isvalidutf8(*args):
 
