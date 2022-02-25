@@ -74,7 +74,7 @@ class VTGenerator(object):
 
         self.tableObjs[tablename]=(schemaUtils.CreateStatement(schema,tablename),LTable(self.tableObjs, envars, TableVT, iterFunc, openedIter))
         if functions.settings['tracing']:
-            print 'VT_Schema: %s' %(self.tableObjs[tablename][0])
+            print 'VT_Schema: %s' %(unicode(self.tableObjs[tablename][0]).encode('utf_8', 'replace'))
         return self.tableObjs[tablename]
     @echocall
     def Connect(self, db, modulename, dbname, tablename,*args):
