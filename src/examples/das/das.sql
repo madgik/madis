@@ -1,3 +1,7 @@
+-- Table name = txts  
+-- columns C1, C2, C3  where C1 openAIRE id, C3= DOI and C2 = text 
+-- i.e. c1 =50|doi_________::03409e48c3e1f32a19c588953dc7ed0f , C3 = 10.1186/s40359-023-01207-1  
+
 hidden var 'UKRN4prefixes1' from '\bdata\b|\bcode\b|\bmaterial\b|\bsoftware\b|\bstatement\b|\bartifact\b';
 hidden var 'full_and_good' from 'freely available|public domain|data are open source|publicly available|accessible through the link|(available (?:at|via|through|to))|((?:have been|are|was|were) deposited)|available without restriction|(can be found(?:,? in the)? online)|can be downloaded|(access(?:ed|ible) (f?from|at))|available online from';
 hidden var 'supplementary' from '(in appendi(?:x|ces))|study are included|in supplement(al (mat|info)|ary (mat|file))|within the (article|manuscript|paper)|are included in (the (article|paper)|this( published article)?)|supporting info|provided within|contained within|appear in the submitted article|all relevant data are within|data are included';
